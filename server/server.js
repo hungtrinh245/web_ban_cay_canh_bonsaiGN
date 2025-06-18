@@ -17,6 +17,11 @@ app.get('/api/test-server', (req, res) => {
   res.json({ message: 'Backend server đang hoạt động tốt!' });
 }); 
 
+// Thêm dòng này phía trên app.listen
+const bonsaiRoutes = require("./routes/bonsai.routes");
+app.use("/api/bonsais", bonsaiRoutes);
+
+
 // Khởi động server sau đó chạy server
 app.listen(PORT, () => {
   console.log(`Backend server mới đang chạy trên http://localhost:${PORT}`);
