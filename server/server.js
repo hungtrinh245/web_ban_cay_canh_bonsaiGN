@@ -16,7 +16,7 @@ app.use(express.urlencoded({ extended: true }));
 app.get('/api/test-server', (req, res) => {
   res.json({ message: 'Backend server đang hoạt động tốt!' });
 }); 
-
+//dsdsds ndsdmsdkm
 // Thêm dòng này phía trên app.listen
 const bonsaiRoutes = require("./routes/bonsai.routes");
 app.use("/api/bonsais", bonsaiRoutes);
