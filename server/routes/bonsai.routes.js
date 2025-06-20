@@ -1,15 +1,8 @@
 const express = require("express");
 const router = express.Router();
 
-const bonsais = [
-  { id: 1, name: "Cây Tùng", price: 1000000 },
-  { id: 2, name: "Cây Sanh", price: 800000 },
-  { id: 3, name: "Cây Mai", price: 1200000 }
-];
+const { getAllBonsais } = require("../controllers/bonsaiController");
 
-// GET: Lấy danh sách cây bonsai
-router.get("/", (req, res) => {
-  res.json(bonsais);
-});
+router.get("/", getAllBonsais);
 
 module.exports = router;
