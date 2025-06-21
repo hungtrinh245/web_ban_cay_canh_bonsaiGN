@@ -1,35 +1,34 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+// src/App.jsx
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import HomePage from './pages/Homepage';
+import ProductDetailPage from './pages/ProductDetailPage';
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <Router>
+      <header style={{ background: '#333', color: 'white', padding: '1rem', marginBottom: '1rem' }}>
+        <nav style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', maxWidth: '1100px', margin: 'auto' }}>
+          <Link to="/" style={{ color: 'white', textDecoration: 'none', fontSize: '1.5rem' }}>BonsaiGN Shop</Link>
+          <div>
+            <Link to="/cart" style={{ color: 'white', textDecoration: 'none', marginLeft: '1rem' }}>Giỏ hàng</Link>
+            <Link to="/login" style={{ color: 'white', textDecoration: 'none', marginLeft: '1rem' }}>Đăng nhập</Link>
+          </div>
+        </nav>
+      </header>
+
+      <main style={{ maxWidth: '1100px', margin: 'auto', padding: '0 1rem' }}>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/products/:id" element={<ProductDetailPage />} />
+          {/* Chúng ta sẽ thêm các route cho /cart, /login sau */}
+        </Routes>
+      </main>
+
+      <footer style={{ background: '#f4f4f4', textAlign: 'center', padding: '1rem', marginTop: '1rem' }}>
+        <p>Copyright &copy; 2025 BonsaiGN Shop</p>
+      </footer>
+    </Router>
+  );
 }
 
-export default App
+export default App;
