@@ -3,7 +3,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/db'); // <-- THÊM DÒNG NÀY
-
+const authRoutes = require('./routes/authRoutes');
 // Kết nối đến Database
 connectDB(); 
 
@@ -21,6 +21,8 @@ app.get('/api/test-server', (req, res) => {
 });
 const bonsaiRoutes = require("./routes/bonsai.routes");
 app.use("/api/bonsais", bonsaiRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/auth', authRoutes); 
 
 
 // Khởi động server sau đó chạy server
