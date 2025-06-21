@@ -21,7 +21,7 @@ app.get('/api/test-server', (req, res) => {
 });
 const bonsaiRoutes = require("./routes/bonsai.routes");
 app.use("/api/bonsais", bonsaiRoutes);
-app.use('/api/products', productRoutes);
+// app.use('/api/products', productRoutes);
 app.use('/api/auth', authRoutes); 
 
 
