@@ -4,11 +4,14 @@ const {
   getAllBonsais,
   getProductById,
   getRelatedProducts,
+  getFeaturedBonsais,
 } = require("../controllers/bonsaiController");
 
 // Định nghĩa các route
 // GET /api/bonsais
 router.get("/", getAllBonsais);
+// Route  sẽ trả về SẢN PHẨM NỔI BẬT
+router.get("/featured", getFeaturedBonsais);
 
 // GET /api/bonsais/:id
 router.get("/:id", getProductById);

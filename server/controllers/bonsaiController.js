@@ -49,8 +49,19 @@ const getRelatedProducts = async (req, res) => {
     }
 };
 
+const getFeaturedBonsais = async (req, res) => {
+    try {
+        const featuredBonsais = await Bonsai.find({ isFeatured: true }).limit(8);
+        res.json(featuredBonsais);
+    } catch (error) {
+        res.status(500).json({ message: 'Lỗi máy chủ' });
+    }
+};
+
+
 module.exports = {
     getAllBonsais,
     getProductById,
      getRelatedProducts,
+     getFeaturedBonsais,
 };
