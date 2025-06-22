@@ -25,3 +25,12 @@ export const getProductById = async (id) => {
         throw error;
     }
 };
+export const getRelatedProducts = async (id) => {
+    try {
+        const response = await axios.get(`${API_URL}/${id}/related`);
+        return response.data;
+    } catch (error) {
+        console.error(`Lỗi khi lấy sản phẩm liên quan cho ID ${id}:`, error);
+        throw error;
+    }
+};
