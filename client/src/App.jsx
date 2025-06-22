@@ -45,7 +45,7 @@ function App() {
                     <Route path="/" element={<HomePage />} />
                     <Route path="/products/:id" element={<ProductDetailPage />} />
                     <Route path="/login" element={<LoginPage />} />
-                    <Route path="/register" new element={<RegisterPage />} />
+                    <Route path="/register"  element={<RegisterPage />} />
                     {/* Chúng ta sẽ thêm các route cho /cart, /profile sau */}
                 </Routes>
             </main>
