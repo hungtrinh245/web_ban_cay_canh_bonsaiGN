@@ -1,25 +1,28 @@
 // src/App.jsx
+// Import useNavigate ở đây vì App đã được Router bọc bên ngoài file main.jsx
 import { Routes, Route, Link, useNavigate } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import ProductDetailPage from './pages/ProductDetailPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import { useAuth } from './context/AuthContext';
+import Newsletter from './components/layout/Newsletter';
+import Footer from './components/layout/Footer';
 
 function App() {
     const { isAuthenticated, user, logout } = useAuth();
-    const navigate = useNavigate(); // Bây giờ hook này sẽ hoạt động!
+    const navigate = useNavigate();
 
     const handleLogout = () => {
         logout();
-        navigate('/login'); // Chuyển hướng về trang login sau khi đăng xuất
+        navigate('/login');
     };
 
     return (
-        // Không cần <Router> ở đây nữa, có thể dùng Fragment <>
+        // Chỉ cần dùng Fragment <> ở đây, không dùng <Router>
         <>
             <header style={{ background: '#333', color: 'white', padding: '1rem', marginBottom: '1rem' }}>
-                <nav style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', maxWidth: '1100px', margin: 'auto' }}>
+                <nav style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', maxWidth: '1200px', margin: 'auto' }}>
                     <Link to="/" style={{ color: 'white', textDecoration: 'none', fontSize: '1.5rem' }}>BonsaiGN Shop</Link>
                     <div>
                         <Link to="/cart" style={{ color: 'white', textDecoration: 'none', marginLeft: '1rem' }}>Giỏ hàng</Link>
@@ -40,19 +43,17 @@ function App() {
                 </nav>
             </header>
 
-            <main style={{ maxWidth: '1100px', margin: 'auto', padding: '0 1rem' }}>
+            <main style={{ maxWidth: '1200px', margin: 'auto', padding: '0 1rem', minHeight: '60vh' }}>
                 <Routes>
                     <Route path="/" element={<HomePage />} />
                     <Route path="/products/:id" element={<ProductDetailPage />} />
                     <Route path="/login" element={<LoginPage />} />
-                    <Route path="/register"  element={<RegisterPage />} />
-                    {/* Chúng ta sẽ thêm các route cho /cart, /profile sau */}
+                    <Route path="/register" element={<RegisterPage />} />
                 </Routes>
             </main>
 
-            <footer style={{ background: '#f4f4f4', textAlign: 'center', padding: '1rem', marginTop: '1rem' }}>
-                <p>Copyright &copy; 2025 BonsaiGN Shop</p>
-            </footer>
+            <Newsletter />
+            <Footer />
         </>
     );
 }
