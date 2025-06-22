@@ -65,7 +65,7 @@ const Footer = () => {
                     <p>
                         BonsaiGN Shop mang đến không gian sống xanh, như là một cách để khơi nguồn cảm hứng, cải thiện chất lượng tinh thần, mang lại sự tĩnh tâm, thẩm mỹ cho không gian nội thất.
                     </p>
-                    <p><strong>MST:</strong> 0317709035</p>
+                    <p><strong>MST:</strong> 0123456789git </p>
                 </div>
 
                 {/* Cột 2: Về chúng tôi */}
@@ -85,7 +85,7 @@ const Footer = () => {
                     <ul style={listStyle}>
                         <li style={listItemStyle}>Hotline: 09 6688 9393</li>
                         <li style={listItemStyle}>Email: hotro@bonsaigarden.com</li>
-                        <li style={listItemStyle}>Địa chỉ: 256 Bình Thạnh, TP.HCM</li>
+                        <li style={listItemStyle}>Địa chỉ:TP Hà Nội</li>
                     </ul>
                 </div>
 
