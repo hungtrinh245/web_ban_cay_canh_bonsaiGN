@@ -29,6 +29,11 @@ const bonsaiSchema = new mongoose.Schema({
         min: [0, 'Số lượng tồn kho không thể âm'],
         default: 0
     },
+      isFeatured: {
+        type: Boolean,
+        default: false // Mặc định sản phẩm không phải là nổi bật
+    },
+
     createdAt: {
         type: Date,
         default: Date.now,
