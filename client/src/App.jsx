@@ -21,7 +21,7 @@ function App() {
     return (
         // Chỉ cần dùng Fragment <> ở đây, không dùng <Router>
         <>
-            <header style={{ background: '#333', color: 'white', padding: '1rem', marginBottom: '1rem' }}>
+           <header style={{ background: '#333', color: 'white', padding: '1rem' }}>
                 <nav style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', maxWidth: '1200px', margin: 'auto' }}>
                     <Link to="/" style={{ color: 'white', textDecoration: 'none', fontSize: '1.5rem' }}>BonsaiGN Shop</Link>
                     <div>
@@ -43,7 +43,7 @@ function App() {
                 </nav>
             </header>
 
-            <main style={{ maxWidth: '1200px', margin: 'auto', padding: '0 1rem', minHeight: '60vh' }}>
+            <main style={{ minHeight: '60vh' }}>
                 <Routes>
                     <Route path="/" element={<HomePage />} />
                     <Route path="/products/:id" element={<ProductDetailPage />} />
