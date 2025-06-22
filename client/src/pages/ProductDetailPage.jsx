@@ -37,9 +37,9 @@ const ProductDetailPage = () => {
                 alt={product.name}
                 style={{ maxWidth: '400px', marginBottom: '20px' }}
             />
-            <p style={{ fontSize: '1.5em', color: '#d9534f', fontWeight: 'bold' }}>
-                {product.price.toLocaleString('vi-VN')} VNĐ
-            </p>
+<p style={{ fontSize: '1.5em', color: '#d9534f', fontWeight: 'bold' }}>
+    {product.price ? product.price.toLocaleString('vi-VN') + ' VNĐ' : 'Giá liên hệ'}
+</p>
             <h3>Mô tả sản phẩm</h3>
             <p>{product.description}</p>
             <p><strong>Loại cây:</strong> {product.category}</p>
