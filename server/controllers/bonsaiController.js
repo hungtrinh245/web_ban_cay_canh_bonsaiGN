@@ -11,7 +11,23 @@ const getAllBonsais = async (req, res) => {
         res.status(500).json({ message: 'Lỗi máy chủ' });
     }
 };
+const getProductById = async (req, res) => {
+    try {
+        const product = await Bonsai.findById(req.params.id);
+
+        if (product) {
+            res.json(product);
+        } else {
+            // Dùng status 404 nếu không tìm thấy sản phẩm
+            res.status(404).json({ message: 'Không tìm thấy sản phẩm' });
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Lỗi máy chủ' });
+    }
+};
 
 module.exports = {
     getAllBonsais,
+    getProductById,
 };
