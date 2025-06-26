@@ -44,22 +44,21 @@ const ProductDetailPage = () => {
         });
     };
 
-    const handleAddToCart = () => {
-        // Logic thêm vào giỏ hàng sẽ được làm ở giai đoạn sau
-        console.log(`Đã thêm ${quantity} sản phẩm '${product.name}' vào giỏ hàng.`);
-        alert(`Đã thêm ${quantity} x ${product.name} vào giỏ hàng!`);
+     const handleAddToCart = () => {
+        if (product) {
+            addToCart(product, quantity);
+            alert(`Đã thêm ${quantity} x ${product.name} vào giỏ hàng!`);
+        }
     };
 
     if (loading) return <p style={{ textAlign: 'center', padding: '50px' }}>Đang tải chi tiết sản phẩm...</p>;
     if (error) return <p style={{ color: 'red', textAlign: 'center', padding: '50px' }}>{error}</p>;
     if (!product) return <p style={{ textAlign: 'center', padding: '50px' }}>Không tìm thấy sản phẩm.</p>;
 
-    // --- GIAO DIỆN ĐẦY ĐỦ ---
     return (
         <>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '50px', padding: '20px', fontFamily: 'Arial, sans-serif' }}>
 
-                {/* CỘT BÊN TRÁI: HÌNH ẢNH */}
                 <div style={{ flex: 1, minWidth: '300px' }}>
                     <img
                         src={product.images && product.images.length > 0 ? product.images[0] : 'https://via.placeholder.com/500?text=No+Image'}
@@ -68,7 +67,6 @@ const ProductDetailPage = () => {
                     />
                 </div>
 
-                {/* CỘT BÊN PHẢI: THÔNG TIN */}
                 <div style={{ flex: 1, minWidth: '300px' }}>
                     <h1 style={{ fontSize: '2.5em', margin: '0 0 10px 0' }}>{product.name}</h1>
                     
@@ -80,7 +78,6 @@ const ProductDetailPage = () => {
                         {product.description}
                     </p>
                     
-                    {/* PHẦN CHỌN SỐ LƯỢNG VÀ THÊM VÀO GIỎ */}
                     <div style={{ display: 'flex', alignItems: 'center', margin: '30px 0', flexWrap: 'wrap', gap: '20px' }}>
                         <div style={{ display: 'flex', border: '1px solid #ccc', borderRadius: '5px' }}>
                             <button onClick={() => handleQuantityChange(-1)} style={{ padding: '10px 15px', border: 'none', background: '#f4f4f4', cursor: 'pointer', fontSize: '1.2em' }}>-</button>
@@ -108,7 +105,6 @@ const ProductDetailPage = () => {
                 </div>
             </div>
 
-            {/* PHẦN SẢN PHẨM LIÊN QUAN */}
             <div style={{ marginTop: '60px', padding: '20px' }}>
                 <h2 style={{ textAlign: 'center', marginBottom: '30px', fontWeight: 'normal', borderBottom: '1px solid #eee', paddingBottom: '20px' }}>SẢN PHẨM LIÊN QUAN</h2>
                 {relatedProducts.length > 0 ? (
