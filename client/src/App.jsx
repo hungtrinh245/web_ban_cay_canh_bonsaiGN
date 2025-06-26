@@ -8,6 +8,7 @@ import RegisterPage from './pages/RegisterPage';
 import { useAuth } from './context/AuthContext';
 import Newsletter from './components/layout/Newsletter';
 import Footer from './components/layout/Footer';
+import ShopPage from './pages/ShopPage';
 
 function App() {
     const { isAuthenticated, user, logout } = useAuth();
@@ -19,7 +20,6 @@ function App() {
     };
 
     return (
-        // Chỉ cần dùng Fragment <> ở đây, không dùng <Router>
         <>
            <header style={{ background: '#333', color: 'white', padding: '1rem' }}>
                 <nav style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', maxWidth: '1200px', margin: 'auto' }}>
@@ -45,7 +45,9 @@ function App() {
 
             <main style={{ minHeight: '60vh' }}>
                 <Routes>
-                    <Route path="/" element={<HomePage />} />
+                 <Route path="/shop" element={<ShopPage />} />
+                    <Route path="/shop/category/:categoryName" element={<ShopPage />} />
+                    <Route path="/home" element={<HomePage />} />
                     <Route path="/products/:id" element={<ProductDetailPage />} />
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/register" element={<RegisterPage />} />

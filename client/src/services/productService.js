@@ -3,11 +3,10 @@ import axios from 'axios';
 
 const API_URL = 'http://localhost:5001/api/bonsais';
 
-// SỬA LẠI TÊN HÀM Ở ĐÂY
+// Trả về sản phẩm mới nhất
 export const getNewProducts = async () => {
     try {
-        // API gốc (/) giờ trả về sản phẩm mới nhất
-        const response = await axios.get(API_URL); 
+        const response = await axios.get(API_URL);
         return response.data;
     } catch (error) {
         console.error('Lỗi khi lấy sản phẩm mới:', error);
@@ -15,7 +14,7 @@ export const getNewProducts = async () => {
     }
 };
 
-// Hàm lấy sản phẩm nổi bật
+// Trả về sản phẩm nổi bật
 export const getFeaturedProducts = async () => {
     try {
         const response = await axios.get(`${API_URL}/featured`);
@@ -26,7 +25,7 @@ export const getFeaturedProducts = async () => {
     }
 };
 
-// Hàm lấy một sản phẩm theo ID
+// Trả về một sản phẩm theo ID
 export const getProductById = async (id) => {
     try {
         const response = await axios.get(`${API_URL}/${id}`);
@@ -37,14 +36,36 @@ export const getProductById = async (id) => {
     }
 };
 
-// Hàm lấy các sản phẩm liên quan
+// Trả về các sản phẩm liên quan
 export const getRelatedProducts = async (id) => {
     try {
         const response = await axios.get(`${API_URL}/${id}/related`);
         return response.data;
-    } catch (error)
-    {
+    } catch (error) {
         console.error(`Lỗi khi lấy sản phẩm liên quan cho ID ${id}:`, error);
+        throw error;
+    }
+};
+
+// ---- HÀM BỊ THIẾU LÀ HÀM NÀY ----
+// Trả về danh sách các danh mục duy nhất
+export const getCategories = async () => {
+    try {
+        const response = await axios.get(`${API_URL}/categories`);
+        return response.data;
+    } catch (error) {
+        console.error('Lỗi khi lấy danh mục:', error);
+        throw error;
+    }
+};
+
+// Trả về các sản phẩm thuộc một danh mục cụ thể
+export const getProductsByCategory = async (categoryName) => {
+    try {
+        const response = await axios.get(`${API_URL}/category/${categoryName}`);
+        return response.data;
+    } catch (error) {
+        console.error(`Lỗi khi lấy sản phẩm theo danh mục ${categoryName}:`, error);
         throw error;
     }
 };
