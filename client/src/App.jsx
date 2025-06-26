@@ -23,7 +23,7 @@ function App() {
         <>
            <header style={{ background: '#333', color: 'white', padding: '1rem' }}>
                 <nav style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', maxWidth: '1200px', margin: 'auto' }}>
-                    <Link to="/" style={{ color: 'white', textDecoration: 'none', fontSize: '1.5rem' }}>BonsaiGN Shop</Link>
+                    <Link to="/home" style={{ color: 'white', textDecoration: 'none', fontSize: '1.5rem' }}>BonsaiGN Shop</Link>
                     <div>
                         <Link to="/cart" style={{ color: 'white', textDecoration: 'none', marginLeft: '1rem' }}>Giỏ hàng</Link>
                         {isAuthenticated ? (

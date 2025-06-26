@@ -17,6 +17,9 @@ const CategoryShowcase = () => {
         // Thêm các danh mục khác bạn có ở đây
         'Cây cao cấp': '/images/sample-sanh-co.jpg',
         'Cây văn phòng': '/images/sample-luoi-ho.jpg',
+           'Cây Dây Leo': '/images/sample-trau-ba.jpg', 
+        'Cây Ăn Trái': '/images/sample-mai-vang.jpg', 
+        'Dụng Cụ & Chậu': '/images/sample-tung-la-han.jpg' 
     };
     const defaultImage = '/images/sample-mai-vang.jpg'; // Ảnh mặc định nếu không có ảnh riêng
 

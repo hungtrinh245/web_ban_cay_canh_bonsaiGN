@@ -68,7 +68,7 @@ const Hero = () => {
     return (
         <div style={heroStyle}>
             <img 
-                src="/images/sample-sanh-co.jpg" // Lấy tạm một ảnh đẹp làm nền
+                src="/images/sample-sanh-co.jpg"
                 alt="Background" 
                 style={bgImageStyle} 
             />
