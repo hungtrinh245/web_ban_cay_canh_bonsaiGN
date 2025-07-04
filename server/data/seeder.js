@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const colors = require("colors"); 
 const connectDB = require("../config/db");
+const Coupon = require("../models/Coupon"); 
 
 
 const Bonsai = require("../models/bonsai"); 
@@ -190,38 +191,71 @@ const bonsaiData = [
         stockQuantity: 20,
     },
 ];
+
+//data ma ưu đãi
+const couponData = [
+    {
+        code: 'SALE10',
+        type: 'percentage',
+        value: 10, // 10%
+        minAmount: 100000, // Đơn hàng từ 100k
+        maxDiscount: 100000, // Giảm tối đa 100k
+        expiresAt: new Date(new Date().setFullYear(new Date().getFullYear() + 1)), // Hết hạn sau 1 năm
+        usageLimit: 100,
+        isActive: true,
+    },
+    {
+        code: 'FREESHIP',
+        type: 'fixed',
+        value: 30000, // Giảm 30k VNĐ
+        minAmount: 0, // Áp dụng cho mọi đơn
+        expiresAt: new Date(new Date().setMonth(new Date().getMonth() + 3)), // Hết hạn sau 3 tháng
+        usageLimit: 50,
+        isActive: true,
+    },
+    {
+        code: 'GIAM50K',
+        type: 'fixed',
+        value: 50000,
+        minAmount: 200000,
+        expiresAt: new Date(new Date().setMonth(new Date().getMonth() + 6)),
+        isActive: true,
+    },
+];
+
 // Kết nối tới DB
 connectDB();
 
 // Hàm nhập dữ liệu
 const importData = async () => {
-  try {
-    // Xóa dữ liệu cũ
-    await Bonsai.deleteMany();
+    try {
+        await Bonsai.deleteMany();
+        await Coupon.deleteMany(); // <-- XÓA COUPONS CŨ
 
-    // Thêm dữ liệu mới từ mảng bonsaiData
-    await Bonsai.insertMany(bonsaiData);
+        await Bonsai.insertMany(bonsaiData);
+        await Coupon.insertMany(couponData); // <-- THÊM COUPONS MỚI
 
-    console.log("Dữ liệu mẫu đã được thêm thành công!".green.inverse);
-    process.exit();
-  } catch (error) {
-    console.error(`Lỗi: ${error}`.red.inverse);
-    process.exit(1);
-  }
+        console.log("Dữ liệu mẫu đã được thêm thành công!".green.inverse);
+        process.exit();
+    } catch (error) {
+        console.error(`Lỗi: ${error}`.red.inverse);
+        process.exit(1);
+    }
 };
+
 
 // Hàm xóa dữ liệu
 const destroyData = async () => {
-  try {
-    // Xóa toàn bộ dữ liệu
-    await Bonsai.deleteMany();
+    try {
+        await Bonsai.deleteMany();
+        await Coupon.deleteMany(); // <-- XÓA COUPONS
 
-    console.log("Dữ liệu đã được xóa thành công!".red.inverse);
-    process.exit();
-  } catch (error) {
-    console.error(`Lỗi: ${error}`.red.inverse);
-    process.exit(1);
-  }
+        console.log("Dữ liệu đã được xóa thành công!".red.inverse);
+        process.exit();
+    } catch (error) {
+        console.error(`Lỗi: ${error}`.red.inverse);
+        process.exit(1);
+    }
 };
 
 // Xử lý tham số dòng lệnh
