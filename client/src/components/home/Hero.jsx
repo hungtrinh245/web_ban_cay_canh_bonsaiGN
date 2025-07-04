@@ -76,7 +76,7 @@ const Hero = () => {
             <div style={contentStyle}>
                 <h1 style={titleStyle}>Mang Không Gian Xanh Đến Bên Bạn</h1>
                 <p style={subtitleStyle}>Khám phá bộ sưu tập cây cảnh độc đáo và chất lượng nhất.</p>
-                <Link to="/products" style={buttonStyle}>Khám phá ngay</Link>
+                <Link to="/shop" style={buttonStyle}>Khám phá ngay</Link>
             </div>
         </div>
     );
