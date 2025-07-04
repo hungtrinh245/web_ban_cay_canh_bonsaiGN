@@ -53,7 +53,7 @@ const HomePage = () => {
             </div>
             
             <div style={{ padding: '60px 0' }}>
-                <Section title="SẢN PHẨM NỔI BẬT" products={featuredProducts} loading={loading} error={null} /> {/* Giả sử không báo lỗi trùng lặp */}
+                <Section title="SẢN PHẨM NỔI BẬT" products={featuredProducts} loading={loading} error={null} /> 
             </div>
 
             <BlogSection />

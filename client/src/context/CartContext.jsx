@@ -16,8 +16,8 @@ function reducer(state, action) {
             const existItem = state.cartItems.find((item) => item._id === newItem._id);
             const cartItems = existItem
                 ? state.cartItems.map((item) =>
-                    item._id === existItem._id ? newItem : item
-                )
+                      item._id === existItem._id ? newItem : item
+                  )
                 : [...state.cartItems, newItem];
             return { ...state, cartItems };
         }
@@ -46,6 +46,11 @@ export const CartProvider = ({ children }) => {
         const existItem = state.cartItems.find((item) => item._id === product._id);
         const qty = existItem ? existItem.qty + quantity : quantity;
 
+        // Đảm bảo product.stockQuantity là một số và không âm
+        if (typeof product.stockQuantity !== 'number' || product.stockQuantity < 0) {
+            console.warn("Product stockQuantity is invalid or missing:", product.stockQuantity, "for product:", product.name);
+        }
+        
         if (product.stockQuantity < qty) {
             alert('Xin lỗi, sản phẩm không đủ số lượng trong kho.');
             return;

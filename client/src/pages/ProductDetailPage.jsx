@@ -4,14 +4,16 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { getProductById, getRelatedProducts } from '../services/productService';
 import ProductList from '../components/product/ProductList';
+import { useCart } from '../context/CartContext'; // Đảm bảo import useCart
 
-const ProductDetailPage = () => {
+const ProductDetailPage = ({ onAddToCartSuccess }) => { // Thêm prop onAddToCartSuccess
     const { id } = useParams();
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [quantity, setQuantity] = useState(1); // Thêm state cho số lượng
+    const [quantity, setQuantity] = useState(1);
     const [relatedProducts, setRelatedProducts] = useState([]);
+    const { addToCart } = useCart(); // Khởi tạo useCart
 
     useEffect(() => {
         const fetchAllData = async () => {
@@ -24,12 +26,11 @@ const ProductDetailPage = () => {
                 setRelatedProducts(relatedData);
             } catch (err) {
                 setError('Không tìm thấy sản phẩm hoặc có lỗi xảy ra.');
-            } finally {
+            } finally { 
                 setLoading(false);
             }
         };
 
-        // Scroll lên đầu trang khi chuyển sản phẩm
         window.scrollTo(0, 0);
         fetchAllData();
     }, [id]);
@@ -44,10 +45,12 @@ const ProductDetailPage = () => {
         });
     };
 
-     const handleAddToCart = () => {
+    const handleAddToCart = () => {
         if (product) {
             addToCart(product, quantity);
-            alert(`Đã thêm ${quantity} x ${product.name} vào giỏ hàng!`);
+            if (onAddToCartSuccess) {
+                onAddToCartSuccess(); // Gọi callback để App.jsx biết và hiển thị mini-cart
+            }
         }
     };
 
@@ -58,7 +61,6 @@ const ProductDetailPage = () => {
     return (
         <>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '50px', padding: '20px', fontFamily: 'Arial, sans-serif' }}>
-
                 <div style={{ flex: 1, minWidth: '300px' }}>
                     <img
                         src={product.images && product.images.length > 0 ? product.images[0] : 'https://via.placeholder.com/500?text=No+Image'}
@@ -98,9 +100,9 @@ const ProductDetailPage = () => {
                     </div>
                     
                     <div style={{ borderTop: '1px solid #eee', paddingTop: '20px', color: '#777' }}>
-                         <p><strong>SKU: </strong> <span>{product._id.slice(-6).toUpperCase()}</span></p>
-                         <p><strong>Loại cây: </strong> <span>{product.category}</span></p>
-                         <p><strong>Tồn kho: </strong> <span>{product.stockQuantity} sản phẩm</span></p>
+                            <p><strong>SKU: </strong> <span>{product._id.slice(-6).toUpperCase()}</span></p>
+                            <p><strong>Loại cây: </strong> <span>{product.category}</span></p>
+                            <p><strong>Tồn kho: </strong> <span>{product.stockQuantity} sản phẩm</span></p>
                     </div>
                 </div>
             </div>

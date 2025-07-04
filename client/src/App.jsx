@@ -1,4 +1,5 @@
 // client/src/App.jsx
+import React, { useState } from 'react';
 import { Routes, Route, Link, useNavigate } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import ProductDetailPage from './pages/ProductDetailPage';
@@ -7,30 +8,46 @@ import RegisterPage from './pages/RegisterPage';
 import ShopPage from './pages/ShopPage';
 import CartPage from './pages/CartPage';
 
+// Import các component layout
 import Newsletter from './components/layout/Newsletter';
 import Footer from './components/layout/Footer';
+import MiniCart from './components/layout/MiniCart'; 
 
-
+// Import các Context Hook
 import { useAuth } from './context/AuthContext';
 import { useCart } from './context/CartContext';
 
-import { FaShoppingCart, FaUserCircle, FaHome, FaStore, FaInfoCircle, FaPhone, FaNewspaper } from 'react-icons/fa';
+// Import icons
+import { FaShoppingCart, FaUserCircle, FaHome, FaStore, FaInfoCircle, FaPhone, FaNewspaper, FaSearch } from 'react-icons/fa';
 
 function App() {
     const { isAuthenticated, user, logout } = useAuth();
     const { cartItems } = useCart();
     const navigate = useNavigate();
 
+    const [showMiniCart, setShowMiniCart] = useState(false);
+
+    // Tính tổng số lượng và tổng tiền cho mini-cart (được sử dụng cả ở header)
     const totalCartItems = cartItems.reduce((sum, item) => sum + item.qty, 0);
+    const miniCartSubtotal = cartItems.reduce((acc, item) => acc + item.qty * item.price, 0);
 
     const handleLogout = () => {
         logout();
         navigate('/login');
     };
 
-    
+    const handleCloseMiniCart = () => {
+        setShowMiniCart(false);
+    };
 
-    const headerTopStyle = {
+    const handleAddToCartSuccess = () => {
+        setShowMiniCart(true); 
+        // Optional: Tự động đóng mini-cart sau vài giây
+        // setTimeout(() => setShowMiniCart(false), 3000); 
+    };
+
+
+    const headerTopStyle = { 
         background: '#1a1a1a', 
         color: 'white',
         padding: '0.8rem 2.5rem', 
@@ -67,6 +84,7 @@ function App() {
         gap: '20px'
     };
 
+    // Style cho Link chung (ví dụ: Đăng nhập, Đăng ký)
     const navLinkStyle = {
         color: 'white',
         textDecoration: 'none',
@@ -84,20 +102,32 @@ function App() {
         color: 'white',
     };
 
-    const cartIconStyle = {
-        position: 'relative',
+    // Style riêng cho phần Giỏ hàng 
+    const headerCartLinkStyle = {
+        ...navLinkStyle, // Kế thừa style chung
+        position: 'relative', // Để badge số lượng có thể định vị
         display: 'flex',
         alignItems: 'center',
-        gap: '5px'
+        gap: '10px', // Khoảng cách giữa icon và chữ/giá
+        background: '#444', // Nền hơi xám cho vùng giỏ hàng
+        padding: '8px 15px', // Padding rộng hơn
+        borderRadius: '25px', // Bo tròn hơn
+        cursor: 'pointer',
+        transition: 'background-color 0.3s ease, transform 0.2s',
+    };
+
+    const headerCartLinkHoverStyle = {
+        backgroundColor: '#555', // Đậm hơn khi hover
+        transform: 'scale(1.02)'
     };
 
     const cartBadgeStyle = {
         position: 'absolute',
         top: '-8px',
-        right: '-12px',
+        right: '-8px', // Điều chỉnh vị trí badge
         background: '#FF5722',
         borderRadius: '50%',
-        width: '22px',
+        minWidth: '22px', // Đảm bảo đủ rộng cho số 2 chữ số
         height: '22px',
         display: 'flex',
         alignItems: 'center',
@@ -106,6 +136,20 @@ function App() {
         fontWeight: 'bold',
         color: 'white',
         boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+    };
+
+    const cartTextStyle = {
+        fontSize: '1rem',
+        fontWeight: 'bold',
+        color: 'white',
+        whiteSpace: 'nowrap' // Ngăn không cho chữ xuống dòng
+    };
+
+    const cartPriceStyle = {
+        fontSize: '0.9em', // Kích thước nhỏ hơn một chút
+        color: '#f0f0f0', // Màu trắng nhạt
+        marginLeft: '5px',
+        whiteSpace: 'nowrap' // Ngăn không cho số tiền xuống dòng
     };
 
     const buttonStyle = {
@@ -138,7 +182,6 @@ function App() {
         display: 'flex',
         justifyContent: 'center',
         gap: '35px',
-
     };
 
     const mainNavLinkStyle = {
@@ -176,28 +219,69 @@ function App() {
                     <FaStore size={28} style={{ marginRight: '8px', color: 'white' }} /> Bonsai<span style={logoSpanStyle}>GN</span>
                 </Link>
                 
+                {/* Thanh tìm kiếm */}
+                <div style={{ position: 'relative', display: 'flex', alignItems: 'center', flex: 1, maxWidth: '500px', margin: '0 30px' }}>
+                    <input 
+                        type="text" 
+                        placeholder="Tìm kiếm sản phẩm..." 
+                        style={{ 
+                            width: '100%', 
+                            padding: '10px 40px 10px 15px', 
+                            borderRadius: '25px', 
+                            border: '1px solid #555',
+                            background: '#2a2a2a',
+                            color: 'white',
+                            fontSize: '0.95em',
+                            boxSizing: 'border-box'
+                        }} 
+                    />
+                    <FaSearch style={{ 
+                        position: 'absolute', 
+                        right: '15px', 
+                        color: '#aaa' 
+                    }} />
+                </div>
+
                 <div style={userActionsStyle}>
-                    {/* Giỏ hàng */}
+                    {/* Giỏ hàng và tổng tiền */}
                     <Link
                         to="/cart"
-                        style={navLinkStyle}
-                        onMouseOver={(e) => applyHoverStyle(e, navLinkHoverStyle)}
-                        onMouseOut={(e) => removeHoverStyle(e, navLinkStyle)}
+                        style={headerCartLinkStyle} // Sử dụng style mới cho giỏ hàng
+                        onMouseOver={(e) => applyHoverStyle(e, headerCartLinkHoverStyle)}
+                        onMouseOut={(e) => removeHoverStyle(e, headerCartLinkStyle)}
+                        onClick={(e) => { 
+                            e.preventDefault(); 
+                            setShowMiniCart(!showMiniCart); 
+                        }}
                     >
                         <FaShoppingCart size={18} />
-                        <span style={cartIconStyle}>
+                        <span style={cartTextStyle}>
                             Giỏ hàng
                             {totalCartItems > 0 && (
                                 <span style={cartBadgeStyle}>{totalCartItems}</span>
                             )}
                         </span>
+                        {totalCartItems > 0 && ( // Chỉ hiện giá khi có sản phẩm
+                            <span style={cartPriceStyle}>
+                                / {miniCartSubtotal.toLocaleString('vi-VN')} VNĐ
+                            </span>
+                        )}
                     </Link>
+                    
+                    {/* Render MiniCart nếu showMiniCart là true */}
+                    {showMiniCart && (
+                        <MiniCart 
+                            cartItems={cartItems} 
+                            subtotal={miniCartSubtotal} 
+                            onClose={handleCloseMiniCart} 
+                        />
+                    )}
 
                     {/* Hiển thị tùy theo trạng thái đăng nhập */}
                     {isAuthenticated ? (
                         <>
                             <Link
-                                to="/profile" // Thêm link đến trang profile 
+                                to="/profile" 
                                 style={navLinkStyle}
                                 onMouseOver={(e) => applyHoverStyle(e, navLinkHoverStyle)}
                                 onMouseOut={(e) => removeHoverStyle(e, navLinkStyle)}
@@ -240,7 +324,7 @@ function App() {
             <nav style={mainNavBarStyle}>
                 <div style={mainNavLinkContainerStyle}>
                     <Link
-                        to="/" // Trang chủ
+                        to="/"
                         style={mainNavLinkStyle}
                         onMouseOver={(e) => applyHoverStyle(e, mainNavLinkHoverStyle)}
                         onMouseOut={(e) => removeHoverStyle(e, mainNavLinkStyle)}
@@ -248,7 +332,7 @@ function App() {
                         <FaHome style={{ marginRight: '5px' }} /> Trang chủ
                     </Link>
                     <Link
-                        to="/shop" // Cửa hàng / Sản phẩm
+                        to="/shop"
                         style={mainNavLinkStyle}
                         onMouseOver={(e) => applyHoverStyle(e, mainNavLinkHoverStyle)}
                         onMouseOut={(e) => removeHoverStyle(e, mainNavLinkStyle)}
@@ -256,7 +340,7 @@ function App() {
                         <FaStore style={{ marginRight: '5px' }} /> Cửa hàng
                     </Link>
                     <Link
-                        to="/about" // Giới thiệu
+                        to="/about"
                         style={mainNavLinkStyle}
                         onMouseOver={(e) => applyHoverStyle(e, mainNavLinkHoverStyle)}
                         onMouseOut={(e) => removeHoverStyle(e, mainNavLinkStyle)}
@@ -264,7 +348,7 @@ function App() {
                         <FaInfoCircle style={{ marginRight: '5px' }} /> Giới thiệu
                     </Link>
                     <Link
-                        to="/contact" // Liên hệ 
+                        to="/contact"
                         style={mainNavLinkStyle}
                         onMouseOver={(e) => applyHoverStyle(e, mainNavLinkHoverStyle)}
                         onMouseOut={(e) => removeHoverStyle(e, mainNavLinkStyle)}
@@ -272,7 +356,7 @@ function App() {
                         <FaPhone style={{ marginRight: '5px' }} /> Liên hệ
                     </Link>
                     <Link
-                        to="/blog" // Tin tức / Blog 
+                        to="/blog"
                         style={mainNavLinkStyle}
                         onMouseOver={(e) => applyHoverStyle(e, mainNavLinkHoverStyle)}
                         onMouseOut={(e) => removeHoverStyle(e, mainNavLinkStyle)}
@@ -283,31 +367,28 @@ function App() {
             </nav>
 
 
-            <main style={{ minHeight: '60vh', padding: '0px 0', overflowX: 'hidden' }}> 
+            <main style={{ minHeight: '60vh', padding: '0px 0', overflowX: 'hidden' }}>
                 <Routes>
                     <Route path="/" element={<HomePage />} /> 
                     <Route path="/home" element={<HomePage />} />
-                    <Route path="/shop" element={<ShopPage />} />
-                    <Route path="/shop/category/:categoryName" element={<ShopPage />} />
-                    <Route path="/products/:id" element={<ProductDetailPage />} />
+                    <Route path="/shop" element={<ShopPage onAddToCartSuccess={handleAddToCartSuccess} />} />
+                    <Route path="/shop/category/:categoryName" element={<ShopPage onAddToCartSuccess={handleAddToCartSuccess} />} />
+                    <Route path="/products/:id" element={<ProductDetailPage onAddToCartSuccess={handleAddToCartSuccess} />} />
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/register" element={<RegisterPage />} />
                     <Route path="/cart" element={<CartPage />} />
-
-
                     <Route path="/about" element={<div><h1>Giới thiệu</h1><p>Đây là trang giới thiệu.</p></div>} />
                     <Route path="/contact" element={<div><h1>Liên hệ</h1><p>Đây là trang liên hệ.</p></div>} />
                     <Route path="/blog" element={<div><h1>Tin tức</h1><p>Đây là trang tin tức.</p></div>} />
                     <Route path="/profile" element={<div><h1>Hồ sơ của bạn</h1><p>Trang này sẽ hiển thị thông tin cá nhân của bạn.</p></div>} />
+                    <Route path="/checkout" element={<div><h1>Trang Thanh Toán</h1><p>Đây là trang thanh toán.</p></div>} />
                     
-                    {/* Các route chính sách từ Footer */}
                     <Route path="/privacy-policy" element={<div><h1>Chính sách bảo mật</h1><p>Nội dung chính sách bảo mật...</p></div>} />
                     <Route path="/warranty" element={<div><h1>Chính sách bảo hành</h1><p>Nội dung chính sách bảo hành...</p></div>} />
                     <Route path="/payment" element={<div><h1>Phương thức thanh toán</h1><p>Nội dung phương thức thanh toán...</p></div>} />
                 </Routes>
             </main>
 
-            {/* Newsletter và Footer sẽ cần điều chỉnh tương tự nếu muốn full width và không có khoảng trống */}
             <Newsletter />
             <Footer />
         </>

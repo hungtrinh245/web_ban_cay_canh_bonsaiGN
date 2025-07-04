@@ -47,7 +47,6 @@ export const getRelatedProducts = async (id) => {
     }
 };
 
-// ---- HÀM BỊ THIẾU LÀ HÀM NÀY ----
 // Trả về danh sách các danh mục duy nhất
 export const getCategories = async () => {
     try {

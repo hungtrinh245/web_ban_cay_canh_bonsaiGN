@@ -22,7 +22,7 @@ const Hero = () => {
         height: '100%',
         objectFit: 'cover',
         zIndex: -2,
-        filter: 'brightness(0.6)' // Làm ảnh nền tối đi một chút
+        filter: 'brightness(0.6)'
     };
 
     const overlayStyle = {

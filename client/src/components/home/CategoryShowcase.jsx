@@ -7,7 +7,6 @@ const CategoryShowcase = () => {
     const [categories, setCategories] = useState([]);
 
     // Ánh xạ tên danh mục với một hình ảnh đại diện
-    // Chúng ta sẽ lấy các ảnh đã có trong public/images
     const categoryImages = {
         'Cây để bàn': '/images/sample-kim-tien.jpg',
         'Cây phong thủy': '/images/sample-tung-la-han.jpg',
@@ -21,7 +20,7 @@ const CategoryShowcase = () => {
         'Cây Ăn Trái': '/images/sample-mai-vang.jpg', 
         'Dụng Cụ & Chậu': '/images/sample-tung-la-han.jpg' 
     };
-    const defaultImage = '/images/sample-mai-vang.jpg'; // Ảnh mặc định nếu không có ảnh riêng
+    const defaultImage = '/images/sample-mai-vang.jpg'; // Ảnh mặc định 
 
     useEffect(() => {
         const fetchCategories = async () => {

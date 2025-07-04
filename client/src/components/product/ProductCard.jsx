@@ -1,21 +1,24 @@
+// client/src/components/product/ProductCard.jsx
 import React from 'react';
 import { Link } from 'react-router-dom';
-
-// DÒNG BỊ THIẾU LÀ DÒNG NÀY:
 import { useCart } from '../../context/CartContext';
 
-const ProductCard = ({ product }) => {
- // Dòng này sẽ hết báo lỗi sau khi bạn thêm import
+const ProductCard = ({ product, onAddToCartSuccess }) => { // Thêm prop onAddToCartSuccess
     const { addToCart } = useCart();
 
     const handleAddToCart = (e) => {
-        // Ngăn sự kiện click lan ra thẻ Link, tránh chuyển trang không mong muốn
         e.preventDefault();
         e.stopPropagation();
         
         addToCart(product, 1); // Thêm 1 sản phẩm
-        alert(`Đã thêm ${product.name} vào giỏ hàng!`);
+ 
+
+        if (onAddToCartSuccess) {
+            onAddToCartSuccess(); // Gọi callback 
+        }
     };
+
+
 
     return (
         <div style={{ border: '1px solid #eee', margin: '10px', padding: '15px', width: '220px', textAlign: 'center', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>
@@ -33,7 +36,6 @@ const ProductCard = ({ product }) => {
                 {product.price ? product.price.toLocaleString('vi-VN') : 'N/A'} VNĐ
             </p>
 
-            {/* Gắn sự kiện onClick cho nút */}
             <button onClick={handleAddToCart} style={{ padding: '8px 15px', cursor: 'pointer', background: '#5cb85c', color: 'white', border: 'none', borderRadius: '4px' }}>
                 Thêm vào giỏ
             </button>
