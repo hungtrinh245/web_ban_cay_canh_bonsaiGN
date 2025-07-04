@@ -7,6 +7,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ShopPage from './pages/ShopPage';
 import CartPage from './pages/CartPage';
+import CheckoutPage from './pages/CheckoutPage'
 
 // Import các component layout
 import Newsletter from './components/layout/Newsletter';
@@ -381,7 +382,10 @@ function App() {
                     <Route path="/contact" element={<div><h1>Liên hệ</h1><p>Đây là trang liên hệ.</p></div>} />
                     <Route path="/blog" element={<div><h1>Tin tức</h1><p>Đây là trang tin tức.</p></div>} />
                     <Route path="/profile" element={<div><h1>Hồ sơ của bạn</h1><p>Trang này sẽ hiển thị thông tin cá nhân của bạn.</p></div>} />
-                    <Route path="/checkout" element={<div><h1>Trang Thanh Toán</h1><p>Đây là trang thanh toán.</p></div>} />
+                    {/* <Route path="/checkout" element={<div><h1>Trang Thanh Toán</h1><p>Đây là trang thanh toán.</p></div>} /> */}
+                    <Route path="/checkout" element={<CheckoutPage />} /> {/* <-- THÊM ROUTE NÀY */}
+                    <Route path="/order-success" element={<div><h1>Đặt hàng thành công!</h1><p>Cảm ơn bạn đã mua sắm. Đơn hàng của bạn đang được xử lý.</p><Link to="/">Tiếp tục mua sắm</Link></div>} /> {/* Trang xác nhận đơn hàng */}
+
                     
                     <Route path="/privacy-policy" element={<div><h1>Chính sách bảo mật</h1><p>Nội dung chính sách bảo mật...</p></div>} />
                     <Route path="/warranty" element={<div><h1>Chính sách bảo hành</h1><p>Nội dung chính sách bảo hành...</p></div>} />
