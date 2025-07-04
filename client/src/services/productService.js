@@ -2,6 +2,7 @@
 import axios from 'axios';
 
 const API_URL = 'http://localhost:5001/api/bonsais';
+const API_URL_COUPONS  = 'http://localhost:5001/api/coupons';
 
 // Trả về sản phẩm mới nhất
 export const getNewProducts = async () => {
@@ -81,5 +82,15 @@ export const getProductsByCategory = async (categoryName) => {
     } catch (error) {
         console.error('Lỗi khi lấy sản phẩm theo khoảng giá:', error);
         throw error;
+    }
+};
+
+export const applyCoupon = async (code, cartTotal) => {
+    try {
+        const response = await axios.post(`${API_URL_COUPONS}/apply`, { code, cartTotal });
+        return response.data; // Trả về { message, discountAmount, couponCode, newTotal }
+    } catch (error) {
+        console.error('Lỗi khi áp dụng mã ưu đãi:', error.response?.data?.message || error.message);
+        throw new Error(error.response?.data?.message || 'Áp dụng mã ưu đãi thất bại.');
     }
 };

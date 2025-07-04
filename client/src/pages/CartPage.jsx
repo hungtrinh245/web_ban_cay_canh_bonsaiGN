@@ -3,10 +3,15 @@ import React, { useState } from "react";
 import { useCart } from "../context/CartContext";
 import { Link } from "react-router-dom";
 import { FaTrashAlt, FaMinus, FaPlus } from "react-icons/fa";
+// Import hàm applyCoupon từ service của bạn
+import { applyCoupon } from "../services/productService"; // Hoặc ../services/couponService nếu bạn đã tạo
+
 
 const CartPage = () => {
   const { cartItems, addToCart, removeFromCart } = useCart();
   const [discountCode, setDiscountCode] = useState(""); // State cho mã ưu đãi
+  const [discountAmount, setDiscountAmount] = useState(0); // <-- NEW STATE: Số tiền giảm giá
+  const [discountError, setDiscountError] = useState(""); // <-- NEW STATE: Thông báo lỗi mã ưu đãi
 
   const subtotal = cartItems.reduce(
     (acc, item) => acc + item.qty * item.price,
@@ -15,15 +20,22 @@ const CartPage = () => {
   const totalItems = cartItems.reduce((acc, item) => acc + item.qty, 0);
 
   const shippingFee = subtotal > 500000 ? 0 : 30000;
-  const finalTotal = subtotal + shippingFee;
+  // Tính finalTotal: tạm tính + phí vận chuyển - số tiền giảm giá
+  let finalTotal = subtotal + shippingFee - discountAmount; 
+  if (finalTotal < 0) finalTotal = 0; // Đảm bảo tổng tiền không âm
 
-  const handleApplyDiscount = () => {
-    if (discountCode.trim() === "SALE10") {
-      alert(
-        "Mã giảm giá đã được áp dụng! (Logic giảm giá cần được phát triển)"
-      );
-    } else {
-      alert("Mã giảm giá không hợp lệ.");
+  const handleApplyDiscount = async () => { // <-- CHUYỂN THÀNH ASYNC FUNCTION
+    setDiscountError(""); // Reset lỗi mỗi khi áp dụng
+    setDiscountAmount(0); // Reset giảm giá trước khi áp dụng mã mới
+
+    try {
+      // Gọi API applyCoupon, truyền mã và tổng tiền tạm tính
+      const data = await applyCoupon(discountCode, subtotal); 
+      setDiscountAmount(data.discountAmount); // Cập nhật số tiền giảm giá từ backend
+      alert(data.message); // Hiển thị thông báo thành công từ backend
+    } catch (error) {
+      setDiscountError(error.message); // Cập nhật thông báo lỗi
+      setDiscountAmount(0); // Đảm bảo giảm giá về 0 nếu có lỗi
     }
   };
 
@@ -40,7 +52,7 @@ const CartPage = () => {
     fontSize: "2.5em",
     fontWeight: "bold",
     color: "#2c3e50",
-    marginBottom: "-11px",
+    marginBottom: "15px", // Đã điều chỉnh
     textAlign: "center",
     position: "relative",
     paddingBottom: "15px",
@@ -62,7 +74,7 @@ const CartPage = () => {
     gap: "40px",
     flexWrap: "wrap-reverse",
     alignItems: "flex-start",
-    marginTop: "-55px",
+    marginTop: "-15px", // Đã điều chỉnh
   };
 
   const cartTableColumnStyle = {
