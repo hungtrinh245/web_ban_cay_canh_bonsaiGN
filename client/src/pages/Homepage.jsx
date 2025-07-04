@@ -4,7 +4,7 @@ import { getNewProducts, getFeaturedProducts } from '../services/productService'
 
 import Hero from '../components/home/Hero';
 import Services from '../components/home/Services';
-import CategoryShowcase from '../components/home/CategoryShowcase'; // <-- Import component mới
+import CategoryShowcase from '../components/home/CategoryShowcase';
 import ProductList from '../components/product/ProductList';
 import BlogSection from '../components/home/BlogSection';
 

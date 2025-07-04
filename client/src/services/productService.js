@@ -69,3 +69,18 @@ export const getProductsByCategory = async (categoryName) => {
         throw error;
     }
 };
+
+// Hàm mới để lấy sản phẩm theo khoảng giá và danh mục
+ export const getProductsByPriceRange = async (minPrice, maxPrice, category) => {
+    try {
+        let url = `${API_URL}/filter-products?min=${minPrice}&max=${maxPrice}`;
+        if (category) {
+            url += `&category=${category}`;
+        }
+        const response = await axios.get(url);
+        return response.data;
+    } catch (error) {
+        console.error('Lỗi khi lấy sản phẩm theo khoảng giá:', error);
+        throw error;
+    }
+};
