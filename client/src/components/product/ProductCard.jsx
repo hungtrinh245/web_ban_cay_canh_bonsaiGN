@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 
 const ProductCard = ({ product }) => {
-    // Dòng này sẽ hết báo lỗi sau khi bạn thêm import
+ // Dòng này sẽ hết báo lỗi sau khi bạn thêm import
     const { addToCart } = useCart();
 
     const handleAddToCart = (e) => {
