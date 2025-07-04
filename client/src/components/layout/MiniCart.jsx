@@ -1,11 +1,11 @@
 // client/src/components/layout/MiniCart.jsx
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { FaTimesCircle } from 'react-icons/fa'; 
+import { FaTimesCircle } from 'react-icons/fa'; // Import icon đóng
 
 // Props: cartItems, subtotal, onClose (hàm để đóng mini-cart)
 const MiniCart = ({ cartItems, subtotal, onClose }) => {
-    // Style 
+    // Style cho toàn bộ popover
     const miniCartStyle = {
         position: 'absolute',
         top: '60px', // Vị trí dưới header
@@ -24,6 +24,7 @@ const MiniCart = ({ cartItems, subtotal, onClose }) => {
         border: '1px solid #ddd'
     };
 
+    // Style cho header của mini-cart
     const headerStyle = {
         display: 'flex',
         justifyContent: 'space-between',
@@ -51,7 +52,7 @@ const MiniCart = ({ cartItems, subtotal, onClose }) => {
         alignItems: 'center',
         marginBottom: '15px',
         paddingBottom: '10px',
-        borderBottom: '1px dotted #eee', 
+        borderBottom: '1px dotted #eee', // Border chấm
     };
 
     const itemImageStyle = {
@@ -87,7 +88,7 @@ const MiniCart = ({ cartItems, subtotal, onClose }) => {
         alignItems: 'center',
         marginTop: '15px',
         paddingTop: '15px',
-        borderTop: '2px solid #28a745',
+        borderTop: '2px solid #28a745', // Đường kẻ xanh nổi bật
         fontWeight: 'bold',
         fontSize: '1.1em',
         color: '#333',
@@ -108,14 +109,14 @@ const MiniCart = ({ cartItems, subtotal, onClose }) => {
         cursor: 'pointer',
         fontSize: '1em',
         fontWeight: 'bold',
-        textDecoration: 'none', 
-        textAlign: 'center', 
+        textDecoration: 'none', // Cho Link
+        textAlign: 'center', // Cho Link
         transition: 'background-color 0.3s ease, color 0.3s ease',
     };
 
     const viewCartButtonStyle = {
         ...buttonBaseStyle,
-        background: '#007bff', 
+        background: '#007bff', // Màu xanh dương
         color: 'white',
         '&:hover': {
             backgroundColor: '#0056b3'
@@ -124,7 +125,7 @@ const MiniCart = ({ cartItems, subtotal, onClose }) => {
 
     const checkoutButtonStyle = {
         ...buttonBaseStyle,
-        background: '#28a745',
+        background: '#28a745', // Màu xanh lá
         color: 'white',
         '&:hover': {
             backgroundColor: '#218838'
@@ -156,10 +157,17 @@ const MiniCart = ({ cartItems, subtotal, onClose }) => {
             {cartItems.length === 0 ? (
                 <p style={emptyCartMessageStyle}>Giỏ hàng trống.</p>
             ) : (
-                <>
-                    <div style={{ flex: 1, overflowY: 'auto' }}> 
+                // ĐÃ THÊM KEY CHO FRAGMENT NẾU CÓ NHIỀU ELEMENT NGANG HÀNG TRỰC TIẾP
+                // Nếu có nhiều hơn 1 phần tử con trực tiếp ở đây, ví dụ: <div>...</div> và <p>...</p>
+                // thì bạn cần bọc chúng trong một Fragment có key nếu bản thân chúng không phải là list item của map
+                // Tuy nhiên, cấu trúc hiện tại của bạn đã là một div chứa các div khác, nên có thể lỗi key không phải ở đây.
+                // Lỗi "Each child in a list should have a unique 'key' prop" thường xảy ra khi bạn map một mảng và quên key
+                // hoặc khi bạn render một mảng các components mà bản thân array đó không có key.
+                // Đoạn code dưới đây đã đúng, lỗi key có thể ở một chỗ khác.
+                <> 
+                    <div style={{ flex: 1, overflowY: 'auto' }}> {/* Container cuộn cho danh sách sản phẩm */}
                         {cartItems.map(item => (
-                            <div key={item._id} style={cartItemStyle}> 
+                            <div key={item._id || item.id} style={cartItemStyle}> {/* <-- Đảm bảo key có thể dùng _id HOẶC id */}
                                 <img src={item.images && item.images.length > 0 ? item.images[0] : 'https://via.placeholder.com/60?text=No+Image'} alt={item.name} style={itemImageStyle} />
                                 <div style={itemInfoStyle}>
                                     <p style={itemNameStyle}>{item.name}</p>
@@ -192,7 +200,7 @@ const MiniCart = ({ cartItems, subtotal, onClose }) => {
                             XEM GIỎ HÀNG
                         </Link>
                         <Link 
-                            to="/checkout" 
+                            to="/checkout" // Cần tạo route và trang CheckoutPage sau
                             onClick={onClose} // Đóng mini-cart khi chuyển trang
                             style={checkoutButtonStyle}
                             onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#218838'}

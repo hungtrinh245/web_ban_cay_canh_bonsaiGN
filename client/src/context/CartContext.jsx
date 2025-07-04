@@ -40,11 +40,15 @@ export const CartProvider = ({ children }) => {
 
     useEffect(() => {
         localStorage.setItem('cartItems', JSON.stringify(state.cartItems));
+        // --- DÒNG LOG QUAN TRỌNG NHẤT: XEM CẤU TRÚC CỦA cartItems ---
+        console.log("DEBUG: cartItems đã được cập nhật:", state.cartItems); 
     }, [state.cartItems]);
 
     const addToCart = (product, quantity) => {
         const existItem = state.cartItems.find((item) => item._id === product._id);
         const qty = existItem ? existItem.qty + quantity : quantity;
+
+             console.log("DEBUG: product được thêm vào cart:", product);
 
         // Đảm bảo product.stockQuantity là một số và không âm
         if (typeof product.stockQuantity !== 'number' || product.stockQuantity < 0) {
