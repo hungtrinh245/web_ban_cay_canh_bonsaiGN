@@ -1,18 +1,16 @@
-
+// server/routes/bonsai.routes.js
 const express = require("express");
 const router = express.Router();
 
 const {
-    getAllBonsais,
-    getProductById,
-    getRelatedProducts,
-    getFeaturedBonsais,
-    getBonsaiCategories,
-    getBonsaisByCategory
-} = require('../controllers/bonsaiController');
-
-// Route này trả về SẢN PHẨM MỚI
-router.get("/", getAllBonsais);
+  getAllBonsais,
+  getProductById,
+  getRelatedProducts,
+  getFeaturedBonsais,
+  getBonsaiCategories,
+  getBonsaisByCategory,
+  getBonsaisByPriceRange,
+} = require("../controllers/bonsaiController");
 
 // Route này trả về SẢN PHẨM NỔI BẬT
 router.get("/featured", getFeaturedBonsais);
@@ -22,6 +20,12 @@ router.get("/categories", getBonsaiCategories);
 
 // Route này trả về SẢN PHẨM THEO CATEGORY
 router.get("/category/:categoryName", getBonsaisByCategory);
+
+// Route này trả về SẢN PHẨM THEO KHOẢNG GIÁ VÀ DANH MỤC
+router.get("/filter-products", getBonsaisByPriceRange);
+
+// Route này trả về SẢN PHẨM MỚI
+router.get("/", getAllBonsais);
 
 // Route này trả về MỘT SẢN PHẨM THEO ID
 router.get("/:id", getProductById);

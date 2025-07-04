@@ -1,16 +1,16 @@
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
-const colors = require("colors"); // Import thư viện colors
+const colors = require("colors"); 
 const connectDB = require("../config/db");
 
-// Load models
-const Bonsai = require("../models/bonsai"); // Đảm bảo đường dẫn đến model là đúng
 
-// Load env vars
-// Chỉ định đường dẫn tới file .env ở thư mục gốc của server
+const Bonsai = require("../models/bonsai"); 
+
+
+
 dotenv.config({ path: __dirname + "/../.env" });
 
-// Dữ liệu mẫu
+
 const bonsaiData = [
  {
         name: "Cây Tùng La Hán",
@@ -163,6 +163,31 @@ const bonsaiData = [
         images: ["/images/sample-tung-la-han.jpg"],
         category: "Cây phong thủy",
         stockQuantity: 25,
+    },
+     {
+        name: "Cây Phú Quý",
+        description: "Cây Phú Quý mang ý nghĩa tiền tài, phú quý cho gia chủ. Cây rất dễ chăm sóc, phù hợp đặt trong nhà hoặc văn phòng.",
+        price: 35000, 
+        images: ["/images/sample-kim-tien.jpg"],
+        category: "Cây để bàn",
+        stockQuantity: 60,
+    },
+    {
+        name: "Cây Đa Búp Đỏ Cổ Thụ",
+        description: "Cây Đa Búp Đỏ cổ thụ với dáng vẻ hùng vĩ, tượng trưng cho sự trường tồn và thịnh vượng, thích hợp cho không gian lớn.",
+        price: 1500000, 
+        images: ["/images/sample-sanh-co.jpg"],
+        category: "Cây cao cấp",
+        stockQuantity: 3,
+        isFeatured: true
+    },
+    {
+        name: "Chậu composite cao cấp",
+        description: "Chậu trồng cây làm từ composite siêu nhẹ, bền đẹp, phù hợp với các loại cây lớn trong nhà và ngoài trời.",
+        price: 600000, 
+        images: ["/images/sample-tung-la-han.jpg"],
+        category: "Dụng Cụ & Chậu",
+        stockQuantity: 20,
     },
 ];
 // Kết nối tới DB
