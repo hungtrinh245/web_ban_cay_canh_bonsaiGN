@@ -5,6 +5,8 @@ const cors = require('cors');
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const couponRoutes = require("./routes/couponRoutes");
+const orderRoutes = require("./routes/orderRoutes");
+const postRoutes = require("./routes/postRoutes");
 // Kết nối đến Database
 connectDB(); 
 
@@ -26,6 +28,10 @@ app.use("/api/bonsais", bonsaiRoutes);
 app.use('/api/auth', authRoutes); 
 
 app.use('/api/coupons', couponRoutes);
+
+app.use('/api/orders', orderRoutes);
+
+app.use('/api/posts', postRoutes);
 
 // Khởi động server sau đó chạy server
 app.listen(PORT, () => {

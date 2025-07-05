@@ -7,6 +7,7 @@ const Coupon = require("../models/Coupon");
 
 const Bonsai = require("../models/bonsai"); 
 
+const Post = require("../models/Post"); 
 
 
 dotenv.config({ path: __dirname + "/../.env" });
@@ -223,6 +224,52 @@ const couponData = [
     },
 ];
 
+
+// Dữ liệu mẫu cho bài viết
+const postData = [
+    {
+        title: 'Nên tưới cây bằng nước máy hay nước đun sôi?',
+        excerpt: 'Vì sao lại lựa chọn hai loại nước này? Vì nếu bạn ở thành phố và văn phòng thì...',
+        content: 'Nước là yếu tố sống còn đối với cây trồng, nhưng loại nước nào là tốt nhất? Nước máy thường chứa clo và florua, có thể không tốt cho một số loại cây nhạy cảm. Nước đun sôi để nguội có thể loại bỏ clo nhưng cũng làm mất đi oxy và khoáng chất. Bài viết này sẽ phân tích ưu nhược điểm của từng loại và đưa ra lời khuyên cho bạn.',
+        image: '/images/blog-watering.jpg', 
+        category: 'Mẹo chăm sóc',
+        tags: ['tưới nước', 'chăm sóc'],
+    },
+    {
+        title: '8 yếu tố giúp cây trồng trong nhà luôn xanh tốt',
+        excerpt: 'Trong thời đại hiện nay, cây trồng trong nhà không chỉ để trang trí mà còn mang lại...',
+        content: 'Để cây trồng trong nhà luôn xanh tốt, bạn cần chú ý đến 8 yếu tố quan trọng: ánh sáng, nước, độ ẩm, nhiệt độ, đất trồng, dinh dưỡng, chậu cây và phòng ngừa sâu bệnh. Mỗi yếu tố đều đóng vai trò thiết yếu trong sự phát triển của cây. Bài viết sẽ đi sâu vào từng yếu tố và cung cấp những mẹo nhỏ để bạn áp dụng ngay tại nhà.',
+        image: '/images/blog-green-plant.jpg', 
+        category: 'Mẹo chăm sóc',
+        tags: ['chăm sóc', 'cây trong nhà'],
+        isFeatured: true,
+    },
+    {
+        title: '10 loại cây trừ tà ma, xua đuổi vận xui hiệu quả',
+        excerpt: 'Trồng cây xanh không chỉ giúp thanh lọc không khí mà còn có ý nghĩa phong thủy sâu sắc...',
+        content: 'Theo quan niệm phong thủy, một số loại cây không chỉ mang lại vẻ đẹp tự nhiên mà còn có khả năng trừ tà, xua đuổi vận xui và thu hút tài lộc. Danh sách này bao gồm 10 loại cây phổ biến như cây Lưỡi Hổ, cây Kim Tiền, cây Lan Ý, Trúc Phú Quý, v.v. Tìm hiểu ý nghĩa và cách trồng để mang lại may mắn cho ngôi nhà của bạn.',
+        image: '/images/blog-fengshui.jpg', 
+        category: 'Phong thủy',
+        tags: ['phong thủy', 'tài lộc'],
+        isFeatured: true,
+    },
+    {
+        title: 'Bí quyết chọn chậu phù hợp cho từng loại cây',
+        excerpt: 'Chậu cây không chỉ là nơi chứa đất mà còn là yếu tố quan trọng ảnh hưởng đến sức khỏe cây và tính thẩm mỹ.',
+        content: 'Việc lựa chọn chậu cây tưởng chừng đơn giản nhưng lại rất quan trọng. Một chiếc chậu phù hợp sẽ giúp cây phát triển tốt, thoát nước hiệu quả và tăng thêm vẻ đẹp cho không gian. Bài viết này sẽ hướng dẫn bạn cách chọn chậu dựa trên chất liệu, kích thước, hình dáng và mục đích sử dụng, đảm bảo cây của bạn luôn khỏe mạnh và đẹp mắt.',
+        image: '/images/blog-pots.jpg', 
+        category: 'Mẹo chăm sóc',
+        tags: ['chậu cây', 'phụ kiện'],
+    },
+    {
+        title: 'Sự thật bất ngờ về lợi ích của cây cảnh trong nhà',
+        excerpt: 'Cây cảnh không chỉ là vật trang trí, chúng còn mang lại nhiều lợi ích sức khỏe và tinh thần.',
+        content: 'Ngoài việc làm đẹp không gian, cây cảnh trong nhà còn có khả năng thanh lọc không khí, giảm căng thẳng, tăng cường sự tập trung và cải thiện tâm trạng. Nhiều nghiên cứu đã chỉ ra mối liên hệ giữa việc tiếp xúc với cây xanh và sự giảm bớt các triệu chứng lo âu, trầm cảm. Khám phá những lợi ích tuyệt vời mà cây cảnh mang lại cho cuộc sống của bạn.',
+        image: '/images/blog-benefits.jpg', 
+        tags: ['sức khỏe', 'lợi ích'],
+    },
+];
+
 // Kết nối tới DB
 connectDB();
 
@@ -230,11 +277,11 @@ connectDB();
 const importData = async () => {
     try {
         await Bonsai.deleteMany();
-        await Coupon.deleteMany(); // <-- XÓA COUPONS CŨ
-
+        await Coupon.deleteMany(); 
+await Post.deleteMany(); 
         await Bonsai.insertMany(bonsaiData);
-        await Coupon.insertMany(couponData); // <-- THÊM COUPONS MỚI
-
+        await Coupon.insertMany(couponData); 
+ await Post.insertMany(postData);
         console.log("Dữ liệu mẫu đã được thêm thành công!".green.inverse);
         process.exit();
     } catch (error) {
@@ -249,7 +296,7 @@ const destroyData = async () => {
     try {
         await Bonsai.deleteMany();
         await Coupon.deleteMany(); // <-- XÓA COUPONS
-
+   await Post.deleteMany();
         console.log("Dữ liệu đã được xóa thành công!".red.inverse);
         process.exit();
     } catch (error) {
