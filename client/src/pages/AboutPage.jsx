@@ -74,6 +74,7 @@ const AboutPage = () => {
         fontSize: '3.5em',
         fontWeight: 'bold',
         marginBottom: '15px',
+        color: '#228B22',
     };
 
     const heroSubtitleStyle = {
@@ -301,6 +302,22 @@ const AboutPage = () => {
                             <div style={serviceIconStyle}><FaCertificate /></div> 
                             <h3 style={serviceTitleStyle}>Chính sách bảo hành</h3>
                             <p>Cam kết bảo hành rõ ràng, hỗ trợ đổi trả nếu sản phẩm có lỗi từ nhà sản xuất.</p>
+                        </div>
+                         <div style={serviceItemStyle}
+                            onMouseOver={(e) => applyHover(e, serviceItemStyle['&:hover'])}
+                            onMouseOut={(e) => removeHover(e, serviceItemStyle)}
+                        >
+                            <div style={serviceIconStyle}><FaCertificate /></div> 
+                            <h3 style={serviceTitleStyle}>Chính sách đổi trả</h3>
+                            <p>Hỗ trợ đổi sản phẩm trong vòng 7 ngày nếu không hài lòng, với điều kiện sản phẩm còn nguyên tem, hộp..</p>
+                        </div>
+                         <div style={serviceItemStyle}
+                            onMouseOver={(e) => applyHover(e, serviceItemStyle['&:hover'])}
+                            onMouseOut={(e) => removeHover(e, serviceItemStyle)}
+                        >
+                            <div style={serviceIconStyle}><FaCertificate /></div> 
+                            <h3 style={serviceTitleStyle}>Hỗ trợ khách hàng</h3>
+                            <p>Đội ngũ tư vấn nhiệt tình, sẵn sàng giải đáp mọi thắc mắc và hỗ trợ xử lý khi có sự cố với sản phẩm..</p>
                         </div>
                     </div>
                 </div>
