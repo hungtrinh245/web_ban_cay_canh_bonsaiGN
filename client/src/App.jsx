@@ -18,7 +18,9 @@ import MiniCart from './components/layout/MiniCart';
 import { useAuth } from './context/AuthContext';
 import { useCart } from './context/CartContext';
 
+
 import BlogDetailPage from './pages/BlogDetailPage';
+import AboutPage from './pages/AboutPage';
 
 
 import { FaShoppingCart, FaUserCircle, FaHome, FaStore, FaInfoCircle, FaPhone, FaNewspaper, FaSearch } from 'react-icons/fa';
@@ -48,6 +50,8 @@ function App() {
         // Optional: Tự động đóng mini-cart sau vài giây
         // setTimeout(() => setShowMiniCart(false), 3000); 
     };
+
+
 
     const headerTopStyle = { 
         background: '#1a1a1a', 
@@ -215,7 +219,7 @@ function App() {
 
     return (
         <>
-        
+            {/* Header chính */}
             <header style={headerTopStyle}>
                 <Link to="/" style={logoStyle}>
                     <FaStore size={28} style={{ marginRight: '8px', color: 'white' }} /> Bonsai<span style={logoSpanStyle}>GN</span>
@@ -270,7 +274,6 @@ function App() {
                         )}
                     </Link>
                     
-                    {/* Render MiniCart nếu showMiniCart là true */}
                     {showMiniCart && (
                         <MiniCart 
                             cartItems={cartItems} 
@@ -279,7 +282,6 @@ function App() {
                         />
                     )}
 
-                    {/* Hiển thị tùy theo trạng thái đăng nhập */}
                     {isAuthenticated ? (
                         <>
                             <Link
@@ -322,7 +324,7 @@ function App() {
                 </div>
             </header>
 
-   
+            {/*(Main Navigation Bar) */}
             <nav style={mainNavBarStyle}>
                 <div style={mainNavLinkContainerStyle}>
                     <Link
@@ -379,10 +381,13 @@ function App() {
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/register" element={<RegisterPage />} />
                     <Route path="/cart" element={<CartPage />} />
-                    <Route path="/about" element={<div><h1>Giới thiệu</h1><p>Đây là trang giới thiệu.</p></div>} />
+                    
+                    <Route path="/about" element={<AboutPage />} /> 
+
                     <Route path="/contact" element={<div><h1>Liên hệ</h1><p>Đây là trang liên hệ.</p></div>} />
                     <Route path="/blog" element={<HomePage />} /> 
-                         <Route path="/blog/:id" element={<BlogDetailPage />} /> 
+                    <Route path="/blog/:id" element={<BlogDetailPage />} /> 
+                    
                     <Route path="/profile" element={<div><h1>Hồ sơ của bạn</h1><p>Trang này sẽ hiển thị thông tin cá nhân của bạn.</p></div>} />
                     <Route path="/checkout" element={<CheckoutPage />} /> 
                     <Route path="/order-success" element={<div><h1>Đặt hàng thành công!</h1><p>Cảm ơn bạn đã mua sắm. Đơn hàng của bạn đang được xử lý.</p><Link to="/">Tiếp tục mua sắm</Link></div>} /> 
