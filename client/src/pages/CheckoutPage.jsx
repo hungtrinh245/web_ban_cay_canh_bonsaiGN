@@ -1,25 +1,26 @@
 // client/src/pages/CheckoutPage.jsx
-import React, { useState, useEffect, useCallback } from 'react'; // Import useCallback
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
-// import { placeOrder } from '../services/orderService'; // Sẽ dùng khi có API đặt hàng
+// import { placeOrder } from '../services/orderService'; 
 
 const CheckoutPage = () => {
     const navigate = useNavigate();
-    const { cartItems, clearCart } = useCart();
+    // Đảm bảo clearCart được lấy ra đúng cách từ useCart()
+    const { cartItems, clearCart } = useCart(); 
     const { user, isAuthenticated } = useAuth();
 
     // States cho thông tin giao hàng & thanh toán
-    const [firstName, setFirstName] = useState('');
-    const [lastName, setLastName] = useState('');
+    const [firstName, setFirstName] = useState(user ? (user.name ? user.name.split(' ')[0] : '') : ''); 
+    const [lastName, setLastName] = useState(user ? (user.name ? user.name.split(' ').slice(1).join(' ') : '') : '');
     const [company, setCompany] = useState('');
-    const [country, setCountry] = useState('Việt Nam'); // Mặc định Việt Nam
+    const [country, setCountry] = useState('Việt Nam');
     const [address, setAddress] = useState('');
     const [postalCode, setPostalCode] = useState('');
     const [city, setCity] = useState('');
     const [phone, setPhone] = useState('');
-    const [email, setEmail] = useState('');
+    const [email, setEmail] = useState(user ? user.email : '');
 
     const [createAccount, setCreateAccount] = useState(false);
     const [shipToDifferentAddress, setShipToDifferentAddress] = useState(false);
@@ -28,33 +29,32 @@ const CheckoutPage = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
-    // Logic tính toán giảm giá (dù không hiển thị input trên UI này)
-    const [discountAmount] = useState(0); // Giả định 0 cho trang này
+    const [discountAmount] = useState(0); 
 
-    // Tính toán tổng tiền và phí vận chuyển
     const subtotal = cartItems.reduce((acc, item) => acc + item.qty * item.price, 0);
     const shippingFee = subtotal > 500000 ? 0 : 30000;
     let finalTotal = subtotal + shippingFee - discountAmount;
     if (finalTotal < 0) finalTotal = 0;
 
-    // Redirect nếu giỏ hàng trống hoặc pre-fill thông tin
     useEffect(() => {
         if (cartItems.length === 0) {
             navigate('/cart');
-            return; // Quan trọng: return để dừng useEffect nếu redirect
+            return; 
         }
+        // Có thể điền trước thông tin nếu user đã đăng nhập
         if (isAuthenticated && user) {
-            setEmail(user.email || ''); // Thêm || '' để tránh undefined
+            setEmail(user.email || ''); 
             if (user.name) {
                 const nameParts = user.name.split(' ');
                 setLastName(nameParts.pop() || '');
                 setFirstName(nameParts.join(' ') || '');
             }
+    
         }
     }, [cartItems, navigate, isAuthenticated, user]);
 
 
-    // --- ĐỊNH NGHĨA TẤT CẢ CÁC BIẾN STYLE TẠI ĐÂY ---
+   
     const checkoutContainerStyle = {
         maxWidth: '1200px',
         margin: '40px auto',
@@ -63,7 +63,7 @@ const CheckoutPage = () => {
         color: '#333',
     };
 
-    const pageTitleStyle = { // Style cho tiêu đề trang "Thanh toán"
+    const pageTitleStyle = {
         fontSize: '2.8em',
         fontWeight: 'bold',
         color: '#2c3e50',
@@ -73,7 +73,7 @@ const CheckoutPage = () => {
         paddingBottom: '15px',
     };
 
-    const pageTitleUnderlineStyle = { // Style cho đường gạch dưới tiêu đề trang
+    const pageTitleUnderlineStyle = {
         width: '80px',
         height: '4px',
         background: '#28a745',
@@ -117,7 +117,7 @@ const CheckoutPage = () => {
         border: '1px solid #eee',
     };
 
-    const sectionTitleStyle = { // Style cho tiêu đề từng phần trong form (VD: "Thông tin thanh toán")
+    const sectionTitleStyle = {
         fontSize: '1.5em',
         fontWeight: 'bold',
         color: '#2c3e50',
@@ -257,7 +257,7 @@ const CheckoutPage = () => {
     const removeHover = (e, baseStyle) => Object.assign(e.currentTarget.style, baseStyle);
 
 
-    // --- Hàm xử lý đặt hàng (bọc trong useCallback) ---
+    // --- Hàm xử lý đặt hàng 
     const handleSubmitOrder = useCallback(async (e) => {
         e.preventDefault();
         setLoading(true);
@@ -295,7 +295,7 @@ const CheckoutPage = () => {
                     phone,
                     email,
                 },
-                paymentMethod: 'cod', // Tạm thời mặc định COD
+                paymentMethod: 'cod', 
                 itemsPrice: subtotal,
                 shippingPrice: shippingFee,
                 totalPrice: finalTotal,
@@ -306,7 +306,7 @@ const CheckoutPage = () => {
             };
 
             // TODO: GỌI API ĐẶT HÀNG THỰC TẾ Ở ĐÂY
-            // const response = await placeOrder(orderData); // placeOrder là hàm service mới
+            // const response = await placeOrder(orderData); 
             // console.log("Order placed successfully:", response);
 
             alert('Đặt hàng thành công! Cảm ơn bạn đã mua sắm.');
@@ -368,7 +368,10 @@ const CheckoutPage = () => {
                                     <input type="text" id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} style={inputStyle} required />
                                 </div>
                             </div>
-                           
+                            <div style={formGroupStyle}>
+                                <label htmlFor="company" style={labelStyle}>Tên công ty (tùy chọn)</label>
+                                <input type="text" id="company" value={company} onChange={(e) => setCompany(e.target.value)} style={inputStyle} />
+                            </div>
                             <div style={formGroupStyle}>
                                 <label htmlFor="country" style={labelStyle}>Quốc gia <span style={{color: 'red'}}>*</span></label>
                                 <select id="country" value={country} onChange={(e) => setCountry(e.target.value)} style={selectStyle} required>
@@ -381,7 +384,10 @@ const CheckoutPage = () => {
                                 <input type="text" id="address" value={address} onChange={(e) => setAddress(e.target.value)} style={inputStyle} placeholder="Số nhà, tên đường, thôn, xóm..." required />
                             </div>
                             <div style={{ display: 'flex', gap: '20px' }}>
-                               
+                                <div style={{ ...formGroupStyle, flex: 1 }}>
+                                    <label htmlFor="postalCode" style={labelStyle}>Mã bưu điện (tùy chọn)</label>
+                                    <input type="text" id="postalCode" value={postalCode} onChange={(e) => setPostalCode(e.target.value)} style={inputStyle} />
+                                </div>
                                 <div style={{ ...formGroupStyle, flex: 1 }}>
                                     <label htmlFor="city" style={labelStyle}>Tỉnh / Thành phố <span style={{color: 'red'}}>*</span></label>
                                     <input type="text" id="city" value={city} onChange={(e) => setCity(e.target.value)} style={inputStyle} required />
@@ -403,7 +409,10 @@ const CheckoutPage = () => {
                                 <input type="checkbox" checked={createAccount} onChange={(e) => setCreateAccount(e.target.checked)} style={checkboxInputStyle} />
                                 Tạo tài khoản mới?
                             </label>
-                          
+                            <label style={checkboxItemStyle}>
+                                <input type="checkbox" checked={shipToDifferentAddress} onChange={(e) => setShipToDifferentAddress(e.target.checked)} style={checkboxInputStyle} />
+                                Giao hàng tới địa chỉ khác?
+                            </label>
                         </div>
 
                         {/* Phần ghi chú đơn hàng */}
@@ -419,7 +428,7 @@ const CheckoutPage = () => {
                         </div>
                     </div>
 
-                    {/* Cột phải: Đơn hàng của bạn */}
+                    {/*Đơn hàng của bạn */}
                     <div style={orderSummaryColumnStyle}>
                         <h2 style={sectionTitleStyle}>Đơn hàng của bạn</h2>
                         {/* Headers của bảng tóm tắt sản phẩm trong cột này */}
@@ -438,7 +447,7 @@ const CheckoutPage = () => {
                             </div>
                         ))}
                         {/* Các dòng tổng phụ */}
-                        <div style={summaryTotalsDividerStyle}></div> {/* Đường gạch ngang mảnh */}
+                        <div style={summaryTotalsDividerStyle}></div> 
                         <div style={summaryRowStyle}>
                             <span>Tổng phụ:</span>
                             <span style={{ fontWeight: 'bold' }}>{subtotal.toLocaleString('vi-VN')} VNĐ</span>
@@ -449,7 +458,6 @@ const CheckoutPage = () => {
                                 {shippingFee === 0 ? 'Giao hàng miễn phí' : shippingFee.toLocaleString('vi-VN') + ' VNĐ'}
                             </span>
                         </div>
-                        {/* Nếu có logic giảm giá, sẽ hiển thị ở đây */}
                         {/* <div style={{...summaryRowStyle, color: '#28a745', fontWeight: 'bold'}}>
                             <span>Giảm giá:</span>
                             <span>- {discountAmount.toLocaleString('vi-VN')} VNĐ</span>
