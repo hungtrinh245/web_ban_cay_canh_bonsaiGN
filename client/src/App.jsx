@@ -1,8 +1,8 @@
 // client/src/App.jsx
 import React, { useState } from 'react';
-import { Routes, Route, Link, useNavigate } from 'react-router-dom';
+import { Routes, Route, Link, NavLink, useNavigate } from 'react-router-dom'; 
 import HomePage from './pages/HomePage';
-import ProductDetailPage from './pages/ProductDetailPage';
+import ProductDetailPage from './pages/ProductDetailPage'; 
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ShopPage from './pages/ShopPage';
@@ -20,8 +20,7 @@ import { useCart } from './context/CartContext';
 
 
 import BlogDetailPage from './pages/BlogDetailPage';
-import AboutPage from './pages/AboutPage';
-
+import AboutPage from './pages/AboutPage'; 
 
 import { FaShoppingCart, FaUserCircle, FaHome, FaStore, FaInfoCircle, FaPhone, FaNewspaper, FaSearch } from 'react-icons/fa';
 
@@ -32,7 +31,6 @@ function App() {
 
     const [showMiniCart, setShowMiniCart] = useState(false);
 
-    // Tính tổng số lượng và tổng tiền cho mini-cart (được sử dụng cả ở header)
     const totalCartItems = cartItems.reduce((sum, item) => sum + item.qty, 0);
     const miniCartSubtotal = cartItems.reduce((acc, item) => acc + item.qty * item.price, 0);
 
@@ -90,7 +88,6 @@ function App() {
         gap: '20px'
     };
 
-    // Style cho Link chung (ví dụ: Đăng nhập, Đăng ký)
     const navLinkStyle = {
         color: 'white',
         textDecoration: 'none',
@@ -108,7 +105,6 @@ function App() {
         color: 'white',
     };
 
-    // Style Giỏ hàng 
     const headerCartLinkStyle = {
         ...navLinkStyle, 
         position: 'relative', 
@@ -190,36 +186,58 @@ function App() {
         gap: '35px',
     };
 
-    const mainNavLinkStyle = {
+    const mainNavLinkBaseStyle = {
         color: 'white',
         textDecoration: 'none',
         fontSize: '1.05rem',
         fontWeight: '500',
         padding: '5px 10px',
         position: 'relative',
-        transition: 'color 0.3s ease',
+        transition: 'color 0.3s ease, border-bottom 0.3s ease, padding-bottom 0.3s ease', 
+        display: 'flex', 
+        alignItems: 'center',
+        gap: '5px'
     };
 
     const mainNavLinkHoverStyle = {
         color: '#f0f0f0',
     };
 
+   
     const mainNavLinkActiveStyle = {
         fontWeight: 'bold',
-        color: '#1a1a1a',
+        color: 'blue', //màu  nổi bật 
+        borderBottom: '3px solid blue', 
+        paddingBottom: '2px', //gạch chân không quá sát chữ
     };
     
+   
+    const getNavLinkStyle = ({ isActive }) => {
+        return {
+            ...mainNavLinkBaseStyle,
+            ...(isActive ? mainNavLinkActiveStyle : {}),
+           
+        };
+    };
+
+
     const applyHoverStyle = (e, style) => {
         Object.assign(e.currentTarget.style, style);
     };
 
     const removeHoverStyle = (e, initialStyle) => {
-        Object.assign(e.currentTarget.style, initialStyle);
+        // Đối với NavLink, cần giữ lại active style nếu đang active
+        if (e.currentTarget.dataset && e.currentTarget.dataset.isactive === 'true') {
+            Object.assign(e.currentTarget.style, mainNavLinkActiveStyle);
+        } else {
+            Object.assign(e.currentTarget.style, initialStyle);
+        }
     };
+
 
     return (
         <>
-            {/* Header chính */}
+            {/* Header chính (Top Bar) */}
             <header style={headerTopStyle}>
                 <Link to="/" style={logoStyle}>
                     <FaStore size={28} style={{ marginRight: '8px', color: 'white' }} /> Bonsai<span style={logoSpanStyle}>GN</span>
@@ -296,7 +314,7 @@ function App() {
                                 onClick={handleLogout}
                                 style={buttonStyle}
                                 onMouseOver={(e) => applyHoverStyle(e, buttonHoverStyle)}
-                                onMouseOut={(e) => removeHoverStyle(e, buttonStyle)}
+                                onMouseOut={(e) => removeHover(e, buttonStyle)}
                             >
                                 Đăng xuất
                             </button>
@@ -324,49 +342,55 @@ function App() {
                 </div>
             </header>
 
-            {/*(Main Navigation Bar) */}
+            {/* Header phụ (Main Navigation Bar) */}
             <nav style={mainNavBarStyle}>
                 <div style={mainNavLinkContainerStyle}>
-                    <Link
+                    {/* DÙNG NavLink VÀ getNavLinkStyle */}
+                    <NavLink
                         to="/"
-                        style={mainNavLinkStyle}
+                        style={getNavLinkStyle}
                         onMouseOver={(e) => applyHoverStyle(e, mainNavLinkHoverStyle)}
-                        onMouseOut={(e) => removeHoverStyle(e, mainNavLinkStyle)}
+                        onMouseOut={(e) => removeHoverStyle(e, mainNavLinkBaseStyle)} // Về base style nếu không active
+                        data-isactive={location.pathname === '/' || location.pathname === '/home' ? 'true' : 'false'} // Thêm data-attribute để helper nhận biết
                     >
-                        <FaHome style={{ marginRight: '5px' }} /> Trang chủ
-                    </Link>
-                    <Link
+                        <FaHome /> Trang chủ
+                    </NavLink>
+                    <NavLink
                         to="/shop"
-                        style={mainNavLinkStyle}
+                        style={getNavLinkStyle}
                         onMouseOver={(e) => applyHoverStyle(e, mainNavLinkHoverStyle)}
-                        onMouseOut={(e) => removeHoverStyle(e, mainNavLinkStyle)}
+                        onMouseOut={(e) => removeHoverStyle(e, mainNavLinkBaseStyle)}
+                        data-isactive={location.pathname.startsWith('/shop') ? 'true' : 'false'}
                     >
-                        <FaStore style={{ marginRight: '5px' }} /> Cửa hàng
-                    </Link>
-                    <Link
+                        <FaStore /> Cửa hàng
+                    </NavLink>
+                    <NavLink
                         to="/about"
-                        style={mainNavLinkStyle}
+                        style={getNavLinkStyle}
                         onMouseOver={(e) => applyHoverStyle(e, mainNavLinkHoverStyle)}
-                        onMouseOut={(e) => removeHoverStyle(e, mainNavLinkStyle)}
+                        onMouseOut={(e) => removeHoverStyle(e, mainNavLinkBaseStyle)}
+                        data-isactive={location.pathname === '/about' ? 'true' : 'false'}
                     >
-                        <FaInfoCircle style={{ marginRight: '5px' }} /> Giới thiệu
-                    </Link>
-                    <Link
+                        <FaInfoCircle /> Giới thiệu
+                    </NavLink>
+                    <NavLink
                         to="/contact"
-                        style={mainNavLinkStyle}
+                        style={getNavLinkStyle}
                         onMouseOver={(e) => applyHoverStyle(e, mainNavLinkHoverStyle)}
-                        onMouseOut={(e) => removeHoverStyle(e, mainNavLinkStyle)}
+                        onMouseOut={(e) => removeHoverStyle(e, mainNavLinkBaseStyle)}
+                        data-isactive={location.pathname === '/contact' ? 'true' : 'false'}
                     >
-                        <FaPhone style={{ marginRight: '5px' }} /> Liên hệ
-                    </Link>
-                    <Link
+                        <FaPhone /> Liên hệ
+                    </NavLink>
+                    <NavLink
                         to="/blog" 
-                        style={mainNavLinkStyle}
+                        style={getNavLinkStyle}
                         onMouseOver={(e) => applyHoverStyle(e, mainNavLinkHoverStyle)}
-                        onMouseOut={(e) => removeHoverStyle(e, mainNavLinkStyle)}
+                        onMouseOut={(e) => removeHoverStyle(e, mainNavLinkBaseStyle)}
+                        data-isactive={location.pathname.startsWith('/blog') ? 'true' : 'false'}
                     >
-                        <FaNewspaper style={{ marginRight: '5px' }} /> Tin tức
-                    </Link>
+                        <FaNewspaper /> Tin tức
+                    </NavLink>
                 </div>
             </nav>
 
@@ -381,10 +405,11 @@ function App() {
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/register" element={<RegisterPage />} />
                     <Route path="/cart" element={<CartPage />} />
-                    
+                    {/* ROUTE CHÍNH XÁC CHO TRANG GIỚI THIỆU */}
                     <Route path="/about" element={<AboutPage />} /> 
 
                     <Route path="/contact" element={<div><h1>Liên hệ</h1><p>Đây là trang liên hệ.</p></div>} />
+                    {/* ROUTES CHO BLOG */}
                     <Route path="/blog" element={<HomePage />} /> 
                     <Route path="/blog/:id" element={<BlogDetailPage />} /> 
                     
