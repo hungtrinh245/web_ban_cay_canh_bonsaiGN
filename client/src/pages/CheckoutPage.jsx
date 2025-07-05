@@ -342,8 +342,7 @@ const CheckoutPage = () => {
         navigate,
     ]); // Dependencies cho useCallback
 
-
-    return (
+ return (
         <div style={checkoutContainerStyle}>
             <h1 style={pageTitleStyle}>
                 Thanh toán
@@ -354,7 +353,7 @@ const CheckoutPage = () => {
 
             <form onSubmit={handleSubmitOrder}>
                 <div style={mainContentWrapperStyle}>
-                    {/* Cột trái: Thông tin thanh toán */}
+                    {/*Thông tin thanh toán */}
                     <div style={formColumnStyle}>
                         <div style={sectionStyle}> {/* Hộp cho thông tin thanh toán */}
                             <h2 style={sectionTitleStyle}>Thông tin thanh toán</h2>
@@ -369,10 +368,6 @@ const CheckoutPage = () => {
                                 </div>
                             </div>
                             <div style={formGroupStyle}>
-                                <label htmlFor="company" style={labelStyle}>Tên công ty (tùy chọn)</label>
-                                <input type="text" id="company" value={company} onChange={(e) => setCompany(e.target.value)} style={inputStyle} />
-                            </div>
-                            <div style={formGroupStyle}>
                                 <label htmlFor="country" style={labelStyle}>Quốc gia <span style={{color: 'red'}}>*</span></label>
                                 <select id="country" value={country} onChange={(e) => setCountry(e.target.value)} style={selectStyle} required>
                                     <option value="Việt Nam">Việt Nam</option>
@@ -384,10 +379,7 @@ const CheckoutPage = () => {
                                 <input type="text" id="address" value={address} onChange={(e) => setAddress(e.target.value)} style={inputStyle} placeholder="Số nhà, tên đường, thôn, xóm..." required />
                             </div>
                             <div style={{ display: 'flex', gap: '20px' }}>
-                                <div style={{ ...formGroupStyle, flex: 1 }}>
-                                    <label htmlFor="postalCode" style={labelStyle}>Mã bưu điện (tùy chọn)</label>
-                                    <input type="text" id="postalCode" value={postalCode} onChange={(e) => setPostalCode(e.target.value)} style={inputStyle} />
-                                </div>
+                              
                                 <div style={{ ...formGroupStyle, flex: 1 }}>
                                     <label htmlFor="city" style={labelStyle}>Tỉnh / Thành phố <span style={{color: 'red'}}>*</span></label>
                                     <input type="text" id="city" value={city} onChange={(e) => setCity(e.target.value)} style={inputStyle} required />
@@ -404,7 +396,7 @@ const CheckoutPage = () => {
                         </div> {/* End Thông tin thanh toán section */}
 
                         {/* Các checkboxes */}
-                        <div style={checkboxGroupStyle}>
+                        {/* <div style={checkboxGroupStyle}>
                             <label style={checkboxItemStyle}>
                                 <input type="checkbox" checked={createAccount} onChange={(e) => setCreateAccount(e.target.checked)} style={checkboxInputStyle} />
                                 Tạo tài khoản mới?
@@ -413,7 +405,7 @@ const CheckoutPage = () => {
                                 <input type="checkbox" checked={shipToDifferentAddress} onChange={(e) => setShipToDifferentAddress(e.target.checked)} style={checkboxInputStyle} />
                                 Giao hàng tới địa chỉ khác?
                             </label>
-                        </div>
+                        </div> */}
 
                         {/* Phần ghi chú đơn hàng */}
                         <div style={sectionStyle}> {/* Hộp cho ghi chú */}
@@ -428,7 +420,7 @@ const CheckoutPage = () => {
                         </div>
                     </div>
 
-                    {/*Đơn hàng của bạn */}
+                    {/* Cột phải: Đơn hàng của bạn */}
                     <div style={orderSummaryColumnStyle}>
                         <h2 style={sectionTitleStyle}>Đơn hàng của bạn</h2>
                         {/* Headers của bảng tóm tắt sản phẩm trong cột này */}
@@ -446,7 +438,7 @@ const CheckoutPage = () => {
                                 <span style={{textAlign: 'right', flex: 1, fontWeight: 'bold', color: '#555'}}>{(item.qty * item.price || 0).toLocaleString('vi-VN')} VNĐ</span>
                             </div>
                         ))}
-                        {/* Các dòng tổng phụ */}
+                       
                         <div style={summaryTotalsDividerStyle}></div> 
                         <div style={summaryRowStyle}>
                             <span>Tổng phụ:</span>
@@ -458,10 +450,6 @@ const CheckoutPage = () => {
                                 {shippingFee === 0 ? 'Giao hàng miễn phí' : shippingFee.toLocaleString('vi-VN') + ' VNĐ'}
                             </span>
                         </div>
-                        {/* <div style={{...summaryRowStyle, color: '#28a745', fontWeight: 'bold'}}>
-                            <span>Giảm giá:</span>
-                            <span>- {discountAmount.toLocaleString('vi-VN')} VNĐ</span>
-                        </div> */}
                         <div style={summaryTotalRowStyle}>
                             <span>Tổng cộng:</span>
                             <span>{finalTotal.toLocaleString('vi-VN')} VNĐ</span>

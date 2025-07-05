@@ -3,6 +3,7 @@ import axios from 'axios';
 
 const API_URL = 'http://localhost:5001/api/bonsais';
 const API_URL_COUPONS  = 'http://localhost:5001/api/coupons';
+const API_URL_ORDERS = 'http://localhost:5001/api/orders';
 
 // Trả về sản phẩm mới nhất
 export const getNewProducts = async () => {
@@ -92,5 +93,27 @@ export const applyCoupon = async (code, cartTotal) => {
     } catch (error) {
         console.error('Lỗi khi áp dụng mã ưu đãi:', error.response?.data?.message || error.message);
         throw new Error(error.response?.data?.message || 'Áp dụng mã ưu đãi thất bại.');
+    }
+};
+
+// Hàm để đặt hàng
+export const createOrder = async (orderData, token) => {
+    try {
+        const config = {
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`, // Gửi token nếu người dùng đăng nhập
+            },
+        };
+        // orderData đã bao gồm tất cả các thông tin cần thiết
+        const response = await axios.post(API_URL_ORDERS, orderData, config);
+        return response.data; // Trả về thông tin đơn hàng đã tạo
+    } catch (error) {
+        console.error('Lỗi khi đặt hàng:', error.response?.data?.message || error.message);
+        // Kiểm tra lỗi tồn kho cụ thể
+        if (error.response && error.response.status === 400 && error.response.data.message.includes("không đủ số lượng tồn kho")) {
+             throw new Error(error.response.data.message);
+        }
+        throw new Error(error.response?.data?.message || 'Đặt hàng thất bại');
     }
 };

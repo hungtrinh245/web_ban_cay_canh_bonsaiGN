@@ -7,18 +7,18 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ShopPage from './pages/ShopPage';
 import CartPage from './pages/CartPage';
-import CheckoutPage from './pages/CheckoutPage'
+import CheckoutPage from './pages/CheckoutPage' 
 
-// Import các component layout
+
 import Newsletter from './components/layout/Newsletter';
 import Footer from './components/layout/Footer';
 import MiniCart from './components/layout/MiniCart'; 
 
-// Import các Context Hook
+
 import { useAuth } from './context/AuthContext';
 import { useCart } from './context/CartContext';
 
-// Import icons
+
 import { FaShoppingCart, FaUserCircle, FaHome, FaStore, FaInfoCircle, FaPhone, FaNewspaper, FaSearch } from 'react-icons/fa';
 
 function App() {
@@ -46,7 +46,6 @@ function App() {
         // Optional: Tự động đóng mini-cart sau vài giây
         // setTimeout(() => setShowMiniCart(false), 3000); 
     };
-
 
     const headerTopStyle = { 
         background: '#1a1a1a', 
@@ -103,32 +102,32 @@ function App() {
         color: 'white',
     };
 
-    // Style riêng cho phần Giỏ hàng 
+    // Style Giỏ hàng 
     const headerCartLinkStyle = {
-        ...navLinkStyle, // Kế thừa style chung
-        position: 'relative', // Để badge số lượng có thể định vị
+        ...navLinkStyle, 
+        position: 'relative', 
         display: 'flex',
         alignItems: 'center',
-        gap: '10px', // Khoảng cách giữa icon và chữ/giá
-        background: '#444', // Nền hơi xám cho vùng giỏ hàng
-        padding: '8px 15px', // Padding rộng hơn
-        borderRadius: '25px', // Bo tròn hơn
+        gap: '10px', 
+        background: '#444', 
+        padding: '8px 15px', 
+        borderRadius: '25px', 
         cursor: 'pointer',
         transition: 'background-color 0.3s ease, transform 0.2s',
     };
 
     const headerCartLinkHoverStyle = {
-        backgroundColor: '#555', // Đậm hơn khi hover
+        backgroundColor: '#555', 
         transform: 'scale(1.02)'
     };
 
     const cartBadgeStyle = {
         position: 'absolute',
         top: '-8px',
-        right: '-8px', // Điều chỉnh vị trí badge
+        right: '-8px', 
         background: '#FF5722',
         borderRadius: '50%',
-        minWidth: '22px', // Đảm bảo đủ rộng cho số 2 chữ số
+        minWidth: '22px', 
         height: '22px',
         display: 'flex',
         alignItems: 'center',
@@ -143,14 +142,14 @@ function App() {
         fontSize: '1rem',
         fontWeight: 'bold',
         color: 'white',
-        whiteSpace: 'nowrap' // Ngăn không cho chữ xuống dòng
+        whiteSpace: 'nowrap' 
     };
 
     const cartPriceStyle = {
-        fontSize: '0.9em', // Kích thước nhỏ hơn một chút
-        color: '#f0f0f0', // Màu trắng nhạt
+        fontSize: '0.9em', 
+        color: '#f0f0f0', 
         marginLeft: '5px',
-        whiteSpace: 'nowrap' // Ngăn không cho số tiền xuống dòng
+        whiteSpace: 'nowrap' 
     };
 
     const buttonStyle = {
@@ -214,7 +213,7 @@ function App() {
 
     return (
         <>
-            {/* Header chính (Top Bar) */}
+        
             <header style={headerTopStyle}>
                 <Link to="/" style={logoStyle}>
                     <FaStore size={28} style={{ marginRight: '8px', color: 'white' }} /> Bonsai<span style={logoSpanStyle}>GN</span>
@@ -247,7 +246,7 @@ function App() {
                     {/* Giỏ hàng và tổng tiền */}
                     <Link
                         to="/cart"
-                        style={headerCartLinkStyle} // Sử dụng style mới cho giỏ hàng
+                        style={headerCartLinkStyle} 
                         onMouseOver={(e) => applyHoverStyle(e, headerCartLinkHoverStyle)}
                         onMouseOut={(e) => removeHoverStyle(e, headerCartLinkStyle)}
                         onClick={(e) => { 
@@ -262,7 +261,7 @@ function App() {
                                 <span style={cartBadgeStyle}>{totalCartItems}</span>
                             )}
                         </span>
-                        {totalCartItems > 0 && ( // Chỉ hiện giá khi có sản phẩm
+                        {totalCartItems > 0 && ( 
                             <span style={cartPriceStyle}>
                                 / {miniCartSubtotal.toLocaleString('vi-VN')} VNĐ
                             </span>
@@ -321,7 +320,7 @@ function App() {
                 </div>
             </header>
 
-            {/* Header phụ (Main Navigation Bar) */}
+   
             <nav style={mainNavBarStyle}>
                 <div style={mainNavLinkContainerStyle}>
                     <Link
@@ -382,9 +381,8 @@ function App() {
                     <Route path="/contact" element={<div><h1>Liên hệ</h1><p>Đây là trang liên hệ.</p></div>} />
                     <Route path="/blog" element={<div><h1>Tin tức</h1><p>Đây là trang tin tức.</p></div>} />
                     <Route path="/profile" element={<div><h1>Hồ sơ của bạn</h1><p>Trang này sẽ hiển thị thông tin cá nhân của bạn.</p></div>} />
-                    {/* <Route path="/checkout" element={<div><h1>Trang Thanh Toán</h1><p>Đây là trang thanh toán.</p></div>} /> */}
-                    <Route path="/checkout" element={<CheckoutPage />} /> {/* <-- THÊM ROUTE NÀY */}
-                    <Route path="/order-success" element={<div><h1>Đặt hàng thành công!</h1><p>Cảm ơn bạn đã mua sắm. Đơn hàng của bạn đang được xử lý.</p><Link to="/">Tiếp tục mua sắm</Link></div>} /> {/* Trang xác nhận đơn hàng */}
+                    <Route path="/checkout" element={<CheckoutPage />} /> 
+                    <Route path="/order-success" element={<div><h1>Đặt hàng thành công!</h1><p>Cảm ơn bạn đã mua sắm. Đơn hàng của bạn đang được xử lý.</p><Link to="/">Tiếp tục mua sắm</Link></div>} /> 
 
                     
                     <Route path="/privacy-policy" element={<div><h1>Chính sách bảo mật</h1><p>Nội dung chính sách bảo mật...</p></div>} />
