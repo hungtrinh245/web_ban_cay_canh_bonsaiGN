@@ -21,6 +21,7 @@ import { useCart } from './context/CartContext';
 
 import BlogDetailPage from './pages/BlogDetailPage';
 import AboutPage from './pages/AboutPage'; 
+import ContactPage from './pages/ContactPage';
 
 import { FaShoppingCart, FaUserCircle, FaHome, FaStore, FaInfoCircle, FaPhone, FaNewspaper, FaSearch } from 'react-icons/fa';
 
@@ -405,10 +406,9 @@ function App() {
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/register" element={<RegisterPage />} />
                     <Route path="/cart" element={<CartPage />} />
-                    {/* ROUTE CHÍNH XÁC CHO TRANG GIỚI THIỆU */}
                     <Route path="/about" element={<AboutPage />} /> 
 
-                    <Route path="/contact" element={<div><h1>Liên hệ</h1><p>Đây là trang liên hệ.</p></div>} />
+                     <Route path="/contact" element={<ContactPage />} /> 
                     {/* ROUTES CHO BLOG */}
                     <Route path="/blog" element={<HomePage />} /> 
                     <Route path="/blog/:id" element={<BlogDetailPage />} /> 
