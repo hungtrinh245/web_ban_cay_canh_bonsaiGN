@@ -399,7 +399,6 @@ function App() {
             <main style={{ minHeight: '60vh', padding: '0px 0', overflowX: 'hidden' }}>
                 <Routes>
                     <Route path="/" element={<HomePage />} /> 
-                    <Route path="/home" element={<HomePage />} />
                     <Route path="/shop" element={<ShopPage onAddToCartSuccess={handleAddToCartSuccess} />} />
                     <Route path="/shop/category/:categoryName" element={<ShopPage onAddToCartSuccess={handleAddToCartSuccess} />} />
                     <Route path="/products/:id" element={<ProductDetailPage onAddToCartSuccess={handleAddToCartSuccess} />} />

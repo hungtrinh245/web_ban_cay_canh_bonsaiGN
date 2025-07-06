@@ -1,6 +1,7 @@
 // client/src/pages/ContactPage.jsx
 import React, { useState } from 'react';
-import { FaMapMarkerAlt, FaPhone, FaEnvelope, FaPaperPlane } from 'react-icons/fa'; // Import icons
+import { FaMapMarkerAlt, FaPhone, FaEnvelope, FaPaperPlane } from 'react-icons/fa';
+import { sendMessage } from '../services/contactService'; 
 
 const ContactPage = () => {
     const [name, setName] = useState('');
@@ -15,7 +16,7 @@ const ContactPage = () => {
         setLoading(true);
         setFormStatus('');
 
-        // Basic validation
+        //validation
         if (!name || !email || !phone || !message) {
             setFormStatus('error');
             setLoading(false);
@@ -23,12 +24,12 @@ const ContactPage = () => {
         }
 
         try {
-            // TODO: GỌI API GỬI TIN NHẮN TẠI ĐÂY (Cần backend API cho contact form)
-            // const response = await sendMessage({ name, email, phone, message });
-            // console.log('Message sent:', response);
+            // GỌI API GỬI TIN NHẮN TẠI ĐÂY (sendMessage đã được import)
+            const response = await sendMessage({ name, email, phone, message });
+            console.log('Message sent:', response);
 
             setFormStatus('success');
-            alert('Tin nhắn của bạn đã được gửi thành công! Chúng tôi sẽ liên hệ lại sớm nhất.');
+            alert(response.message); // Hiển thị thông báo thành công từ backend
             // Reset form
             setName('');
             setEmail('');
@@ -37,7 +38,8 @@ const ContactPage = () => {
         } catch (err) {
             console.error('Lỗi khi gửi tin nhắn:', err);
             setFormStatus('error');
-            alert('Có lỗi xảy ra khi gửi tin nhắn. Vui lòng thử lại sau.');
+            // Kiểm tra nếu lỗi có message từ backend
+            alert(err.message || 'Có lỗi xảy ra khi gửi tin nhắn. Vui lòng thử lại sau.'); 
         } finally {
             setLoading(false);
         }
@@ -81,7 +83,7 @@ const ContactPage = () => {
     };
 
     const infoColumnStyle = {
-        flex: '1 1 450px', // Cột thông tin & bản đồ
+        flex: '1 1 450px',
         background: 'white',
         borderRadius: '12px',
         boxShadow: '0 8px 30px rgba(0,0,0,0.08)',
@@ -90,7 +92,7 @@ const ContactPage = () => {
     };
 
     const formColumnStyle = {
-        flex: '1 1 450px', // Cột form liên hệ
+        flex: '1 1 450px',
         background: 'white',
         borderRadius: '12px',
         boxShadow: '0 8px 30px rgba(0,0,0,0.08)',
@@ -110,7 +112,7 @@ const ContactPage = () => {
 
     const contactInfoItemStyle = {
         display: 'flex',
-        alignItems: 'flex-start', // Căn chỉnh top nếu nội dung dài
+        alignItems: 'flex-start',
         marginBottom: '15px',
         gap: '15px',
         fontSize: '1.05em',
@@ -120,12 +122,12 @@ const ContactPage = () => {
     const contactIconStyle = {
         fontSize: '1.5em',
         color: '#28a745',
-        flexShrink: 0, // Ngăn icon bị co lại
+        flexShrink: 0,
     };
 
     const mapContainerStyle = {
         width: '100%',
-        height: '350px', // Chiều cao cố định cho bản đồ
+        height: '350px',
         borderRadius: '8px',
         overflow: 'hidden',
         boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
@@ -156,7 +158,7 @@ const ContactPage = () => {
     const textareaStyle = {
         ...inputStyle,
         minHeight: '120px',
-        resize: 'vertical', // Cho phép thay đổi chiều cao
+        resize: 'vertical',
     };
 
     const submitButtonStyle = {
@@ -215,7 +217,7 @@ const ContactPage = () => {
             </h1>
 
             <div style={contentWrapperStyle}>
-                {/* Cột trái: Thông tin và Bản đồ */}
+                {/*Thông tin và Bản đồ */}
                 <div style={infoColumnStyle}>
                     <h2 style={sectionTitleStyle}>Thông tin liên hệ</h2>
                     <div style={contactInfoItemStyle}>
@@ -232,10 +234,8 @@ const ContactPage = () => {
                     </div>
 
                     <div style={mapContainerStyle}>
-                        {/* Thay thế iframe này bằng nhúng Google Maps của địa điểm của bạn */}
-                        {/* Để lấy iframe: Vào Google Maps, tìm địa điểm, chọn "Share" -> "Embed a map" -> "Copy HTML" */}
                         <iframe
-                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3724.088636952771!2d105.77977461490234!3d21.02967668599878!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3135ab70b8e7e1e7%3A0x6b9d6a7d7b8d6d!2zVHLGsOG7nW5nIMSQ4bqhaSBo4buNYyBRdeG7kWMgZ2lhIEjDoCBO4buZaQ!5e0!3m2!1svi!2svn!4v1678280000000!5m2!1svi!2svn"
+                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3724.1039864270177!2d105.77660637500001!3d21.02677938062838!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x313454b52c02052f%3A0x6e788e0c8b2a3d0!2zVHLGsOG7nW5nIMSQ4bqhaSBo4buNYyBRdeG7kWMgZ2lhIEjDoCBO4buZaQ!5e0!3m2!1svi!2s!4v1719946468499!5m2!1svi!2s" // Vui lòng thay thế bằng URL Google Maps của bạn
                             width="100%"
                             height="100%"
                             style={{ border: 0 }}
@@ -247,7 +247,7 @@ const ContactPage = () => {
                     </div>
                 </div>
 
-                {/* Cột phải: Form liên hệ */}
+                {/*Form liên hệ */}
                 <div style={formColumnStyle}>
                     <h2 style={sectionTitleStyle}>Gửi tin nhắn cho chúng tôi</h2>
                     <form onSubmit={handleSubmit}>
@@ -314,7 +314,6 @@ const ContactPage = () => {
                     </form>
                 </div>
             </div>
-            {/* Thêm keyframe cho animation spin (nếu chưa có trong global CSS) */}
             <style>
                 {`
                 @keyframes spin {
