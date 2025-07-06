@@ -117,3 +117,19 @@ export const createOrder = async (orderData, token) => {
         throw new Error(error.response?.data?.message || 'Đặt hàng thất bại');
     }
 };
+
+// Hàm  để lấy các đơn hàng của người dùng hiện tại
+export const getMyOrders = async (token) => {
+    try {
+        const config = {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        };
+        const response = await axios.get(`${API_URL_ORDERS}/myorders`, config);
+        return response.data;
+    } catch (error) {
+        console.error('Lỗi khi lấy đơn hàng của tôi:', error.response?.data?.message || error.message);
+        throw new Error(error.response?.data?.message || 'Không thể lấy danh sách đơn hàng.');
+    }
+};
