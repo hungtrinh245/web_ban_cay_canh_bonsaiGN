@@ -144,3 +144,20 @@ export const searchProducts = async (keyword) => {
         throw error;
     }
 };
+
+// Hàm  để gửi đánh giá sản phẩm
+export const createProductReview = async (productId, reviewData, token) => {
+    try {
+        const config = {
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+            },
+        };
+        const response = await axios.post(`${API_URL}/${productId}/reviews`, reviewData, config);
+        return response.data; // Trả về thông báo thành công
+    } catch (error) {
+        console.error('Lỗi khi gửi đánh giá sản phẩm:', error.response?.data?.message || error.message);
+        throw new Error(error.response?.data?.message || 'Gửi đánh giá thất bại');
+    }
+};
