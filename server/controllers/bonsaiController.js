@@ -1,7 +1,7 @@
 // server/controllers/bonsaiController.js
 const Bonsai = require("../models/bonsai.js");
 
-// Trả về sản phẩm MỚI NHẤT (Nếu không có bộ lọc nào khác, đây là mặc định)
+// Trả về sản phẩm MỚI NHẤT
 const getAllBonsais = async (req, res) => {
   try {
     const bonsais = await Bonsai.find({}).sort({ createdAt: -1 }); // Sắp xếp theo ngày tạo giảm dần (mới nhất)
@@ -161,6 +161,62 @@ const searchBonsais = async (req, res) => {
         res.status(500).json({ message: 'Lỗi máy chủ nội bộ khi tìm kiếm.' });
     }
 };
+
+
+// @desc    Create new review
+// @route   POST /api/bonsais/:id/reviews
+// @access  Private (Chỉ người dùng đã đăng nhập mới được đánh giá)
+const createProductReview = async (req, res) => {
+    const { rating, comment } = req.body;
+    const productId = req.params.id; // Lấy ID sản phẩm từ URL
+
+    try {
+        const product = await Bonsai.findById(productId);
+
+        if (product) {
+            // Kiểm tra xem người dùng đã đánh giá sản phẩm này chưa
+            const alreadyReviewed = product.reviews.find(
+                (r) => r.user.toString() === req.user._id.toString()
+            );
+
+            if (alreadyReviewed) {
+                res.status(400).json({ message: 'Bạn đã đánh giá sản phẩm này rồi.' });
+                return;
+            }
+
+            const review = {
+                name: req.user.name,
+                rating: Number(rating),
+                comment,
+                user: req.user._id,
+            };
+
+            // Thêm đánh giá mới vào mảng reviews
+            product.reviews.push(review);
+
+            // Cập nhật tổng số lượt đánh giá
+            product.numReviews = product.reviews.length;
+
+            // Cập nhật điểm đánh giá trung bình
+            product.rating =
+                product.reviews.reduce((acc, item) => item.rating + acc, 0) /
+                product.reviews.length;
+
+            await product.save(); // Lưu sản phẩm với đánh giá mới
+            res.status(201).json({ message: 'Đánh giá sản phẩm thành công!' });
+        } else {
+            res.status(404).json({ message: 'Không tìm thấy sản phẩm.' });
+        }
+    } catch (error) {
+        console.error('Lỗi khi tạo đánh giá sản phẩm:', error);
+        if (error.name === 'ValidationError') {
+            const messages = Object.values(error.errors).map(val => val.message);
+            return res.status(400).json({ message: messages.join(', ') });
+        }
+        res.status(500).json({ message: 'Lỗi máy chủ nội bộ khi tạo đánh giá.' });
+    }
+};
+
 module.exports = {
   getAllBonsais,
   getProductById,
@@ -170,4 +226,5 @@ module.exports = {
   getBonsaisByCategory,
   getBonsaisByPriceRange,
   searchBonsais,
+  createProductReview,
 };

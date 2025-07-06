@@ -1,6 +1,26 @@
 // server/models/bonsai.js
 const mongoose = require('mongoose'); // Đảm bảo bạn đã import mongoose
 
+
+
+// Định nghĩa schema cho mỗi đánh giá (Review)
+const reviewSchema = mongoose.Schema(
+    {
+        name: { type: String, required: true }, // Tên người đánh giá
+        rating: { type: Number, required: true }, // Số sao (1-5)
+        comment: { type: String, required: true }, // Nội dung bình luận
+        user: { // Tham chiếu đến người dùng đã đánh giá
+            type: mongoose.Schema.Types.ObjectId,
+            required: true,
+            ref: 'User', // Tham chiếu đến User Model
+        },
+    },
+    {
+        timestamps: true, // Tự động thêm createdAt và updatedAt cho mỗi review
+    }
+);
+
+
 const bonsaiSchema = new mongoose.Schema({
     name: {
         type: String,
@@ -38,7 +58,27 @@ const bonsaiSchema = new mongoose.Schema({
         type: Date,
         default: Date.now,
     },
+
+
+    reviews: [reviewSchema], // Mảng chứa các đánh giá 
+    rating: { // Điểm đánh giá trung bình
+        type: Number,
+        required: true,
+        default: 0,
+    },
+    numReviews: { // Tổng số lượt đánh giá
+        type: Number,
+        required: true,
+        default: 0,
+    },
+
+    createdAt: {
+        type: Date,
+        default: Date.now,
+    },
 });
+
+
 
 const Bonsai = mongoose.model("Bonsai", bonsaiSchema);
 

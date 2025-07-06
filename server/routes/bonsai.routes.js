@@ -1,6 +1,7 @@
 // server/routes/bonsai.routes.js
 const express = require("express");
 const router = express.Router();
+const { protect } = require('../middleware/authMiddleware');
 
 const {
   getAllBonsais,
@@ -10,10 +11,14 @@ const {
   getBonsaiCategories,
   getBonsaisByCategory,
   getBonsaisByPriceRange,
-  searchBonsais
+  searchBonsais,
+  createProductReview,
 } = require("../controllers/bonsaiController");
 //tìm kiếm sản phẩm theo từ khoas
 router.get("/search", searchBonsais);
+
+// Route để tạo đánh giá mới cho sản phẩm (bảo vệ bằng protect)
+router.post('/:id/reviews', protect, createProductReview);
 
 // Route này trả về SẢN PHẨM NỔI BẬT
 router.get("/featured", getFeaturedBonsais);
