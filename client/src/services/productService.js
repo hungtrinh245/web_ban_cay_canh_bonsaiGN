@@ -133,3 +133,14 @@ export const getMyOrders = async (token) => {
         throw new Error(error.response?.data?.message || 'Không thể lấy danh sách đơn hàng.');
     }
 };
+
+// Hàm tìm kiếm sản phẩm theo từ khóa
+export const searchProducts = async (keyword) => {
+    try {
+        const response = await axios.get(`${API_URL}/search?keyword=${keyword}`);
+        return response.data;
+    } catch (error) {
+        console.error('Lỗi khi tìm kiếm sản phẩm:', error);
+        throw error;
+    }
+};

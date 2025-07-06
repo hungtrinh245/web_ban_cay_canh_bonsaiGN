@@ -1,7 +1,8 @@
+// client/src/App.jsx
 import React, { useState } from 'react';
-import { Routes, Route, Link, NavLink, useNavigate, useLocation } from 'react-router-dom'; // Import useLocation
+import { Routes, Route, Link, NavLink, useNavigate, useLocation } from 'react-router-dom'; 
 import HomePage from './pages/HomePage';
-import ProductDetailPage from './pages/ProductDetailPage'; // Đã sửa đường dẫn
+import ProductDetailPage from './pages/ProductDetailPage'; 
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ShopPage from './pages/ShopPage';
@@ -20,8 +21,9 @@ import { useCart } from './context/CartContext';
 // IMPORT CÁC TRANG MỚI KHÁC
 import BlogDetailPage from './pages/BlogDetailPage';
 import AboutPage from './pages/AboutPage'; 
-// DÒNG NÀY RẤT QUAN TRỌNG: ĐẢM BẢO ContactPage ĐƯỢC IMPORT
 import ContactPage from './pages/ContactPage'; 
+// DÒNG NÀY SẼ HẾT NHẠT MÀU KHI ĐƯỢC SỬ DỤNG TRONG <Routes>
+import SearchPage from './pages/SearchPage'; 
 
 
 import { FaShoppingCart, FaUserCircle, FaHome, FaStore, FaInfoCircle, FaPhone, FaNewspaper, FaSearch } from 'react-icons/fa';
@@ -31,10 +33,10 @@ function App() {
     const { isAuthenticated, user, logout } = useAuth();
     const { cartItems } = useCart();
     const navigate = useNavigate();
-    // KHỞI TẠO useLocation Ở ĐÂY
     const location = useLocation(); 
 
-    const [showMiniCart, setShowMiniCart] = useState(false);
+    const [searchTerm, setSearchTerm] = useState(''); // State cho thanh tìm kiếm
+    const [showMiniCart, setShowMiniCart] = useState(false); // State cho mini cart
 
     const totalCartItems = cartItems.reduce((sum, item) => sum + item.qty, 0);
     const miniCartSubtotal = cartItems.reduce((acc, item) => acc + item.qty * item.price, 0);
@@ -54,6 +56,15 @@ function App() {
         // setTimeout(() => setShowMiniCart(false), 3000); 
     };
 
+    const handleSearchSubmit = (e) => {
+        e.preventDefault();
+        if (searchTerm.trim()) {
+            // Chuyển hướng đến trang tìm kiếm với từ khóa
+            navigate(`/search?keyword=${encodeURIComponent(searchTerm.trim())}`); 
+            setSearchTerm(''); // Xóa nội dung thanh tìm kiếm sau khi gửi
+        }
+    };
+
     // --- CÁC STYLE ĐÃ CÓ VÀ ĐƯỢC CHỈNH SỬA CHO HEADER VÀ NAVIGAION ---
 
     const headerTopStyle = { 
@@ -69,7 +80,7 @@ function App() {
         zIndex: 100,
         fontFamily: 'Roboto, sans-serif',
         width: '100%', 
-        boxSizing: 'border-box' 
+        boxSizing: 'border-box'
     };
 
     const logoStyle = {
@@ -224,8 +235,13 @@ function App() {
         const isShopPageActive = path === '/shop' && location.pathname.startsWith('/shop');
         // Kiểm tra nếu path là '/blog', thì active khi path name bắt đầu bằng '/blog'
         const isBlogPageActive = path === '/blog' && location.pathname.startsWith('/blog');
+        // Kiểm tra nếu path là '/contact', thì active khi path name khớp chính xác '/contact'
+        const isContactPageActive = path === '/contact' && location.pathname === '/contact';
+        // Kiểm tra nếu path là '/search', thì active khi path name bắt đầu bằng '/search'
+        const isSearchPageActive = path === '/search' && location.pathname.startsWith('/search');
 
-        const currentlyActive = isActive || isHomePageActive || isShopPageActive || isBlogPageActive;
+
+        const currentlyActive = isActive || isHomePageActive || isShopPageActive || isBlogPageActive || isContactPageActive || isSearchPageActive;
 
         return {
             ...mainNavLinkBaseStyle,
@@ -244,7 +260,10 @@ function App() {
         const isHomePageActive = path === '/' && (location.pathname === '/' || location.pathname === '/home');
         const isShopPageActive = path === '/shop' && location.pathname.startsWith('/shop');
         const isBlogPageActive = path === '/blog' && location.pathname.startsWith('/blog');
-        const currentlyActive = e.currentTarget.dataset.isactive === 'true' || isHomePageActive || isShopPageActive || isBlogPageActive;
+        const isContactPageActive = path === '/contact' && location.pathname === '/contact';
+        const isSearchPageActive = path === '/search' && location.pathname.startsWith('/search');
+
+        const currentlyActive = e.currentTarget.dataset.isactive === 'true' || isHomePageActive || isShopPageActive || isBlogPageActive || isContactPageActive || isSearchPageActive;
 
         if (currentlyActive) {
             Object.assign(e.currentTarget.style, mainNavLinkActiveStyle);
@@ -264,25 +283,27 @@ function App() {
                 
                 {/* Thanh tìm kiếm */}
                 <div style={{ position: 'relative', display: 'flex', alignItems: 'center', flex: 1, maxWidth: '500px', margin: '0 30px' }}>
-                    <input 
-                        type="text" 
-                        placeholder="Tìm kiếm sản phẩm..." 
-                        style={{ 
-                            width: '100%', 
-                            padding: '10px 40px 10px 15px', 
-                            borderRadius: '25px', 
-                            border: '1px solid #555',
-                            background: '#2a2a2a',
-                            color: 'white',
-                            fontSize: '0.95em',
-                            boxSizing: 'border-box'
-                        }} 
-                    />
-                    <FaSearch style={{ 
-                        position: 'absolute', 
-                        right: '15px', 
-                        color: '#aaa' 
-                    }} />
+                    <form onSubmit={handleSearchSubmit} style={{width: '100%'}}> {/* Thêm form để xử lý submit */}
+                        <input 
+                            type="text" 
+                            placeholder="Tìm kiếm sản phẩm..." 
+                            value={searchTerm} 
+                            onChange={(e) => setSearchTerm(e.target.value)} 
+                            style={{ 
+                                width: '100%', 
+                                padding: '10px 40px 10px 15px', 
+                                borderRadius: '25px', 
+                                border: '1px solid #555',
+                                background: '#2a2a2a',
+                                color: 'white',
+                                fontSize: '0.95em',
+                                boxSizing: 'border-box'
+                            }} 
+                        />
+                        <button type="submit" style={{ background: 'none', border: 'none', position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer' }}>
+                            <FaSearch style={{ color: '#aaa', fontSize: '1.1em' }} />
+                        </button>
+                    </form>
                 </div>
 
                 <div style={userActionsStyle}>
@@ -421,15 +442,16 @@ function App() {
                     <Route path="/register" element={<RegisterPage />} />
                     <Route path="/cart" element={<CartPage />} />
                     
-                    {/* ROUTE CHÍNH XÁC CHO TRANG GIỚI THIỆU */}
                     <Route path="/about" element={<AboutPage />} /> 
 
                     <Route path="/contact" element={<ContactPage />} /> 
                     {/* ROUTES CHO BLOG */}
-                    {/* Route cho trang danh sách blog (có thể là một component mới BlogListPage) */}
-                    <Route path="/blog" element={<HomePage />} /> {/* Tạm thời link /blog về HomePage, bạn có thể tạo BlogListPage riêng */}
+                    <Route path="/blog" element={<HomePage />} /> 
                     <Route path="/blog/:id" element={<BlogDetailPage />} /> 
                     
+                    {/* ROUTE CHO TRANG KẾT QUẢ TÌM KIẾM */}
+                    <Route path="/search" element={<SearchPage />} />
+
                     <Route path="/profile" element={<div><h1>Hồ sơ của bạn</h1><p>Trang này sẽ hiển thị thông tin cá nhân của bạn.</p></div>} />
                     <Route path="/checkout" element={<CheckoutPage />} /> 
                     <Route path="/order-success" element={<div><h1>Đặt hàng thành công!</h1><p>Cảm ơn bạn đã mua sắm. Đơn hàng của bạn đang được xử lý.</p><Link to="/">Tiếp tục mua sắm</Link></div>} /> 
