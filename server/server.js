@@ -7,6 +7,7 @@ const authRoutes = require('./routes/authRoutes');
 const couponRoutes = require("./routes/couponRoutes");
 const orderRoutes = require("./routes/orderRoutes");
 const postRoutes = require("./routes/postRoutes");
+const contactRoutes = require("./routes/contactRoutes");
 // Kết nối đến Database
 connectDB(); 
 
@@ -32,6 +33,8 @@ app.use('/api/coupons', couponRoutes);
 app.use('/api/orders', orderRoutes);
 
 app.use('/api/posts', postRoutes);
+
+app.use('/api/contact', contactRoutes);
 
 // Khởi động server sau đó chạy server
 app.listen(PORT, () => {
