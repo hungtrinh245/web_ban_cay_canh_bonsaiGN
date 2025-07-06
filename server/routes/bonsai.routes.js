@@ -10,7 +10,10 @@ const {
   getBonsaiCategories,
   getBonsaisByCategory,
   getBonsaisByPriceRange,
+  searchBonsais
 } = require("../controllers/bonsaiController");
+//tìm kiếm sản phẩm theo từ khoas
+router.get("/search", searchBonsais);
 
 // Route này trả về SẢN PHẨM NỔI BẬT
 router.get("/featured", getFeaturedBonsais);
@@ -32,5 +35,7 @@ router.get("/:id", getProductById);
 
 // Route này trả về SẢN PHẨM LIÊN QUAN
 router.get("/:id/related", getRelatedProducts);
+
+
 
 module.exports = router;

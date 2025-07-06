@@ -139,6 +139,28 @@ const getBonsaisByPriceRange = async (req, res) => {
   }
 };
 
+
+//Search bonsais by keyword
+// @route   GET /api/bonsais/search
+// @access  Public
+const searchBonsais = async (req, res) => {
+    const keyword = req.query.keyword
+        ? {
+              name: {
+                  $regex: req.query.keyword, // Tìm kiếm gần đúng
+                  $options: 'i', // Không phân biệt chữ hoa chữ thường
+              },
+          }
+        : {};
+
+    try {
+        const bonsais = await Bonsai.find({ ...keyword }).sort({ createdAt: -1 });
+        res.json(bonsais);
+    } catch (error) {
+        console.error('Lỗi khi tìm kiếm sản phẩm:', error);
+        res.status(500).json({ message: 'Lỗi máy chủ nội bộ khi tìm kiếm.' });
+    }
+};
 module.exports = {
   getAllBonsais,
   getProductById,
@@ -147,4 +169,5 @@ module.exports = {
   getBonsaiCategories,
   getBonsaisByCategory,
   getBonsaisByPriceRange,
+  searchBonsais,
 };
