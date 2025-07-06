@@ -102,9 +102,41 @@ const getMe = async (req, res) => {
     }
 };
 
+// @desc    Update user profile
+// @route   PUT /api/auth/profile
+// @access  Private
+const updateUserProfile = async (req, res) => {
+    const user = await User.findById(req.user.id); // User ID từ token
+
+    if (user) {
+        user.name = req.body.name || user.name;
+        user.email = req.body.email || user.email;
+        // Thêm cập nhật các trường khác nếu có
+        // user.address = req.body.address || user.address;
+        // user.phone = req.body.phone || user.phone;
+
+        // Nếu có mật khẩu mới, hash nó
+        if (req.body.password) {
+            user.password = req.body.password; // Middleware pre('save') trong User model sẽ hash
+        }
+
+        const updatedUser = await user.save(); // Lưu thay đổi
+
+        res.json({
+            _id: updatedUser._id,
+            name: updatedUser.name,
+            email: updatedUser.email,
+            role: updatedUser.role,
+            token: generateToken(updatedUser._id), // Tạo token mới nếu cập nhật
+        });
+    } else {
+        res.status(404).json({ message: 'Người dùng không tìm thấy.' });
+    }
+};
 
 module.exports = {
     registerUser,
     loginUser,
-    getMe
+    getMe,
+    updateUserProfile,
 };

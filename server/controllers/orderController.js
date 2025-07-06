@@ -102,7 +102,24 @@ const getOrderById = async (req, res) => {
     }
 };
 
+
+// @desc    Get user's own orders
+// @route   GET /api/orders/myorders
+// @access  Private (only for logged in user)
+
+const getMyOrders = async (req, res) => {
+    try {
+        // req.user._id được gắn từ middleware 'protect'
+        const orders = await Order.find({ user: req.user._id }).sort({ createdAt: -1 }); // Sắp xếp mới nhất
+        res.json(orders);
+    } catch (error) {
+        console.error('Lỗi khi lấy đơn hàng của người dùng:', error);
+        res.status(500).json({ message: 'Lỗi máy chủ nội bộ khi lấy đơn hàng của bạn.' });
+    }
+};
+
 module.exports = {
     addOrderItems,
     getOrderById,
+    getMyOrders,
 };
