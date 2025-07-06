@@ -1,14 +1,13 @@
 // client/src/services/productService.js
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5001/api/bonsais';
-const API_URL_COUPONS  = 'http://localhost:5001/api/coupons';
+const API_URL_BONSAIS = 'http://localhost:5001/api/bonsais';
+const API_URL_COUPONS = 'http://localhost:5001/api/coupons';
 const API_URL_ORDERS = 'http://localhost:5001/api/orders';
 
-// Trả về sản phẩm mới nhất
-export const getNewProducts = async () => {
+const getNewProducts = async (page = 1, limit = 8) => {
     try {
-        const response = await axios.get(API_URL);
+        const response = await axios.get(`${API_URL_BONSAIS}?page=${page}&limit=${limit}`);
         return response.data;
     } catch (error) {
         console.error('Lỗi khi lấy sản phẩm mới:', error);
@@ -16,10 +15,9 @@ export const getNewProducts = async () => {
     }
 };
 
-// Trả về sản phẩm nổi bật
-export const getFeaturedProducts = async () => {
+const getFeaturedProducts = async () => {
     try {
-        const response = await axios.get(`${API_URL}/featured`);
+        const response = await axios.get(`${API_URL_BONSAIS}/featured`);
         return response.data;
     } catch (error) {
         console.error('Lỗi khi lấy sản phẩm nổi bật:', error);
@@ -27,10 +25,9 @@ export const getFeaturedProducts = async () => {
     }
 };
 
-// Trả về một sản phẩm theo ID
-export const getProductById = async (id) => {
+const getProductById = async (id) => {
     try {
-        const response = await axios.get(`${API_URL}/${id}`);
+        const response = await axios.get(`${API_URL_BONSAIS}/${id}`);
         return response.data;
     } catch (error) {
         console.error(`Lỗi khi lấy sản phẩm ID ${id}:`, error);
@@ -38,10 +35,9 @@ export const getProductById = async (id) => {
     }
 };
 
-// Trả về các sản phẩm liên quan
-export const getRelatedProducts = async (id) => {
+const getRelatedProducts = async (id) => {
     try {
-        const response = await axios.get(`${API_URL}/${id}/related`);
+        const response = await axios.get(`${API_URL_BONSAIS}/${id}/related`);
         return response.data;
     } catch (error) {
         console.error(`Lỗi khi lấy sản phẩm liên quan cho ID ${id}:`, error);
@@ -49,10 +45,9 @@ export const getRelatedProducts = async (id) => {
     }
 };
 
-// Trả về danh sách các danh mục duy nhất
-export const getCategories = async () => {
+const getCategories = async () => {
     try {
-        const response = await axios.get(`${API_URL}/categories`);
+        const response = await axios.get(`${API_URL_BONSAIS}/categories`);
         return response.data;
     } catch (error) {
         console.error('Lỗi khi lấy danh mục:', error);
@@ -60,10 +55,9 @@ export const getCategories = async () => {
     }
 };
 
-// Trả về các sản phẩm thuộc một danh mục cụ thể
-export const getProductsByCategory = async (categoryName) => {
+const getProductsByCategory = async (categoryName, page = 1, limit = 8) => {
     try {
-        const response = await axios.get(`${API_URL}/category/${categoryName}`);
+        const response = await axios.get(`${API_URL_BONSAIS}/category/${categoryName}?page=${page}&limit=${limit}`);
         return response.data;
     } catch (error) {
         console.error(`Lỗi khi lấy sản phẩm theo danh mục ${categoryName}:`, error);
@@ -71,11 +65,10 @@ export const getProductsByCategory = async (categoryName) => {
     }
 };
 
-// Hàm mới để lấy sản phẩm theo khoảng giá và danh mục
- export const getProductsByPriceRange = async (minPrice, maxPrice, category) => {
+const getProductsByPriceRange = async (minPrice, maxPrice, category, page = 1, limit = 8) => {
     try {
-        let url = `${API_URL}/filter-products?min=${minPrice}&max=${maxPrice}`;
-        if (category) {
+        let url = `${API_URL_BONSAIS}/filter-products?min=${minPrice}&max=${maxPrice}&page=${page}&limit=${limit}`;
+        if (category && category !== 'null' && category !== 'undefined') {
             url += `&category=${category}`;
         }
         const response = await axios.get(url);
@@ -86,31 +79,38 @@ export const getProductsByCategory = async (categoryName) => {
     }
 };
 
-export const applyCoupon = async (code, cartTotal) => {
+const searchProducts = async (keyword, page = 1, limit = 8) => {
+    try {
+        const response = await axios.get(`${API_URL_BONSAIS}/search?keyword=${keyword}&page=${page}&limit=${limit}`);
+        return response.data;
+    } catch (error) {
+        console.error('Lỗi khi tìm kiếm sản phẩm:', error);
+        throw error;
+    }
+};
+
+const applyCoupon = async (code, cartTotal) => {
     try {
         const response = await axios.post(`${API_URL_COUPONS}/apply`, { code, cartTotal });
-        return response.data; // Trả về { message, discountAmount, couponCode, newTotal }
+        return response.data;
     } catch (error) {
         console.error('Lỗi khi áp dụng mã ưu đãi:', error.response?.data?.message || error.message);
         throw new Error(error.response?.data?.message || 'Áp dụng mã ưu đãi thất bại.');
     }
 };
 
-// Hàm để đặt hàng
-export const createOrder = async (orderData, token) => {
+const createOrder = async (orderData, token) => {
     try {
         const config = {
             headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`, // Gửi token nếu người dùng đăng nhập
+                ...(token && { Authorization: `Bearer ${token}` }), 
             },
         };
-        // orderData đã bao gồm tất cả các thông tin cần thiết
         const response = await axios.post(API_URL_ORDERS, orderData, config);
-        return response.data; // Trả về thông tin đơn hàng đã tạo
+        return response.data;
     } catch (error) {
         console.error('Lỗi khi đặt hàng:', error.response?.data?.message || error.message);
-        // Kiểm tra lỗi tồn kho cụ thể
         if (error.response && error.response.status === 400 && error.response.data.message.includes("không đủ số lượng tồn kho")) {
              throw new Error(error.response.data.message);
         }
@@ -118,8 +118,7 @@ export const createOrder = async (orderData, token) => {
     }
 };
 
-// Hàm  để lấy các đơn hàng của người dùng hiện tại
-export const getMyOrders = async (token) => {
+const getMyOrders = async (token) => {
     try {
         const config = {
             headers: {
@@ -134,19 +133,8 @@ export const getMyOrders = async (token) => {
     }
 };
 
-// Hàm tìm kiếm sản phẩm theo từ khóa
-export const searchProducts = async (keyword) => {
-    try {
-        const response = await axios.get(`${API_URL}/search?keyword=${keyword}`);
-        return response.data;
-    } catch (error) {
-        console.error('Lỗi khi tìm kiếm sản phẩm:', error);
-        throw error;
-    }
-};
-
-// Hàm  để gửi đánh giá sản phẩm
-export const createProductReview = async (productId, reviewData, token) => {
+// Đảm bảo hàm createProductReview được định nghĩa với 'const' hoặc 'function'
+const createProductReview = async (productId, reviewData, token) => { 
     try {
         const config = {
             headers: {
@@ -154,10 +142,25 @@ export const createProductReview = async (productId, reviewData, token) => {
                 Authorization: `Bearer ${token}`,
             },
         };
-        const response = await axios.post(`${API_URL}/${productId}/reviews`, reviewData, config);
-        return response.data; // Trả về thông báo thành công
+        const response = await axios.post(`${API_URL_BONSAIS}/${productId}/reviews`, reviewData, config);
+        return response.data; 
     } catch (error) {
         console.error('Lỗi khi gửi đánh giá sản phẩm:', error.response?.data?.message || error.message);
         throw new Error(error.response?.data?.message || 'Gửi đánh giá thất bại');
     }
+};
+
+export {
+    getNewProducts,
+    getFeaturedProducts,
+    getProductById,
+    getRelatedProducts,
+    getCategories,
+    getProductsByCategory,
+    getProductsByPriceRange,
+    searchProducts,
+    applyCoupon,
+    createOrder,
+    getMyOrders,
+    createProductReview, 
 };
