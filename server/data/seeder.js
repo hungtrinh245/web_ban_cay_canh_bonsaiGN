@@ -257,7 +257,7 @@ const postData = [
         title: 'Bí quyết chọn chậu phù hợp cho từng loại cây',
         excerpt: 'Chậu cây không chỉ là nơi chứa đất mà còn là yếu tố quan trọng ảnh hưởng đến sức khỏe cây và tính thẩm mỹ.',
         content: 'Việc lựa chọn chậu cây tưởng chừng đơn giản nhưng lại rất quan trọng. Một chiếc chậu phù hợp sẽ giúp cây phát triển tốt, thoát nước hiệu quả và tăng thêm vẻ đẹp cho không gian. Bài viết này sẽ hướng dẫn bạn cách chọn chậu dựa trên chất liệu, kích thước, hình dáng và mục đích sử dụng, đảm bảo cây của bạn luôn khỏe mạnh và đẹp mắt.',
-        image: '/images/blog-pots.jpg', 
+        image: '/images/bi-quyet-chon-chau-cay.jpg', 
         category: 'Mẹo chăm sóc',
         tags: ['chậu cây', 'phụ kiện'],
     },

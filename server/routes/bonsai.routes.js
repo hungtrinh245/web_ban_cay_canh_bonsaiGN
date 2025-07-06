@@ -1,46 +1,37 @@
 // server/routes/bonsai.routes.js
 const express = require("express");
 const router = express.Router();
-const { protect } = require('../middleware/authMiddleware');
+const { protect } = require('../middleware/authMiddleware'); // Middleware bảo vệ route
 
 const {
-  getAllBonsais,
-  getProductById,
-  getRelatedProducts,
-  getFeaturedBonsais,
-  getBonsaiCategories,
-  getBonsaisByCategory,
-  getBonsaisByPriceRange,
-  searchBonsais,
-  createProductReview,
-} = require("../controllers/bonsaiController");
-//tìm kiếm sản phẩm theo từ khoas
-router.get("/search", searchBonsais);
+    getAllBonsais,
+    getProductById,
+    getRelatedProducts,
+    getFeaturedBonsais,
+    getBonsaiCategories,
+    getBonsaisByCategory,
+    getBonsaisByPriceRange,
+    searchBonsais, 
+    createProductReview, 
+} = require('../controllers/bonsaiController');
+
+// ĐẶT CÁC ROUTE CỤ THỂ HƠN LÊN TRÊN CÁC ROUTE TỔNG QUÁT (:id)
+router.get("/featured", getFeaturedBonsais);
+router.get("/categories", getBonsaiCategories);
+
+// Các route có tham số query (filter, search) thường nên đứng trước các route có param (:id)
+router.get("/category/:categoryName", getBonsaisByCategory);
+router.get("/filter-products", getBonsaisByPriceRange);
+router.get("/search", searchBonsais); // trc /:id
+router.get("/", getAllBonsais); 
+
+// Route cho một sản phẩm theo ID (phải ở dưới cùng của các route bonsai chính)
+router.get("/:id", getProductById);
+
+// Route cho sản phẩm liên quan (phải ở dưới cùng vì nó cũng có :id)
+router.get("/:id/related", getRelatedProducts);
 
 // Route để tạo đánh giá mới cho sản phẩm (bảo vệ bằng protect)
 router.post('/:id/reviews', protect, createProductReview);
-
-// Route này trả về SẢN PHẨM NỔI BẬT
-router.get("/featured", getFeaturedBonsais);
-
-// Route này trả về DANH SÁCH CÁC CATEGORY
-router.get("/categories", getBonsaiCategories);
-
-// Route này trả về SẢN PHẨM THEO CATEGORY
-router.get("/category/:categoryName", getBonsaisByCategory);
-
-// Route này trả về SẢN PHẨM THEO KHOẢNG GIÁ VÀ DANH MỤC
-router.get("/filter-products", getBonsaisByPriceRange);
-
-// Route này trả về SẢN PHẨM MỚI
-router.get("/", getAllBonsais);
-
-// Route này trả về MỘT SẢN PHẨM THEO ID
-router.get("/:id", getProductById);
-
-// Route này trả về SẢN PHẨM LIÊN QUAN
-router.get("/:id/related", getRelatedProducts);
-
-
 
 module.exports = router;
