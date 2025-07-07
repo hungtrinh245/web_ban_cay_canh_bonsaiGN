@@ -22,8 +22,11 @@ import { useCart } from './context/CartContext';
 import BlogDetailPage from './pages/BlogDetailPage';
 import AboutPage from './pages/AboutPage'; 
 import ContactPage from './pages/ContactPage'; 
-// DÒNG NÀY SẼ HẾT NHẠT MÀU KHI ĐƯỢC SỬ DỤNG TRONG <Routes>
 import SearchPage from './pages/SearchPage'; 
+import ProfilePage from './pages/ProfilePage'; 
+import AdminDashboardPage from './pages/AdminDashboardPage'; 
+// DÒNG NÀY RẤT QUAN TRỌNG: ĐẢM BẢO ProductManagement ĐƯỢC IMPORT
+import ProductManagement from './components/admin/ProductManagement'; 
 
 
 import { FaShoppingCart, FaUserCircle, FaHome, FaStore, FaInfoCircle, FaPhone, FaNewspaper, FaSearch } from 'react-icons/fa';
@@ -35,8 +38,8 @@ function App() {
     const navigate = useNavigate();
     const location = useLocation(); 
 
-    const [searchTerm, setSearchTerm] = useState(''); // State cho thanh tìm kiếm
-    const [showMiniCart, setShowMiniCart] = useState(false); // State cho mini cart
+    const [searchTerm, setSearchTerm] = useState(''); 
+    const [showMiniCart, setShowMiniCart] = useState(false); 
 
     const totalCartItems = cartItems.reduce((sum, item) => sum + item.qty, 0);
     const miniCartSubtotal = cartItems.reduce((acc, item) => acc + item.qty * item.price, 0);
@@ -59,9 +62,8 @@ function App() {
     const handleSearchSubmit = (e) => {
         e.preventDefault();
         if (searchTerm.trim()) {
-            // Chuyển hướng đến trang tìm kiếm với từ khóa
             navigate(`/search?keyword=${encodeURIComponent(searchTerm.trim())}`); 
-            setSearchTerm(''); // Xóa nội dung thanh tìm kiếm sau khi gửi
+            setSearchTerm(''); 
         }
     };
 
@@ -80,7 +82,7 @@ function App() {
         zIndex: 100,
         fontFamily: 'Roboto, sans-serif',
         width: '100%', 
-        boxSizing: 'border-box'
+        boxSizing: 'border-box' 
     };
 
     const logoStyle = {
@@ -202,15 +204,15 @@ function App() {
         gap: '35px',
     };
 
-    const mainNavLinkBaseStyle = { // Style cơ bản cho NavLink
+    const mainNavLinkBaseStyle = { 
         color: 'white',
         textDecoration: 'none',
         fontSize: '1.05rem',
         fontWeight: '500',
         padding: '5px 10px',
         position: 'relative',
-        transition: 'color 0.3s ease, border-bottom 0.3s ease, padding-bottom 0.3s ease', // Thêm transition cho border-bottom
-        display: 'flex', // Để icon và text thẳng hàng
+        transition: 'color 0.3s ease, border-bottom 0.3s ease, padding-bottom 0.3s ease', 
+        display: 'flex',
         alignItems: 'center',
         gap: '5px'
     };
@@ -219,7 +221,6 @@ function App() {
         color: '#f0f0f0',
     };
 
-    // Style khi NavLink đang active
     const mainNavLinkActiveStyle = {
         fontWeight: 'bold',
         color: 'white', 
@@ -227,21 +228,15 @@ function App() {
         paddingBottom: '2px', 
     };
     
-    // Helper function cho NavLink style (sử dụng location.pathname để so khớp)
     const getNavLinkStyle = (path) => ({ isActive }) => {
-        // Kiểm tra nếu path là '/', thì active khi path name là '/' hoặc '/home'
         const isHomePageActive = path === '/' && (location.pathname === '/' || location.pathname === '/home');
-        // Kiểm tra nếu path là '/shop', thì active khi path name bắt đầu bằng '/shop'
         const isShopPageActive = path === '/shop' && location.pathname.startsWith('/shop');
-        // Kiểm tra nếu path là '/blog', thì active khi path name bắt đầu bằng '/blog'
         const isBlogPageActive = path === '/blog' && location.pathname.startsWith('/blog');
-        // Kiểm tra nếu path là '/contact', thì active khi path name khớp chính xác '/contact'
         const isContactPageActive = path === '/contact' && location.pathname === '/contact';
-        // Kiểm tra nếu path là '/search', thì active khi path name bắt đầu bằng '/search'
         const isSearchPageActive = path === '/search' && location.pathname.startsWith('/search');
+        const isAdminPageActive = path === '/admin' && location.pathname.startsWith('/admin'); 
 
-
-        const currentlyActive = isActive || isHomePageActive || isShopPageActive || isBlogPageActive || isContactPageActive || isSearchPageActive;
+        const currentlyActive = isActive || isHomePageActive || isShopPageActive || isBlogPageActive || isContactPageActive || isSearchPageActive || isAdminPageActive;
 
         return {
             ...mainNavLinkBaseStyle,
@@ -249,21 +244,20 @@ function App() {
         };
     };
 
-    // Helper functions for hover effects (sử dụng cho Link và NavLink)
     const applyHoverStyle = (e, style) => {
         Object.assign(e.currentTarget.style, style);
     };
 
     const removeHoverStyle = (e, initialStyle) => {
-        // Đối với NavLink, cần giữ lại active style nếu đang active
         const path = e.currentTarget.getAttribute('to');
         const isHomePageActive = path === '/' && (location.pathname === '/' || location.pathname === '/home');
         const isShopPageActive = path === '/shop' && location.pathname.startsWith('/shop');
         const isBlogPageActive = path === '/blog' && location.pathname.startsWith('/blog');
         const isContactPageActive = path === '/contact' && location.pathname === '/contact';
         const isSearchPageActive = path === '/search' && location.pathname.startsWith('/search');
+        const isAdminPageActive = path === '/admin' && location.pathname.startsWith('/admin'); 
 
-        const currentlyActive = e.currentTarget.dataset.isactive === 'true' || isHomePageActive || isShopPageActive || isBlogPageActive || isContactPageActive || isSearchPageActive;
+        const currentlyActive = e.currentTarget.dataset.isactive === 'true' || isHomePageActive || isShopPageActive || isBlogPageActive || isContactPageActive || isSearchPageActive || isAdminPageActive;
 
         if (currentlyActive) {
             Object.assign(e.currentTarget.style, mainNavLinkActiveStyle);
@@ -283,7 +277,7 @@ function App() {
                 
                 {/* Thanh tìm kiếm */}
                 <div style={{ position: 'relative', display: 'flex', alignItems: 'center', flex: 1, maxWidth: '500px', margin: '0 30px' }}>
-                    <form onSubmit={handleSearchSubmit} style={{width: '100%'}}> {/* Thêm form để xử lý submit */}
+                    <form onSubmit={handleSearchSubmit} style={{width: '100%'}}>
                         <input 
                             type="text" 
                             placeholder="Tìm kiếm sản phẩm..." 
@@ -342,6 +336,7 @@ function App() {
 
                     {isAuthenticated ? (
                         <>
+                            {/* Link đến trang Hồ sơ (Profile) */}
                             <Link
                                 to="/profile" 
                                 style={navLinkStyle}
@@ -350,6 +345,17 @@ function App() {
                             >
                                 <FaUserCircle size={18} /> Chào, {user.name}
                             </Link>
+                            {/* Hiển thị link Admin nếu là admin */}
+                            {user && user.role === 'admin' && (
+                                <Link
+                                    to="/admin"
+                                    style={navLinkStyle}
+                                    onMouseOver={(e) => applyHoverStyle(e, navLinkHoverStyle)}
+                                    onMouseOut={(e) => removeHoverStyle(e, navLinkStyle)}
+                                >
+                                    Admin
+                                </Link>
+                            )}
                             <button
                                 onClick={handleLogout}
                                 style={buttonStyle}
@@ -388,16 +394,15 @@ function App() {
                     {/* DÙNG NavLink VÀ getNavLinkStyle */}
                     <NavLink
                         to="/"
-                        style={getNavLinkStyle('/')} // Truyền path cho helper
+                        style={getNavLinkStyle('/')} 
                         onMouseOver={(e) => applyHoverStyle(e, mainNavLinkHoverStyle)}
                         onMouseOut={(e) => removeHoverStyle(e, mainNavLinkBaseStyle)}
-                        // data-isactive được đặt trong getNavLinkStyle nếu cần tùy chỉnh logic active
                     >
                         <FaHome /> Trang chủ
                     </NavLink>
                     <NavLink
                         to="/shop"
-                        style={getNavLinkStyle('/shop')} // Truyền path cho helper
+                        style={getNavLinkStyle('/shop')} 
                         onMouseOver={(e) => applyHoverStyle(e, mainNavLinkHoverStyle)}
                         onMouseOut={(e) => removeHoverStyle(e, mainNavLinkBaseStyle)}
                     >
@@ -405,7 +410,7 @@ function App() {
                     </NavLink>
                     <NavLink
                         to="/about"
-                        style={getNavLinkStyle('/about')} // Truyền path cho helper
+                        style={getNavLinkStyle('/about')} 
                         onMouseOver={(e) => applyHoverStyle(e, mainNavLinkHoverStyle)}
                         onMouseOut={(e) => removeHoverStyle(e, mainNavLinkBaseStyle)}
                     >
@@ -413,7 +418,7 @@ function App() {
                     </NavLink>
                     <NavLink
                         to="/contact"
-                        style={getNavLinkStyle('/contact')} // Truyền path cho helper
+                        style={getNavLinkStyle('/contact')} 
                         onMouseOver={(e) => applyHoverStyle(e, mainNavLinkHoverStyle)}
                         onMouseOut={(e) => removeHoverStyle(e, mainNavLinkBaseStyle)}
                     >
@@ -421,7 +426,7 @@ function App() {
                     </NavLink>
                     <NavLink
                         to="/blog" 
-                        style={getNavLinkStyle('/blog')} // Truyền path cho helper
+                        style={getNavLinkStyle('/blog')} 
                         onMouseOver={(e) => applyHoverStyle(e, mainNavLinkHoverStyle)}
                         onMouseOut={(e) => removeHoverStyle(e, mainNavLinkBaseStyle)}
                     >
@@ -452,7 +457,17 @@ function App() {
                     {/* ROUTE CHO TRANG KẾT QUẢ TÌM KIẾM */}
                     <Route path="/search" element={<SearchPage />} />
 
-                    <Route path="/profile" element={<div><h1>Hồ sơ của bạn</h1><p>Trang này sẽ hiển thị thông tin cá nhân của bạn.</p></div>} />
+                    <Route path="/profile" element={<ProfilePage />} />
+
+                    {/* ROUTE ADMIN DASHBOARD */}
+                    {/* Sử dụng một route wrapper để AdminDashboardPage có thể kiểm tra quyền truy cập */}
+                    <Route path="/admin/*" element={<AdminDashboardPage />}>
+                        {/* Các route con của admin sẽ được định nghĩa trong AdminDashboardPage */}
+                         <Route path="products" element={<ProductManagement />} /> 
+                         {/* Thêm các route con khác tại đây sau này (users, orders, coupons, posts) */}
+                    </Route>
+
+
                     <Route path="/checkout" element={<CheckoutPage />} /> 
                     <Route path="/order-success" element={<div><h1>Đặt hàng thành công!</h1><p>Cảm ơn bạn đã mua sắm. Đơn hàng của bạn đang được xử lý.</p><Link to="/">Tiếp tục mua sắm</Link></div>} /> 
 

@@ -49,7 +49,7 @@ const CartPage = () => {
   };
 
   const pageTitleStyle = {
-    fontSize: "2.5em",
+    fontSize: "2.0em",
     fontWeight: "bold",
     color: "#2c3e50",
     marginBottom: "15px", // Đã điều chỉnh
@@ -356,7 +356,7 @@ const CartPage = () => {
   };
 
   const emptyCartMessageStyle = {
-    fontSize: "1.5em",
+    fontSize: "1.0em",
     color: "#555",
     marginBottom: "30px",
   };
@@ -368,7 +368,7 @@ const CartPage = () => {
     border: "none",
     borderRadius: "8px",
     textDecoration: "none",
-    fontSize: "1.1em",
+    fontSize: "0.8em",
     fontWeight: "bold",
     transition: "background-color 0.3s ease, transform 0.2s",
     "&:hover": {
