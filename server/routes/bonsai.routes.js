@@ -1,7 +1,8 @@
 // server/routes/bonsai.routes.js
 const express = require("express");
 const router = express.Router();
-const { protect } = require('../middleware/authMiddleware'); // Middleware bảo vệ route
+// DÒNG NÀY RẤT QUAN TRỌNG: ĐẢM BẢO protect VÀ authorize ĐƯỢC IMPORT
+const { protect, authorize } = require('../middleware/authMiddleware'); 
 
 const {
     getAllBonsais,
@@ -13,25 +14,28 @@ const {
     getBonsaisByPriceRange,
     searchBonsais, 
     createProductReview, 
+    createBonsai,
+    updateBonsai,
+    deleteBonsai,
 } = require('../controllers/bonsaiController');
 
-// ĐẶT CÁC ROUTE CỤ THỂ HƠN LÊN TRÊN CÁC ROUTE TỔNG QUÁT (:id)
+// --- CÁC ROUTE CÔNG KHAI (Public Routes) ---
 router.get("/featured", getFeaturedBonsais);
 router.get("/categories", getBonsaiCategories);
-
-// Các route có tham số query (filter, search) thường nên đứng trước các route có param (:id)
 router.get("/category/:categoryName", getBonsaisByCategory);
 router.get("/filter-products", getBonsaisByPriceRange);
-router.get("/search", searchBonsais); // trc /:id
+router.get("/search", searchBonsais);
 router.get("/", getAllBonsais); 
-
-// Route cho một sản phẩm theo ID (phải ở dưới cùng của các route bonsai chính)
-router.get("/:id", getProductById);
-
-// Route cho sản phẩm liên quan (phải ở dưới cùng vì nó cũng có :id)
+router.get("/:id", getProductById); 
 router.get("/:id/related", getRelatedProducts);
 
-// Route để tạo đánh giá mới cho sản phẩm (bảo vệ bằng protect)
+// --- ROUTE ĐẶT BIỆT CHO ĐÁNH GIÁ (cần bảo vệ) ---
 router.post('/:id/reviews', protect, createProductReview);
+
+// --- CÁC ROUTE QUẢN LÝ CHO ADMIN (Protected & Authorized Routes) ---
+// Yêu cầu đăng nhập (protect) và phải có vai trò 'admin' (authorize('admin'))
+router.post('/', protect, authorize('admin'), createBonsai); // Tạo sản phẩm
+router.put('/:id', protect, authorize('admin'), updateBonsai); // Cập nhật sản phẩm
+router.delete('/:id', protect, authorize('admin'), deleteBonsai); // Xóa sản phẩm
 
 module.exports = router;

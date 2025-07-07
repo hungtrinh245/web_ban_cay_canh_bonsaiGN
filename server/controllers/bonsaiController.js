@@ -238,6 +238,99 @@ const createProductReview = async (req, res) => {
     }
 };
 
+
+//ADMIN (CRUD Sản phẩm) ---
+
+// @desc    Create a new bonsai product
+// @route   POST /api/bonsais
+// @access  Private/Admin
+const createBonsai = async (req, res) => {
+    try {
+        // Tạo sản phẩm mới với dữ liệu từ req.body
+        const { name, description, price, images, category, stockQuantity, isFeatured } = req.body;
+
+        const bonsai = await Bonsai.create({
+            name,
+            description,
+            price,
+            images, // Mảng các URL hình ảnh
+            category,
+            stockQuantity,
+            isFeatured: isFeatured || false,
+            // rating và numReviews sẽ được tính toán tự động
+        });
+
+        res.status(201).json(bonsai); // Trả về sản phẩm đã tạo
+
+    } catch (error) {
+        console.error('Lỗi khi tạo sản phẩm mới:', error);
+        if (error.name === 'ValidationError') {
+            const messages = Object.values(error.errors).map(val => val.message);
+            return res.status(400).json({ message: messages.join(', ') });
+        }
+        res.status(500).json({ message: 'Lỗi máy chủ nội bộ khi tạo sản phẩm.' });
+    }
+};
+
+// @desc    Update a bonsai product
+// @route   PUT /api/bonsais/:id
+// @access  Private/Admin
+const updateBonsai = async (req, res) => {
+    const { name, description, price, images, category, stockQuantity, isFeatured } = req.body;
+    const productId = req.params.id;
+
+    try {
+        const bonsai = await Bonsai.findById(productId);
+
+        if (bonsai) {
+            bonsai.name = name || bonsai.name;
+            bonsai.description = description || bonsai.description;
+            bonsai.price = price || bonsai.price;
+            bonsai.images = images || bonsai.images; // Cập nhật toàn bộ mảng ảnh
+            bonsai.category = category || bonsai.category;
+            bonsai.stockQuantity = stockQuantity !== undefined ? stockQuantity : bonsai.stockQuantity;
+            bonsai.isFeatured = isFeatured !== undefined ? isFeatured : bonsai.isFeatured;
+
+            const updatedBonsai = await bonsai.save();
+            res.json(updatedBonsai);
+        } else {
+            res.status(404).json({ message: 'Không tìm thấy sản phẩm để cập nhật.' });
+        }
+    } catch (error) {
+        console.error('Lỗi khi cập nhật sản phẩm:', error);
+        if (error.name === 'ValidationError') {
+            const messages = Object.values(error.errors).map(val => val.message);
+            return res.status(400).json({ message: messages.join(', ') });
+        }
+        res.status(500).json({ message: 'Lỗi máy chủ nội bộ khi cập nhật sản phẩm.' });
+    }
+};
+
+// @desc    Delete a bonsai product
+// @route   DELETE /api/bonsais/:id
+// @access  Private/Admin
+const deleteBonsai = async (req, res) => {
+    const productId = req.params.id;
+
+    try {
+        const bonsai = await Bonsai.findById(productId);
+
+        if (bonsai) {
+            await Bonsai.deleteOne({ _id: productId }); // Sử dụng deleteOne() với điều kiện
+            res.json({ message: 'Sản phẩm đã được xóa thành công.' });
+        } else {
+            res.status(404).json({ message: 'Không tìm thấy sản phẩm để xóa.' });
+        }
+    } catch (error) {
+        console.error('Lỗi khi xóa sản phẩm:', error);
+        if (error.name === 'CastError') {
+            return res.status(400).json({ message: 'ID sản phẩm không hợp lệ.' });
+        }
+        res.status(500).json({ message: 'Lỗi máy chủ nội bộ khi xóa sản phẩm.' });
+    }
+};
+
+
 module.exports = {
     getAllBonsais,
     getProductById,
@@ -248,4 +341,7 @@ module.exports = {
     getBonsaisByPriceRange,
     searchBonsais,
     createProductReview,
+    createBonsai, 
+    updateBonsai, 
+    deleteBonsai,
 };
