@@ -223,11 +223,25 @@ const getMyOrders = async (token) => {
 };
 
 
-// =========================================================
-// DÒNG EXPORT CUỐI CÙNG: ĐẢM BẢO TẤT CẢ CÁC HÀM ĐƯỢC LIỆT KÊ CHỈ MỘT LẦN VÀ ĐÚNG CHÍNH TẢ
-// =========================================================
+// Lấy chi tiết đơn hàng theo ID 
+const getOrderById = async (id, token) => {
+    try {
+        const config = {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        };
+        const response = await axios.get(`${API_URL_ORDERS}/${id}`, config);
+        return response.data;
+    } catch (error) {
+        console.error(`Lỗi khi lấy đơn hàng ID ${id}:`, error.response?.data?.message || error.message);
+        throw new Error(error.response?.data?.message || 'Không thể lấy chi tiết đơn hàng.');
+    }
+};
+
+
 export {
-    getAllBonsais, // <-- ĐẢM BẢO HÀM NÀY ĐƯỢC EXPORT TẠI ĐÂY
+    getAllBonsais,
     getNewProducts,
     getFeaturedProducts,
     getProductById,
@@ -242,5 +256,6 @@ export {
     createProductReview,
     createBonsai, 
     updateBonsai, 
-    deleteBonsai, 
+    deleteBonsai,
+    getOrderById,
 };

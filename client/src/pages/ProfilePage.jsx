@@ -1,24 +1,28 @@
 // client/src/pages/ProfilePage.jsx
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom'; // <-- ĐẢM BẢO Link ĐƯỢC IMPORT
 import { useAuth } from '../context/AuthContext';
-import { updateProfile } from '../services/authService'; // Để cập nhật profile
-import { getMyOrders } from '../services/productService'; // Để lấy đơn hàng
+import { updateProfile } from '../services/authService'; 
+import { getMyOrders } from '../services/productService'; 
 
 const ProfilePage = () => {
-    const { user, token, logout, login } = useAuth(); // Lấy token và hàm login để cập nhật context sau khi update
+    const { user, token, logout, login } = useAuth(); 
+    // Khởi tạo state với giá trị mặc định từ user nếu có
     const [name, setName] = useState(user ? user.name : '');
     const [email, setEmail] = useState(user ? user.email : '');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
-    const [message, setMessage] = useState('');
-    const [profileLoading, setProfileLoading] = useState(false);
+    const [message, setMessage] = useState(''); // Thông báo cho người dùng
+    const [profileLoading, setProfileLoading] = useState(false); // Loading cho form profile
+
+    // States cho lịch sử đơn hàng
     const [orders, setOrders] = useState([]);
     const [ordersLoading, setOrdersLoading] = useState(true);
     const [ordersError, setOrdersError] = useState(null);
 
     // Fetch orders when component mounts or token changes
     useEffect(() => {
-        if (token) {
+        if (token) { // Chỉ fetch nếu có token (người dùng đã đăng nhập)
             const fetchOrders = async () => {
                 try {
                     setOrdersLoading(true);
@@ -26,18 +30,24 @@ const ProfilePage = () => {
                     setOrders(userOrders);
                 } catch (err) {
                     console.error("Lỗi khi tải đơn hàng:", err);
-                    setOrdersError('Không thể tải lịch sử đơn hàng.');
+                    setOrdersError(err.message || 'Không thể tải lịch sử đơn hàng.');
                 } finally {
                     setOrdersLoading(false);
                 }
             };
             fetchOrders();
+        } else {
+            // Nếu không có token, reset orders và thông báo
+            setOrders([]);
+            setOrdersLoading(false);
+            setOrdersError('Vui lòng đăng nhập để xem lịch sử đơn hàng.');
         }
-    }, [token]);
+    }, [token]); // Dependency: chạy lại khi token thay đổi
 
+    // Xử lý cập nhật hồ sơ
     const handleUpdateProfile = async (e) => {
         e.preventDefault();
-        setMessage('');
+        setMessage(''); // Reset thông báo
 
         if (password !== confirmPassword) {
             setMessage('Mật khẩu xác nhận không khớp!');
@@ -47,17 +57,19 @@ const ProfilePage = () => {
         try {
             setProfileLoading(true);
             const updatedUserData = { name, email };
-            if (password) {
+            if (password) { // Chỉ gửi password nếu người dùng nhập
                 updatedUserData.password = password;
             }
-
+            
             const data = await updateProfile(updatedUserData, token);
-            login(data, data.token); // Cập nhật AuthContext với thông tin mới
+            login(data, data.token); // Cập nhật AuthContext với thông tin mới (quan trọng để header cập nhật tên)
             setMessage('Cập nhật hồ sơ thành công!');
+            // Xóa mật khẩu sau khi cập nhật
             setPassword('');
             setConfirmPassword('');
         } catch (err) {
             setMessage(err.message || 'Cập nhật hồ sơ thất bại!');
+            console.error("Update profile error:", err);
         } finally {
             setProfileLoading(false);
         }
@@ -326,7 +338,7 @@ const ProfilePage = () => {
                                         <td style={orderTableCellStyle}>
                                             {order.isDelivered ? 
                                                 <span style={{color: 'green', fontWeight: 'bold'}}>Đã giao</span> : 
-                                                <span style={{color: 'orange', fontWeight: 'bold'}}>Đang giao</span>
+                                                <span style={{color: 'orange', fontWeight: 'bold'}}>Đang xử lý</span>
                                             }
                                         </td>
                                         <td style={orderTableCellLinkStyle}>

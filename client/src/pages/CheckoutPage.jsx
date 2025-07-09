@@ -2,46 +2,45 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
-import { useAuth } from '../context/AuthContext';
-// import { placeOrder } from '../services/orderService'; 
+import { useAuth } from '../context/AuthContext'; 
+import { createOrder } from '../services/productService'; 
 
 const CheckoutPage = () => {
     const navigate = useNavigate();
-    // Đảm bảo clearCart được lấy ra đúng cách từ useCart()
     const { cartItems, clearCart } = useCart(); 
-    const { user, isAuthenticated } = useAuth();
+    const { user, isAuthenticated, token } = useAuth(); 
 
-    // States cho thông tin giao hàng & thanh toán
     const [firstName, setFirstName] = useState(user ? (user.name ? user.name.split(' ')[0] : '') : ''); 
-    const [lastName, setLastName] = useState(user ? (user.name ? user.name.split(' ').slice(1).join(' ') : '') : '');
-    const [company, setCompany] = useState('');
-    const [country, setCountry] = useState('Việt Nam');
-    const [address, setAddress] = useState('');
-    const [postalCode, setPostalCode] = useState('');
-    const [city, setCity] = useState('');
-    const [phone, setPhone] = useState('');
+    const [lastName, setLastName] = useState(user ? (user.name ? user.name.split(' ').slice(1).join(' ') : '') : ''); 
+    const [company, setCompany] = useState('');     
+    const [country, setCountry] = useState('Việt Nam'); 
+    const [address, setAddress] = useState('');     
+    const [postalCode, setPostalCode] = useState(''); 
+    const [city, setCity] = useState(''); 
+    const [phone, setPhone] = useState(''); 
     const [email, setEmail] = useState(user ? user.email : '');
 
-    const [createAccount, setCreateAccount] = useState(false);
-    const [shipToDifferentAddress, setShipToDifferentAddress] = useState(false);
-    const [notes, setNotes] = useState('');
+    const [createAccount, setCreateAccount] = useState(false); 
+    const [shipToDifferentAddress, setShipToDifferentAddress] = useState(false); 
+    const [notes, setNotes] = useState(''); 
 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
     const [discountAmount] = useState(0); 
 
+    const [paymentMethod, setPaymentMethod] = useState('cod'); 
+
     const subtotal = cartItems.reduce((acc, item) => acc + item.qty * item.price, 0);
     const shippingFee = subtotal > 500000 ? 0 : 30000;
-    let finalTotal = subtotal + shippingFee - discountAmount;
-    if (finalTotal < 0) finalTotal = 0;
+    let finalTotal = subtotal + shippingFee - discountAmount; 
+    if (finalTotal < 0) finalTotal = 0; 
 
     useEffect(() => {
         if (cartItems.length === 0) {
-            navigate('/cart');
+            navigate('/cart'); 
             return; 
         }
-        // Có thể điền trước thông tin nếu user đã đăng nhập
         if (isAuthenticated && user) {
             setEmail(user.email || ''); 
             if (user.name) {
@@ -49,215 +48,39 @@ const CheckoutPage = () => {
                 setLastName(nameParts.pop() || '');
                 setFirstName(nameParts.join(' ') || '');
             }
-    
         }
     }, [cartItems, navigate, isAuthenticated, user]);
 
 
-   
-    const checkoutContainerStyle = {
-        maxWidth: '1200px',
-        margin: '40px auto',
-        padding: '0 20px',
-        fontFamily: 'Roboto, sans-serif',
-        color: '#333',
-    };
-
-    const pageTitleStyle = {
-        fontSize: '2.8em',
-        fontWeight: 'bold',
-        color: '#2c3e50',
-        marginBottom: '40px',
-        textAlign: 'center',
-        position: 'relative',
-        paddingBottom: '15px',
-    };
-
-    const pageTitleUnderlineStyle = {
-        width: '80px',
-        height: '4px',
-        background: '#28a745',
-        margin: '0 auto',
-        position: 'absolute',
-        bottom: '0',
-        left: '50%',
-        transform: 'translateX(-50%)',
-    };
-
-    const mainContentWrapperStyle = {
-        display: 'flex',
-        gap: '40px',
-        flexWrap: 'wrap',
-        alignItems: 'flex-start',
-    };
-
-    const formColumnStyle = {
-        flex: '1.5 1 550px',
-        padding: '0',
-    };
-
-    const orderSummaryColumnStyle = {
-        flex: '1 1 350px',
-        background: 'white',
-        borderRadius: '12px',
-        boxShadow: '0 8px 30px rgba(0,0,0,0.08)',
-        padding: '30px',
-        height: 'fit-content',
-        position: 'sticky',
-        top: '120px',
-        border: '1px solid #eee',
-    };
-
-    const sectionStyle = {
-        background: 'white',
-        borderRadius: '12px',
-        boxShadow: '0 8px 30px rgba(0,0,0,0.08)',
-        padding: '30px',
-        marginBottom: '30px',
-        border: '1px solid #eee',
-    };
-
-    const sectionTitleStyle = {
-        fontSize: '1.5em',
-        fontWeight: 'bold',
-        color: '#2c3e50',
-        marginBottom: '20px',
-        paddingBottom: '10px',
-        borderBottom: '2px solid #ddd',
-        marginTop: '0',
-    };
-
-    const formGroupStyle = {
-        marginBottom: '15px',
-    };
-
-    const labelStyle = {
-        display: 'block',
-        marginBottom: '5px',
-        fontWeight: 'bold',
-        color: '#555',
-        fontSize: '0.95em',
-    };
-
-    const inputStyle = {
-        width: '100%',
-        padding: '12px',
-        borderRadius: '5px',
-        border: '1px solid #ccc',
-        fontSize: '1em',
-        boxSizing: 'border-box',
-    };
-
-    const selectStyle = {
-        ...inputStyle,
-        background: 'white',
-        cursor: 'pointer',
-    };
-
-    const checkboxGroupStyle = {
-        marginTop: '25px',
-        marginBottom: '25px',
-    };
-
-    const checkboxItemStyle = {
-        display: 'flex',
-        alignItems: 'center',
-        marginBottom: '10px',
-        cursor: 'pointer',
-        fontSize: '0.95em',
-        color: '#555',
-    };
-
-    const checkboxInputStyle = {
-        marginRight: '10px',
-        transform: 'scale(1.2)',
-    };
-
-    const summaryListTitleStyle = {
-        fontSize: '1em',
-        fontWeight: 'bold',
-        color: '#555',
-        paddingBottom: '10px',
-        borderBottom: '1px solid #eee',
-        marginBottom: '15px',
-    };
-
-    const summaryItemRowStyle = {
-        display: 'flex',
-        justifyContent: 'space-between',
-        marginBottom: '8px',
-        fontSize: '0.95em',
-        color: '#333',
-    };
-
-    const summaryTotalsDividerStyle = {
-        borderTop: '1px dashed #ccc',
-        paddingTop: '15px',
-        marginTop: '15px',
-        marginBottom: '15px',
-    };
-
-    const summaryRowStyle = {
-        display: 'flex',
-        justifyContent: 'space-between',
-        marginBottom: '10px',
-        fontSize: '1.1em',
-        color: '#555',
-    };
-
-    const summaryTotalRowStyle = {
-        ...summaryRowStyle,
-        marginTop: '15px',
-        paddingTop: '15px',
-        borderTop: '2px solid #28a745',
-        fontSize: '1.4em',
-        fontWeight: 'bold',
-        color: '#28a745',
-    };
-
-    const placeOrderButtonStyle = {
-        width: '100%',
-        padding: '18px',
-        background: '#28a745',
-        color: 'white',
-        border: 'none',
-        borderRadius: '8px',
-        cursor: 'pointer',
-        fontSize: '1.2em',
-        fontWeight: 'bold',
-        marginTop: '30px',
-        transition: 'background-color 0.3s ease, transform 0.2s',
-        '&:hover': {
-            backgroundColor: '#218838',
-            transform: 'translateY(-2px)',
-        },
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: '10px',
-    };
-
-    const errorStyle = {
-        color: 'red',
-        marginBottom: '15px',
-        textAlign: 'center',
-        fontSize: '0.9em',
-    };
-
-    const disclaimerTextStyle = {
-        fontSize: '0.85em',
-        color: '#777',
-        marginTop: '20px',
-        textAlign: 'center',
-        lineHeight: '1.5',
-    };
-
-    // Helper functions for hover effects
+    // --- ĐỊNH NGHĨA TẤT CẢ CÁC BIẾN STYLE TẠI ĐÂY ---
+    const checkoutContainerStyle = { /* ... */ };
+    const pageTitleStyle = { /* ... */ };
+    const pageTitleUnderlineStyle = { /* ... */ };
+    const mainContentWrapperStyle = { /* ... */ };
+    const formColumnStyle = { /* ... */ };
+    const orderSummaryColumnStyle = { /* ... */ };
+    const sectionStyle = { /* ... */ };
+    const sectionTitleStyle = { /* ... */ };
+    const formGroupStyle = { /* ... */ };
+    const labelStyle = { /* ... */ };
+    const inputStyle = { /* ... */ };
+    const selectStyle = { /* ... */ };
+    const radioGroupStyle = { /* ... */ };
+    const radioItemStyle = { /* ... */ };
+    const radioCheckedStyle = { /* ... */ };
+    const summaryListTitleStyle = { /* ... */ };
+    const summaryItemRowStyle = { /* ... */ };
+    const summaryTotalsDividerStyle = { /* ... */ };
+    const summaryRowStyle = { /* ... */ };
+    const summaryTotalRowStyle = { /* ... */ };
+    const placeOrderButtonStyle = { /* ... */ };
+    const errorStyle = { /* ... */ };
+    const disclaimerTextStyle = { /* ... */ };
     const applyHover = (e, hoverStyle) => Object.assign(e.currentTarget.style, hoverStyle);
     const removeHover = (e, baseStyle) => Object.assign(e.currentTarget.style, baseStyle);
 
 
-    // --- Hàm xử lý đặt hàng 
+    // --- Hàm xử lý đặt hàng (bọc trong useCallback) ---
     const handleSubmitOrder = useCallback(async (e) => {
         e.preventDefault();
         setLoading(true);
@@ -288,34 +111,33 @@ const CheckoutPage = () => {
                     firstName,
                     lastName,
                     company,
-                    country,
+                    country, 
                     address,
                     postalCode,
                     city,
                     phone,
                     email,
                 },
-                paymentMethod: 'cod', 
+                paymentMethod, 
                 itemsPrice: subtotal,
                 shippingPrice: shippingFee,
                 totalPrice: finalTotal,
                 notes,
-                createAccount, // Thông tin tạo tài khoản
-                shipToDifferentAddress, // Thông tin giao hàng địa chỉ khác
-                userId: isAuthenticated ? user._id : null, // Gửi userId nếu đăng nhập
+                createAccount,
+                shipToDifferentAddress,
+                userId: isAuthenticated ? user._id : null, 
             };
 
-            // TODO: GỌI API ĐẶT HÀNG THỰC TẾ Ở ĐÂY
-            // const response = await placeOrder(orderData); 
-            // console.log("Order placed successfully:", response);
+            const response = await createOrder(orderData, token); // response chứa đối tượng order đã tạo
+            console.log("Order placed successfully:", response);
 
-            alert('Đặt hàng thành công! Cảm ơn bạn đã mua sắm.');
-            clearCart();
-            navigate('/order-success');
+            clearCart(); 
+            // CHUYỂN HƯỚNG ĐẾN TRANG CHI TIẾT ĐƠN HÀNG VÀ TRUYỀN DỮ LIỆU ORDER QUA STATE
+            navigate(`/order/${response._id}`, { state: { order: response } }); 
 
         } catch (err) {
             console.error("Lỗi khi đặt hàng:", err);
-            setError('Có lỗi xảy ra khi đặt hàng. Vui lòng thử lại.');
+            setError(err.message || 'Có lỗi xảy ra khi đặt hàng. Vui lòng thử lại.');
         } finally {
             setLoading(false);
         }
@@ -324,12 +146,13 @@ const CheckoutPage = () => {
         firstName,
         lastName,
         company,
-        country,
+        country, 
         address,
         postalCode,
         city,
         phone,
         email,
+        paymentMethod, 
         createAccount,
         shipToDifferentAddress,
         notes,
@@ -337,12 +160,14 @@ const CheckoutPage = () => {
         shippingFee,
         finalTotal,
         isAuthenticated,
-        user,
+        user, 
         clearCart,
         navigate,
-    ]); // Dependencies cho useCallback
+        token, 
+    ]); 
 
- return (
+
+    return (
         <div style={checkoutContainerStyle}>
             <h1 style={pageTitleStyle}>
                 Thanh toán
@@ -353,7 +178,7 @@ const CheckoutPage = () => {
 
             <form onSubmit={handleSubmitOrder}>
                 <div style={mainContentWrapperStyle}>
-                    {/*Thông tin thanh toán */}
+                    {/* Cột trái: Thông tin thanh toán */}
                     <div style={formColumnStyle}>
                         <div style={sectionStyle}> {/* Hộp cho thông tin thanh toán */}
                             <h2 style={sectionTitleStyle}>Thông tin thanh toán</h2>
@@ -368,6 +193,10 @@ const CheckoutPage = () => {
                                 </div>
                             </div>
                             <div style={formGroupStyle}>
+                                <label htmlFor="company" style={labelStyle}>Tên công ty (tùy chọn)</label>
+                                <input type="text" id="company" value={company} onChange={(e) => setCompany(e.target.value)} style={inputStyle} />
+                            </div>
+                            <div style={formGroupStyle}>
                                 <label htmlFor="country" style={labelStyle}>Quốc gia <span style={{color: 'red'}}>*</span></label>
                                 <select id="country" value={country} onChange={(e) => setCountry(e.target.value)} style={selectStyle} required>
                                     <option value="Việt Nam">Việt Nam</option>
@@ -379,7 +208,10 @@ const CheckoutPage = () => {
                                 <input type="text" id="address" value={address} onChange={(e) => setAddress(e.target.value)} style={inputStyle} placeholder="Số nhà, tên đường, thôn, xóm..." required />
                             </div>
                             <div style={{ display: 'flex', gap: '20px' }}>
-                              
+                                <div style={{ ...formGroupStyle, flex: 1 }}>
+                                    <label htmlFor="postalCode" style={labelStyle}>Mã bưu điện (tùy chọn)</label>
+                                    <input type="text" id="postalCode" value={postalCode} onChange={(e) => setPostalCode(e.target.value)} style={inputStyle} />
+                                </div>
                                 <div style={{ ...formGroupStyle, flex: 1 }}>
                                     <label htmlFor="city" style={labelStyle}>Tỉnh / Thành phố <span style={{color: 'red'}}>*</span></label>
                                     <input type="text" id="city" value={city} onChange={(e) => setCity(e.target.value)} style={inputStyle} required />
@@ -395,17 +227,48 @@ const CheckoutPage = () => {
                             </div>
                         </div> {/* End Thông tin thanh toán section */}
 
-                        {/* Các checkboxes */}
-                        {/* <div style={checkboxGroupStyle}>
-                            <label style={checkboxItemStyle}>
-                                <input type="checkbox" checked={createAccount} onChange={(e) => setCreateAccount(e.target.checked)} style={checkboxInputStyle} />
-                                Tạo tài khoản mới?
-                            </label>
-                            <label style={checkboxItemStyle}>
-                                <input type="checkbox" checked={shipToDifferentAddress} onChange={(e) => setShipToDifferentAddress(e.target.checked)} style={checkboxInputStyle} />
-                                Giao hàng tới địa chỉ khác?
-                            </label>
-                        </div> */}
+                        {/* Phần phương thức thanh toán */}
+                        <div style={sectionStyle}>
+                            <h2 style={sectionTitleStyle}>Phương thức thanh toán</h2>
+                            <div style={radioGroupStyle}>
+                                <label 
+                                    style={{ 
+                                        ...radioItemStyle, 
+                                        ...(paymentMethod === 'cod' ? radioCheckedStyle : {})
+                                    }}
+                                    onMouseOver={(e) => applyHover(e, radioItemStyle['&:hover'])}
+                                    onMouseOut={(e) => removeHover(e, radioItemStyle)}
+                                >
+                                    <input
+                                        type="radio"
+                                        name="paymentMethod"
+                                        value="cod"
+                                        checked={paymentMethod === 'cod'}
+                                        onChange={(e) => setPaymentMethod(e.target.value)}
+                                        style={{ transform: 'scale(1.2)' }}
+                                    />
+                                    Thanh toán khi nhận hàng (COD)
+                                </label>
+                                <label 
+                                    style={{ 
+                                        ...radioItemStyle, 
+                                        ...(paymentMethod === 'bank_transfer' ? radioCheckedStyle : {})
+                                    }}
+                                    onMouseOver={(e) => applyHover(e, radioItemStyle['&:hover'])}
+                                    onMouseOut={(e) => removeHover(e, radioItemStyle)}
+                                >
+                                    <input
+                                        type="radio"
+                                        name="paymentMethod"
+                                        value="bank_transfer"
+                                        checked={paymentMethod === 'bank_transfer'}
+                                        onChange={(e) => setPaymentMethod(e.target.value)}
+                                        style={{ transform: 'scale(1.2)' }}
+                                    />
+                                    Chuyển khoản ngân hàng
+                                </label>
+                            </div>
+                        </div>
 
                         {/* Phần ghi chú đơn hàng */}
                         <div style={sectionStyle}> {/* Hộp cho ghi chú */}
@@ -438,8 +301,8 @@ const CheckoutPage = () => {
                                 <span style={{textAlign: 'right', flex: 1, fontWeight: 'bold', color: '#555'}}>{(item.qty * item.price || 0).toLocaleString('vi-VN')} VNĐ</span>
                             </div>
                         ))}
-                       
-                        <div style={summaryTotalsDividerStyle}></div> 
+                        {/* Các dòng tổng phụ */}
+                        <div style={summaryTotalsDividerStyle}></div> {/* Đường gạch ngang mảnh */}
                         <div style={summaryRowStyle}>
                             <span>Tổng phụ:</span>
                             <span style={{ fontWeight: 'bold' }}>{subtotal.toLocaleString('vi-VN')} VNĐ</span>
@@ -450,6 +313,11 @@ const CheckoutPage = () => {
                                 {shippingFee === 0 ? 'Giao hàng miễn phí' : shippingFee.toLocaleString('vi-VN') + ' VNĐ'}
                             </span>
                         </div>
+                        {/* Nếu có logic giảm giá, sẽ hiển thị ở đây */}
+                        {/* <div style={{...summaryRowStyle, color: '#28a745', fontWeight: 'bold'}}>
+                            <span>Giảm giá:</span>
+                            <span>- {discountAmount.toLocaleString('vi-VN')} VNĐ</span>
+                        </div> */}
                         <div style={summaryTotalRowStyle}>
                             <span>Tổng cộng:</span>
                             <span>{finalTotal.toLocaleString('vi-VN')} VNĐ</span>
