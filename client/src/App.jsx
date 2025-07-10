@@ -18,8 +18,11 @@ import ContactPage from './pages/ContactPage';
 import SearchPage from './pages/SearchPage';
 import ProfilePage from './pages/ProfilePage';
 import AdminLoginPage from './pages/AdminLoginPage';
-
 import ProductManagement from './components/admin/ProductManagement'; 
+import OrderManagement from './components/admin/OrderManagement';  
+import UserManagement from './components/admin/UserManagement';     
+import CouponManagement from './components/admin/CouponManagement'; 
+import PostManagement from './components/admin/PostManagement';  
 import OrderDetailPage from './pages/OrderDetailPage';
 
 
@@ -116,6 +119,10 @@ function App() {
                 <Route path="/admin/*" element={<AdminProtectedRoute><AdminLayout /></AdminProtectedRoute>}>
                     <Route index element={<div><h2 style={{fontSize:'1.8em', textAlign:'center', marginTop:'50px'}}>Chào mừng bạn đến với Admin Dashboard!</h2><p style={{textAlign:'center', fontSize:'1.1em', color:'#666'}}>Chọn một chức năng từ menu bên trái để bắt đầu quản lý.</p></div>} /> 
                     <Route path="products" element={<ProductManagement />} />
+                    <Route path="orders" element={<OrderManagement />} />
+                    <Route path="users" element={<UserManagement />} />
+                    <Route path="posts" element={<PostManagement />} />
+                    <Route path="coupons" element={<CouponManagement />} />
                 </Route>
 
                 {/* Catch-all route cho 404 Not Found */}

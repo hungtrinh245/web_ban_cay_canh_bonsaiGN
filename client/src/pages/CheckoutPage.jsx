@@ -10,6 +10,7 @@ const CheckoutPage = () => {
     const { cartItems, clearCart } = useCart(); 
     const { user, isAuthenticated, token } = useAuth(); 
 
+    // States cho thông tin giao hàng & thanh toán
     const [firstName, setFirstName] = useState(user ? (user.name ? user.name.split(' ')[0] : '') : ''); 
     const [lastName, setLastName] = useState(user ? (user.name ? user.name.split(' ').slice(1).join(' ') : '') : ''); 
     const [company, setCompany] = useState('');     
@@ -53,34 +54,215 @@ const CheckoutPage = () => {
 
 
     // --- ĐỊNH NGHĨA TẤT CẢ CÁC BIẾN STYLE TẠI ĐÂY ---
-    const checkoutContainerStyle = { /* ... */ };
-    const pageTitleStyle = { /* ... */ };
-    const pageTitleUnderlineStyle = { /* ... */ };
-    const mainContentWrapperStyle = { /* ... */ };
-    const formColumnStyle = { /* ... */ };
-    const orderSummaryColumnStyle = { /* ... */ };
-    const sectionStyle = { /* ... */ };
-    const sectionTitleStyle = { /* ... */ };
-    const formGroupStyle = { /* ... */ };
-    const labelStyle = { /* ... */ };
-    const inputStyle = { /* ... */ };
-    const selectStyle = { /* ... */ };
-    const radioGroupStyle = { /* ... */ };
-    const radioItemStyle = { /* ... */ };
-    const radioCheckedStyle = { /* ... */ };
-    const summaryListTitleStyle = { /* ... */ };
-    const summaryItemRowStyle = { /* ... */ };
-    const summaryTotalsDividerStyle = { /* ... */ };
-    const summaryRowStyle = { /* ... */ };
-    const summaryTotalRowStyle = { /* ... */ };
-    const placeOrderButtonStyle = { /* ... */ };
-    const errorStyle = { /* ... */ };
-    const disclaimerTextStyle = { /* ... */ };
+    // Đảm bảo các biến style này nằm TRƯỚC phần return JSX và KHÔNG CÓ LỖI CÚ PHÁP
+    const checkoutContainerStyle = {
+        maxWidth: '1200px', 
+        margin: '40px auto',
+        padding: '0 20px',
+        fontFamily: 'Roboto, sans-serif',
+        color: '#333',
+    };
+
+    const pageTitleStyle = { 
+        fontSize: '2.8em', 
+        fontWeight: 'bold',
+        color: '#2c3e50',
+        marginBottom: '40px', 
+        textAlign: 'center',
+        position: 'relative',
+        paddingBottom: '15px',
+    };
+
+    const pageTitleUnderlineStyle = { 
+        width: '80px',
+        height: '4px',
+        background: '#28a745',
+        margin: '0 auto',
+        position: 'absolute',
+        bottom: '0',
+        left: '50%',
+        transform: 'translateX(-50%)',
+    };
+
+    const mainContentWrapperStyle = {
+        display: 'flex',
+        gap: '40px',
+        flexWrap: 'wrap',
+        alignItems: 'flex-start',
+    };
+
+    const formColumnStyle = {
+        flex: '1.5 1 550px',
+        padding: '0',
+    };
+
+    const orderSummaryColumnStyle = {
+        flex: '1 1 350px',
+        background: 'white',
+        borderRadius: '12px',
+        boxShadow: '0 8px 30px rgba(0,0,0,0.08)',
+        padding: '30px',
+        height: 'fit-content',
+        position: 'sticky',
+        top: '120px',
+        border: '1px solid #eee',
+    };
+
+    const sectionStyle = { 
+        background: 'white',
+        borderRadius: '12px',
+        boxShadow: '0 8px 30px rgba(0,0,0,0.08)',
+        padding: '30px',
+        marginBottom: '30px',
+        border: '1px solid #eee',
+    };
+
+    const sectionTitleStyle = { 
+        fontSize: '1.5em',
+        fontWeight: 'bold',
+        color: '#2c3e50',
+        marginBottom: '20px',
+        paddingBottom: '10px',
+        borderBottom: '2px solid #ddd',
+        marginTop: '0',
+    };
+
+    const formGroupStyle = {
+        marginBottom: '15px',
+    };
+
+    const labelStyle = {
+        display: 'block',
+        marginBottom: '5px',
+        fontWeight: 'bold',
+        color: '#555',
+        fontSize: '0.95em',
+    };
+
+    const inputStyle = {
+        width: '100%',
+        padding: '12px',
+        borderRadius: '5px',
+        border: '1px solid #ccc',
+        fontSize: '1em',
+        boxSizing: 'border-box',
+    };
+
+    const selectStyle = {
+        ...inputStyle,
+        background: 'white',
+        cursor: 'pointer',
+    };
+
+    const radioGroupStyle = { // ĐẢM BẢO STYLE radioGroupStyle ĐƯỢC ĐỊNH NGHĨA Ở ĐÂY
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '10px',
+    };
+
+    const radioItemStyle = {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '10px',
+        padding: '10px 15px',
+        border: '1px solid #ddd',
+        borderRadius: '8px',
+        cursor: 'pointer',
+        transition: 'background-color 0.2s, border-color 0.2s',
+        '&:hover': {
+            borderColor: '#28a745',
+        }
+    };
+
+    const radioCheckedStyle = {
+        background: '#e9f5e9',
+        borderColor: '#28a745',
+    };
+
+    const summaryListTitleStyle = {
+        fontSize: '1em',
+        fontWeight: 'bold',
+        color: '#555',
+        paddingBottom: '10px',
+        borderBottom: '1px solid #eee',
+        marginBottom: '15px',
+    };
+
+    const summaryItemRowStyle = {
+        display: 'flex',
+        justifyContent: 'space-between',
+        marginBottom: '8px',
+        fontSize: '0.95em',
+        color: '#333',
+    };
+
+    const summaryTotalsDividerStyle = {
+        borderTop: '1px dashed #ccc',
+        paddingTop: '15px',
+        marginTop: '15px',
+        marginBottom: '15px',
+    };
+
+    const summaryRowStyle = {
+        display: 'flex',
+        justifyContent: 'space-between',
+        marginBottom: '10px',
+        fontSize: '1.1em',
+        color: '#555',
+    };
+
+    const summaryTotalRowStyle = {
+        ...summaryRowStyle,
+        marginTop: '15px',
+        paddingTop: '15px',
+        borderTop: '2px solid #28a745',
+        fontSize: '1.4em',
+        fontWeight: 'bold',
+        color: '#28a745',
+    };
+
+    const placeOrderButtonStyle = {
+        width: '100%',
+        padding: '18px',
+        background: '#28a745',
+        color: 'white',
+        border: 'none',
+        borderRadius: '8px',
+        cursor: 'pointer',
+        fontSize: '1.2em',
+        fontWeight: 'bold',
+        marginTop: '30px',
+        transition: 'background-color 0.3s ease, transform 0.2s',
+        '&:hover': {
+            backgroundColor: '#218838',
+            transform: 'translateY(-2px)',
+        },
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '10px',
+    };
+
+    const errorStyle = {
+        color: 'red',
+        marginBottom: '15px',
+        textAlign: 'center',
+        fontSize: '0.9em',
+    };
+
+    const disclaimerTextStyle = {
+        fontSize: '0.85em',
+        color: '#777',
+        marginTop: '20px',
+        textAlign: 'center',
+        lineHeight: '1.5',
+    };
+
+    // Helper functions for hover effects
     const applyHover = (e, hoverStyle) => Object.assign(e.currentTarget.style, hoverStyle);
     const removeHover = (e, baseStyle) => Object.assign(e.currentTarget.style, baseStyle);
 
 
-    // --- Hàm xử lý đặt hàng (bọc trong useCallback) ---
     const handleSubmitOrder = useCallback(async (e) => {
         e.preventDefault();
         setLoading(true);
@@ -128,11 +310,10 @@ const CheckoutPage = () => {
                 userId: isAuthenticated ? user._id : null, 
             };
 
-            const response = await createOrder(orderData, token); // response chứa đối tượng order đã tạo
+            const response = await createOrder(orderData, token); 
             console.log("Order placed successfully:", response);
 
             clearCart(); 
-            // CHUYỂN HƯỚNG ĐẾN TRANG CHI TIẾT ĐƠN HÀNG VÀ TRUYỀN DỮ LIỆU ORDER QUA STATE
             navigate(`/order/${response._id}`, { state: { order: response } }); 
 
         } catch (err) {

@@ -1,10 +1,13 @@
-
+// client/src/services/productService.js
 import axios from 'axios';
 
 const API_URL_BONSAIS = 'http://localhost:5001/api/bonsais';
 const API_URL_COUPONS = 'http://localhost:5001/api/coupons';
 const API_URL_ORDERS = 'http://localhost:5001/api/orders';
 
+// =========================================================
+// CÁC HÀM API CHO SẢN PHẨM (BONSAIS) - PUBLIC VÀ ADMIN
+// =========================================================
 
 // Lấy TẤT CẢ sản phẩm với phân trang (dùng cho ShopPage và ProductManagement)
 const getAllBonsais = async (page = 1, limit = 8) => {
@@ -17,7 +20,7 @@ const getAllBonsais = async (page = 1, limit = 8) => {
     }
 };
 
-// Lấy sản phẩm MỚI NHẤT (cóphân trang cho HomePage nếu cần)
+// Lấy sản phẩm MỚI NHẤT (có hỗ trợ phân trang cho HomePage nếu cần)
 const getNewProducts = async (page = 1, limit = 8) => {
     try {
         const response = await axios.get(`${API_URL_BONSAIS}?page=${page}&limit=${limit}`);
@@ -126,6 +129,11 @@ const createProductReview = async (productId, reviewData, token) => {
     }
 };
 
+// =========================================================
+// CÁC HÀM API CHO ADMIN (CRUD) SẢN PHẨM (BONSAIS)
+// =========================================================
+
+// Tạo sản phẩm mới (Admin Only)
 const createBonsai = async (productData, token) => { 
     try {
         const config = {
@@ -175,7 +183,11 @@ const deleteBonsai = async (productId, token) => {
     }
 };
 
-// Áp dụng mã ưu đãi
+// =========================================================
+// CÁC HÀM API CHO COUPONS
+// =========================================================
+
+// Áp dụng mã ưu đãi (Public)
 const applyCoupon = async (code, cartTotal) => { 
     try {
         const response = await axios.post(`${API_URL_COUPONS}/apply`, { code, cartTotal });
@@ -186,7 +198,59 @@ const applyCoupon = async (code, cartTotal) => {
     }
 };
 
-// Tạo đơn hàng
+// Lấy tất cả mã ưu đãi (Admin Only)
+const getCoupons = async (token) => { 
+    try {
+        const config = { headers: { Authorization: `Bearer ${token}` } };
+        const response = await axios.get(API_URL_COUPONS, config);
+        return response.data;
+    } catch (error) {
+        console.error('Lỗi khi lấy tất cả mã ưu đãi (Admin):', error.response?.data?.message || error.message);
+        throw new Error(error.response?.data?.message || 'Không thể tải mã ưu đãi.');
+    }
+};
+
+// Tạo mã ưu đãi (Admin Only)
+const createCoupon = async (couponData, token) => { 
+    try {
+        const config = { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } };
+        const response = await axios.post(API_URL_COUPONS, couponData, config);
+        return response.data;
+    } catch (error) {
+        console.error('Lỗi khi tạo mã ưu đãi:', error.response?.data?.message || error.message);
+        throw new Error(error.response?.data?.message || 'Tạo mã ưu đãi thất bại.');
+    }
+};
+
+// Cập nhật mã ưu đãi (Admin Only)
+const updateCoupon = async (couponId, couponData, token) => { 
+    try {
+        const config = { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } };
+        const response = await axios.put(`${API_URL_COUPONS}/${couponId}`, couponData, config);
+        return response.data;
+    } catch (error) {
+        console.error('Lỗi khi cập nhật mã ưu đãi:', error.response?.data?.message || error.message);
+        throw new Error(error.response?.data?.message || 'Cập nhật mã ưu đãi thất bại.');
+    }
+};
+
+// Xóa mã ưu đãi (Admin Only)
+const deleteCoupon = async (couponId, token) => { 
+    try {
+        const config = { headers: { Authorization: `Bearer ${token}` } };
+        const response = await axios.delete(`${API_URL_COUPONS}/${couponId}`, config);
+        return response.data;
+    } catch (error) {
+        console.error('Lỗi khi xóa mã ưu đãi:', error.response?.data?.message || error.message);
+        throw new Error(error.response?.data?.message || 'Xóa mã ưu đãi thất bại.');
+    }
+};
+
+// =========================================================
+// CÁC HÀM API CHO ORDERS
+// =========================================================
+
+// Tạo đơn hàng (Public/Private - dựa vào token có hay không)
 const createOrder = async (orderData, token) => { 
     try {
         const config = {
@@ -206,7 +270,7 @@ const createOrder = async (orderData, token) => {
     }
 };
 
-// Lấy đơn hàng của người dùng hiện tại
+// Lấy đơn hàng của người dùng hiện tại (Private)
 const getMyOrders = async (token) => { 
     try {
         const config = {
@@ -222,14 +286,13 @@ const getMyOrders = async (token) => {
     }
 };
 
-
-// Lấy chi tiết đơn hàng theo ID 
-const getOrderById = async (id, token) => {
+// Lấy chi tiết đơn hàng theo ID (Public cho Guest Order, Private cho User/Admin Order)
+const getOrderById = async (id, token) => { 
     try {
-        const config = {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
+        const config = { 
+            headers: { 
+                ...(token && { Authorization: `Bearer ${token}` }), 
+            } 
         };
         const response = await axios.get(`${API_URL_ORDERS}/${id}`, config);
         return response.data;
@@ -239,8 +302,213 @@ const getOrderById = async (id, token) => {
     }
 };
 
+// Cập nhật trạng thái đã thanh toán (Admin Only)
+const updateOrderToPaid = async (orderId, token) => { 
+    try {
+        const config = { headers: { Authorization: `Bearer ${token}` } };
+        const response = await axios.put(`${API_URL_ORDERS}/${orderId}/pay`, {}, config);
+        return response.data;
+    } catch (error) {
+        console.error('Lỗi khi cập nhật trạng thái đã thanh toán:', error.response?.data?.message || error.message);
+        throw new Error(error.response?.data?.message || 'Cập nhật trạng thái thanh toán thất bại.');
+    }
+};
 
+// Cập nhật trạng thái đã giao hàng (Admin Only)
+const updateOrderToDelivered = async (orderId, token) => { 
+    try {
+        const config = { headers: { Authorization: `Bearer ${token}` } };
+        const response = await axios.put(`${API_URL_ORDERS}/${orderId}/deliver`, {}, config);
+        return response.data;
+    } catch (error) {
+        console.error('Lỗi khi cập nhật trạng thái đã giao hàng:', error.response?.data?.message || error.message);
+        throw new Error(error.response?.data?.message || 'Cập nhật trạng thái giao hàng thất bại.');
+    }
+};
+
+// Lấy tất cả đơn hàng (Admin Only)
+const getAllOrdersAdmin = async (token) => { 
+    try {
+        const config = { headers: { Authorization: `Bearer ${token}` } };
+        const response = await axios.get(API_URL_ORDERS, config);
+        return response.data;
+    } catch (error) {
+        console.error('Lỗi khi lấy tất cả đơn hàng (Admin):', error.response?.data?.message || error.message);
+        throw new Error(error.response?.data?.message || 'Không thể tải tất cả đơn hàng.');
+    }
+};
+
+// =========================================================
+// CÁC HÀM API CHO BLOG (POSTS)
+// =========================================================
+
+// Lấy tất cả bài viết (Public, có phân trang)
+const getAllPosts = async (page = 1, limit = 5) => { 
+    try {
+        const response = await axios.get(`${API_URL_POSTS}?page=${page}&limit=${limit}`);
+        return response.data; 
+    } catch (error) {
+        console.error('Lỗi khi lấy tất cả bài viết:', error);
+        throw error;
+    }
+};
+const getPostById = async (id) => { 
+    try {
+        const response = await axios.get(`${API_URL_POSTS}/${id}`);
+        return response.data;
+    } catch (error) {
+        console.error(`Lỗi khi lấy bài viết ID ${id}:`, error);
+        throw error;
+    }
+};
+const getLatestPosts = async () => { 
+    try {
+        const response = await axios.get(`${API_URL_POSTS}/latest`);
+        return response.data;
+    } catch (error) {
+        console.error('Lỗi khi lấy bài viết mới nhất:', error);
+        throw error;
+    }
+};
+const getFeaturedPosts = async () => { 
+    try {
+        const response = await axios.get(`${API_URL_POSTS}/featured`);
+        return response.data;
+    } catch (error) {
+        console.error('Lỗi khi lấy bài viết nổi bật:', error);
+        throw error;
+    }
+};
+
+// CRUD Bài viết (Admin Only)
+const createPost = async (postData, token) => { 
+    try {
+        const config = { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } };
+        const response = await axios.post(API_URL_POSTS, postData, config);
+        return response.data;
+    } catch (error) {
+        console.error('Lỗi khi tạo bài viết:', error.response?.data?.message || error.message);
+        throw new Error(error.response?.data?.message || 'Tạo bài viết thất bại');
+    }
+};
+const updatePost = async (postId, postData, token) => { 
+    try {
+        const config = { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } };
+        const response = await axios.put(`${API_URL_POSTS}/${postId}`, postData, config);
+        return response.data;
+    } catch (error) {
+        console.error('Lỗi khi cập nhật bài viết:', error.response?.data?.message || error.message);
+        throw new Error(error.response?.data?.message || 'Cập nhật bài viết thất bại');
+    }
+};
+const deletePost = async (postId, token) => { 
+    try {
+        const config = { headers: { Authorization: `Bearer ${token}` } };
+        const response = await axios.delete(`${API_URL_POSTS}/${postId}`, config);
+        return response.data;
+    } catch (error) {
+        console.error('Lỗi khi xóa bài viết:', error.response?.data?.message || error.message);
+        throw new Error(error.response?.data?.message || 'Xóa bài viết thất bại');
+    }
+};
+
+// =========================================================
+// CÁC HÀM API CHO AUTH (USERS)
+// =========================================================
+
+// Đăng ký, Đăng nhập, Profile (Public/Private)
+const register = async (userData) => { 
+    try {
+        const response = await axios.post(`${API_URL_AUTH}/register`, userData); // API_URL_AUTH không định nghĩa
+        return response.data;
+    } catch (error) {
+        console.error('Lỗi khi đăng ký:', error.response?.data?.message || error.message);
+        throw new Error(error.response?.data?.message || 'Đăng ký thất bại');
+    }
+};
+const login = async (credentials) => { 
+    try {
+        const response = await axios.post(`${API_URL_AUTH}/login`, credentials); // API_URL_AUTH không định nghĩa
+        return response.data;
+    } catch (error) {
+        console.error('Lỗi khi đăng nhập:', error.response?.data?.message || error.message);
+        throw new Error(error.response?.data?.message || 'Đăng nhập thất bại');
+    }
+};
+const updateProfile = async (userData, token) => { 
+    try {
+        const config = { headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` } };
+        const response = await axios.put(`${API_URL_AUTH}/profile`, userData, config); // API_URL_AUTH không định nghĩa
+        return response.data;
+    } catch (error) {
+        console.error('Lỗi khi cập nhật hồ sơ:', error.response?.data?.message || error.message);
+        throw new Error(error.response?.data?.message || 'Cập nhật hồ sơ thất bại');
+    }
+};
+const getProfile = async (token) => { 
+    try {
+        const config = { headers: { Authorization: `Bearer ${token}` } };
+        const response = await axios.get(`${API_URL_AUTH}/me`, config); // API_URL_AUTH không định nghĩa
+        return response.data;
+    } catch (error) {
+        console.error('Lỗi khi lấy hồ sơ người dùng:', error.response?.data?.message || error.message);
+        throw new Error(error.response?.data?.message || 'Không thể lấy hồ sơ');
+    }
+};
+
+// CRUD Users (Admin Only)
+const getAllUsers = async (token) => { 
+    try {
+        const config = { headers: { Authorization: `Bearer ${token}` } };
+        const response = await axios.get(`${API_URL_AUTH}/users`, config); // API_URL_AUTH không định nghĩa
+        return response.data;
+    } catch (error) {
+        console.error('Lỗi khi lấy tất cả người dùng (Admin):', error.response?.data?.message || error.message);
+        throw new Error(error.response?.data?.message || 'Không thể tải danh sách người dùng.');
+    }
+};
+const updateUser = async (userId, userData, token) => { 
+    try {
+        const config = { headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` } };
+        const response = await axios.put(`${API_URL_AUTH}/users/${userId}`, userData, config); // API_URL_AUTH không định nghĩa
+        return response.data;
+    } catch (error) {
+        console.error('Lỗi khi cập nhật người dùng (Admin):', error.response?.data?.message || error.message);
+        throw new Error(error.response?.data?.message || 'Cập nhật người dùng thất bại.');
+    }
+};
+const deleteUser = async (userId, token) => { 
+    try {
+        const config = { headers: { Authorization: `Bearer ${token}` } };
+        const response = await axios.delete(`${API_URL_AUTH}/users/${userId}`, config); // API_URL_AUTH không định nghĩa
+        return response.data;
+    } catch (error) {
+        console.error('Lỗi khi xóa người dùng (Admin):', error.response?.data?.message || error.message);
+        throw new Error(error.response?.data?.message || 'Xóa người dùng thất bại.');
+    }
+};
+
+// =========================================================
+// CÁC HÀM API CHO CONTACT
+// =========================================================
+
+// Gửi tin nhắn liên hệ (Public)
+const sendMessage = async (messageData) => { 
+    try {
+        const response = await axios.post(`${API_URL_CONTACT}`, messageData); // API_URL_CONTACT không định nghĩa
+        return response.data;
+    } catch (error) {
+        console.error('Lỗi khi gửi tin nhắn:', error.response?.data?.message || error.message);
+        throw new Error(error.response?.data?.message || 'Gửi tin nhắn thất bại.');
+    }
+};
+
+
+// =========================================================
+// DÒNG EXPORT CUỐI CÙNG: ĐẢM BẢO TẤT CẢ CÁC HÀM ĐƯỢC LIỆT KÊ CHỈ MỘT LẦN VÀ ĐÚNG CHÍNH TẢ
+// =========================================================
 export {
+    // Sản phẩm
     getAllBonsais,
     getNewProducts,
     getFeaturedProducts,
@@ -250,12 +518,44 @@ export {
     getProductsByCategory,
     getProductsByPriceRange,
     searchProducts,
-    applyCoupon,
-    createOrder,
-    getMyOrders,
     createProductReview,
     createBonsai, 
     updateBonsai, 
-    deleteBonsai,
+    deleteBonsai, 
+
+    // Đơn hàng
+    createOrder,
+    getMyOrders,
     getOrderById,
+    updateOrderToPaid,
+    updateOrderToDelivered,
+    getAllOrdersAdmin, 
+
+    // Mã ưu đãi
+    applyCoupon,
+    getCoupons,       
+    createCoupon,     
+    updateCoupon,     
+    deleteCoupon,     
+
+    // Bài viết
+    getAllPosts,      
+    getPostById,      
+    getLatestPosts,   
+    getFeaturedPosts, 
+    createPost,       
+    updatePost,       
+    deletePost,       
+
+    // Người dùng (Auth)
+    register,
+    login,
+    updateProfile,
+    getProfile,
+    getAllUsers,      
+    updateUser,       
+    deleteUser,       
+
+    // Liên hệ
+    sendMessage,
 };
