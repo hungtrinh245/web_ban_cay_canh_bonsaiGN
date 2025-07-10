@@ -2,17 +2,18 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { getAllUsers, updateUser, deleteUser } from '../../services/authService'; // Import API services
+import { getAllUsers, updateUser, deleteUser } from '../../services/authService'; 
 
 // Import Ant Design Components
-import { Table, Button, Modal, Popconfirm, Select, Tag, message as AntMessage, Spin } from 'antd';
+// Đảm bảo Space được import ở đây
+import { Table, Button, Modal, Popconfirm, Select, Tag, message as AntMessage, Spin, Space } from 'antd';
 import { EditOutlined, DeleteOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 
 const { confirm } = Modal;
 const { Option } = Select;
 
 const UserManagement = () => {
-    const { token, user: loggedInUser } = useAuth(); // Lấy user hiện tại để ngăn không cho xóa chính mình
+    const { token, user: loggedInUser } = useAuth();
     const navigate = useNavigate();
 
     const [users, setUsers] = useState([]);
@@ -42,7 +43,7 @@ const UserManagement = () => {
         try {
             await updateUser(userId, { role: newRole }, token);
             AntMessage.success('Cập nhật vai trò người dùng thành công!');
-            fetchUsers(); // Tải lại danh sách
+            fetchUsers(); 
         } catch (err) {
             AntMessage.error('Lỗi khi cập nhật vai trò: ' + (err.message || 'Lỗi không xác định'));
             console.error("Update user role error:", err);
@@ -105,7 +106,7 @@ const UserManagement = () => {
                     defaultValue={role}
                     style={{ width: 120 }}
                     onChange={(newRole) => handleUpdateUserRole(record._id, newRole)}
-                    disabled={record._id === loggedInUser._id} // Không cho sửa vai trò của chính mình
+                    disabled={record._id === loggedInUser._id} 
                 >
                     <Option value="user">User</Option>
                     <Option value="admin">Admin</Option>
@@ -129,10 +130,10 @@ const UserManagement = () => {
                         title="Xóa người dùng"
                         description="Bạn có chắc chắn muốn xóa người dùng này?"
                         onConfirm={() => handleDeleteUser(record._id)}
-                        okText="Có"
+                        okText="Xóa"
                         cancelText="Không"
                         icon={<ExclamationCircleOutlined style={{ color: 'red' }} />}
-                        disabled={record._id === loggedInUser._id} // Không cho Popconfirm nếu là chính mình
+                        disabled={record._id === loggedInUser._id} 
                     >
                         <Button type="danger" icon={<DeleteOutlined />} disabled={record._id === loggedInUser._id}>
                             Xóa

@@ -24,6 +24,7 @@ import UserManagement from './components/admin/UserManagement';
 import CouponManagement from './components/admin/CouponManagement'; 
 import PostManagement from './components/admin/PostManagement';  
 import OrderDetailPage from './pages/OrderDetailPage';
+import AdminDashboardPage from './pages/AdminDashboardPage';
 
 
 import { useAuth } from './context/AuthContext';
@@ -123,6 +124,7 @@ function App() {
                     <Route path="users" element={<UserManagement />} />
                     <Route path="posts" element={<PostManagement />} />
                     <Route path="coupons" element={<CouponManagement />} />
+                    <Route path="admin" element={<AdminDashboardPage />} />
                 </Route>
 
                 {/* Catch-all route cho 404 Not Found */}
