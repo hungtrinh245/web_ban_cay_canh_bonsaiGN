@@ -4,6 +4,9 @@ import axios from 'axios';
 const API_URL_BONSAIS = 'http://localhost:5001/api/bonsais';
 const API_URL_COUPONS = 'http://localhost:5001/api/coupons';
 const API_URL_ORDERS = 'http://localhost:5001/api/orders';
+const API_URL_CATEGORIES = 'http://localhost:5001/api/categories'; // Đảm bảo dòng này có
+const API_URL_AUTH = 'http://localhost:5001/api/auth'; 
+const API_URL_POSTS = 'http://localhost:5001/api/posts'; 
 
 // =========================================================
 // CÁC HÀM API CHO SẢN PHẨM (BONSAIS) - PUBLIC VÀ ADMIN
@@ -60,17 +63,6 @@ const getRelatedProducts = async (id) => {
         return response.data;
     } catch (error) {
         console.error(`Lỗi khi lấy sản phẩm liên quan cho ID ${id}:`, error);
-        throw error;
-    }
-};
-
-// Lấy danh mục duy nhất
-const getCategories = async () => {
-    try {
-        const response = await axios.get(`${API_URL_BONSAIS}/categories`);
-        return response.data;
-    } catch (error) {
-        console.error('Lỗi khi lấy danh mục:', error);
         throw error;
     }
 };
@@ -419,7 +411,7 @@ const deletePost = async (postId, token) => {
 // Đăng ký, Đăng nhập, Profile (Public/Private)
 const register = async (userData) => { 
     try {
-        const response = await axios.post(`${API_URL_AUTH}/register`, userData); // API_URL_AUTH không định nghĩa
+        const response = await axios.post(`${API_URL_AUTH}/register`, userData); 
         return response.data;
     } catch (error) {
         console.error('Lỗi khi đăng ký:', error.response?.data?.message || error.message);
@@ -428,7 +420,7 @@ const register = async (userData) => {
 };
 const login = async (credentials) => { 
     try {
-        const response = await axios.post(`${API_URL_AUTH}/login`, credentials); // API_URL_AUTH không định nghĩa
+        const response = await axios.post(`${API_URL_AUTH}/login`, credentials); 
         return response.data;
     } catch (error) {
         console.error('Lỗi khi đăng nhập:', error.response?.data?.message || error.message);
@@ -438,7 +430,7 @@ const login = async (credentials) => {
 const updateProfile = async (userData, token) => { 
     try {
         const config = { headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` } };
-        const response = await axios.put(`${API_URL_AUTH}/profile`, userData, config); // API_URL_AUTH không định nghĩa
+        const response = await axios.put(`${API_URL_AUTH}/profile`, userData, config); 
         return response.data;
     } catch (error) {
         console.error('Lỗi khi cập nhật hồ sơ:', error.response?.data?.message || error.message);
@@ -448,7 +440,7 @@ const updateProfile = async (userData, token) => {
 const getProfile = async (token) => { 
     try {
         const config = { headers: { Authorization: `Bearer ${token}` } };
-        const response = await axios.get(`${API_URL_AUTH}/me`, config); // API_URL_AUTH không định nghĩa
+        const response = await axios.get(`${API_URL_AUTH}/me`, config); 
         return response.data;
     } catch (error) {
         console.error('Lỗi khi lấy hồ sơ người dùng:', error.response?.data?.message || error.message);
@@ -460,7 +452,7 @@ const getProfile = async (token) => {
 const getAllUsers = async (token) => { 
     try {
         const config = { headers: { Authorization: `Bearer ${token}` } };
-        const response = await axios.get(`${API_URL_AUTH}/users`, config); // API_URL_AUTH không định nghĩa
+        const response = await axios.get(`${API_URL_AUTH}/users`, config); 
         return response.data;
     } catch (error) {
         console.error('Lỗi khi lấy tất cả người dùng (Admin):', error.response?.data?.message || error.message);
@@ -470,7 +462,7 @@ const getAllUsers = async (token) => {
 const updateUser = async (userId, userData, token) => { 
     try {
         const config = { headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` } };
-        const response = await axios.put(`${API_URL_AUTH}/users/${userId}`, userData, config); // API_URL_AUTH không định nghĩa
+        const response = await axios.put(`${API_URL_AUTH}/users/${userId}`, userData, config); 
         return response.data;
     } catch (error) {
         console.error('Lỗi khi cập nhật người dùng (Admin):', error.response?.data?.message || error.message);
@@ -480,7 +472,7 @@ const updateUser = async (userId, userData, token) => {
 const deleteUser = async (userId, token) => { 
     try {
         const config = { headers: { Authorization: `Bearer ${token}` } };
-        const response = await axios.delete(`${API_URL_AUTH}/users/${userId}`, config); // API_URL_AUTH không định nghĩa
+        const response = await axios.delete(`${API_URL_AUTH}/users/${userId}`, config); 
         return response.data;
     } catch (error) {
         console.error('Lỗi khi xóa người dùng (Admin):', error.response?.data?.message || error.message);
@@ -495,11 +487,63 @@ const deleteUser = async (userId, token) => {
 // Gửi tin nhắn liên hệ (Public)
 const sendMessage = async (messageData) => { 
     try {
-        const response = await axios.post(`${API_URL_CONTACT}`, messageData); // API_URL_CONTACT không định nghĩa
+        const response = await axios.post(`${API_URL_CONTACT}`, messageData); 
         return response.data;
     } catch (error) {
         console.error('Lỗi khi gửi tin nhắn:', error.response?.data?.message || error.message);
         throw new Error(error.response?.data?.message || 'Gửi tin nhắn thất bại.');
+    }
+};
+
+
+// =========================================================
+// CÁC HÀM API CHO DANH MỤC
+// =========================================================
+
+// Lấy danh sách các danh mục (public và admin)
+const getCategories = async () => { 
+    try {
+        const response = await axios.get(API_URL_CATEGORIES);
+        return response.data;
+    } catch (error) {
+        console.error('Lỗi khi lấy danh mục:', error);
+        throw error;
+    }
+};
+
+// Tạo danh mục mới (Admin Only)
+const createCategory = async (categoryData, token) => {
+    try {
+        const config = { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } };
+        const response = await axios.post(API_URL_CATEGORIES, categoryData, config);
+        return response.data;
+    } catch (error) {
+        console.error('Lỗi khi tạo danh mục:', error.response?.data?.message || error.message);
+        throw new Error(error.response?.data?.message || 'Tạo danh mục thất bại.');
+    }
+};
+
+// Cập nhật danh mục (Admin Only)
+const updateCategory = async (categoryId, categoryData, token) => {
+    try {
+        const config = { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } };
+        const response = await axios.put(`${API_URL_CATEGORIES}/${categoryId}`, categoryData, config);
+        return response.data;
+    } catch (error) {
+        console.error('Lỗi khi cập nhật danh mục:', error.response?.data?.message || error.message);
+        throw new Error(error.response?.data?.message || 'Cập nhật danh mục thất bại.');
+    }
+};
+
+// Xóa danh mục (Admin Only)
+const deleteCategory = async (categoryId, token) => {
+    try {
+        const config = { headers: { Authorization: `Bearer ${token}` } };
+        const response = await axios.delete(`${API_URL_CATEGORIES}/${categoryId}`, config);
+        return response.data;
+    } catch (error) {
+        console.error('Lỗi khi xóa danh mục:', error.response?.data?.message || error.message);
+        throw new Error(error.response?.data?.message || 'Xóa danh mục thất bại.');
     }
 };
 
@@ -514,7 +558,6 @@ export {
     getFeaturedProducts,
     getProductById,
     getRelatedProducts,
-    getCategories,
     getProductsByCategory,
     getProductsByPriceRange,
     searchProducts,
@@ -558,4 +601,10 @@ export {
 
     // Liên hệ
     sendMessage,
+
+    // Danh mục
+    getCategories,
+    createCategory,
+    updateCategory,
+    deleteCategory,
 };

@@ -2,10 +2,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+// Import API services
 import { getAllUsers, updateUser, deleteUser } from '../../services/authService'; 
 
 // Import Ant Design Components
-// Đảm bảo Space được import ở đây
+// Đảm bảo import đúng tất cả các component: Table, Button, Modal, Popconfirm, Select, Tag, message, Spin, Space
 import { Table, Button, Modal, Popconfirm, Select, Tag, message as AntMessage, Spin, Space } from 'antd';
 import { EditOutlined, DeleteOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 
@@ -13,7 +14,7 @@ const { confirm } = Modal;
 const { Option } = Select;
 
 const UserManagement = () => {
-    const { token, user: loggedInUser } = useAuth();
+    const { token, user: loggedInUser } = useAuth(); 
     const navigate = useNavigate();
 
     const [users, setUsers] = useState([]);
@@ -24,11 +25,13 @@ const UserManagement = () => {
         try {
             setLoading(true);
             setError(null);
+            // Gửi token xác thực Admin
             const data = await getAllUsers(token);
             setUsers(data);
         } catch (err) {
             setError(err.message || 'Không thể tải dữ liệu người dùng.');
             console.error("Fetch users error:", err);
+            // Sử dụng AntMessage utility function để hiển thị lỗi.
             AntMessage.error('Lỗi: ' + (err.message || 'Không thể tải dữ liệu người dùng.'));
         } finally {
             setLoading(false);
@@ -36,7 +39,9 @@ const UserManagement = () => {
     };
 
     useEffect(() => {
-        fetchUsers();
+        if (token) {
+            fetchUsers();
+        }
     }, [token]);
 
     const handleUpdateUserRole = async (userId, newRole) => {
@@ -106,6 +111,7 @@ const UserManagement = () => {
                     defaultValue={role}
                     style={{ width: 120 }}
                     onChange={(newRole) => handleUpdateUserRole(record._id, newRole)}
+                    // Không cho sửa vai trò của chính mình
                     disabled={record._id === loggedInUser._id} 
                 >
                     <Option value="user">User</Option>
@@ -130,9 +136,10 @@ const UserManagement = () => {
                         title="Xóa người dùng"
                         description="Bạn có chắc chắn muốn xóa người dùng này?"
                         onConfirm={() => handleDeleteUser(record._id)}
-                        okText="Xóa"
+                        okText="Có"
                         cancelText="Không"
                         icon={<ExclamationCircleOutlined style={{ color: 'red' }} />}
+                        // Vô hiệu hóa nút xóa nếu là chính tài khoản đang đăng nhập
                         disabled={record._id === loggedInUser._id} 
                     >
                         <Button type="danger" icon={<DeleteOutlined />} disabled={record._id === loggedInUser._id}>
@@ -152,7 +159,8 @@ const UserManagement = () => {
                 Quản lý Người dùng
             </h1>
 
-            {error && <AntMessage type="error" content={error} style={{ marginBottom: '20px' }} />}
+            {/* Sửa lỗi: Không render AntMessage trong JSX */}
+            {/* {error && <AntMessage type="error" content={error} style={{ marginBottom: '20px' }} />} */}
 
             {loading ? (
                 <Spin tip="Đang tải người dùng...">

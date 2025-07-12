@@ -1,6 +1,7 @@
 // client/src/components/admin/CouponManagement.jsx
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+// Đảm bảo getCoupons, createCoupon, updateCoupon, deleteCoupon được import từ productService.js
 import { getCoupons, createCoupon, updateCoupon, deleteCoupon } from '../../services/productService'; 
 
 // Import Ant Design Components
@@ -29,9 +30,10 @@ const CouponManagement = () => {
         try {
             setLoading(true);
             setError(null);
-            const data = await getCoupons(token);
+            const data = await getCoupons(token); // Gọi API lấy danh sách coupons
             setCoupons(data);
         } catch (err) {
+            // Lỗi 404 (Not Found) sẽ được bắt ở đây
             setError(err.message || 'Không thể tải dữ liệu mã ưu đãi.');
             console.error("Fetch coupons error:", err);
             AntMessage.error('Lỗi: ' + (err.message || 'Không thể tải mã ưu đãi.'));
@@ -41,14 +43,17 @@ const CouponManagement = () => {
     };
 
     useEffect(() => {
-        fetchCoupons();
+        if (token) {
+            fetchCoupons();
+        }
     }, [token]);
 
     const showAddModal = () => {
         setIsEditing(false);
         setCurrentCoupon(null);
         form.resetFields();
-        form.setFieldsValue({ type: 'percentage', minAmount: 0, maxDiscount: Infinity, isActive: true }); // Giá trị mặc định
+        // Giá trị mặc định cho form mới (maxDiscount và usageLimit là undefined để Antd InputNumber hiển thị placeholder)
+        form.setFieldsValue({ type: 'percentage', minAmount: 0, maxDiscount: undefined, usageLimit: undefined, isActive: true }); 
         setIsModalVisible(true);
     };
 
@@ -59,8 +64,9 @@ const CouponManagement = () => {
             ...coupon,
             // Chuyển đổi Date sang moment object cho DatePicker
             expiresAt: coupon.expiresAt ? moment(coupon.expiresAt) : null, 
-            // Đảm bảo maxDiscount là một giá trị số, nếu là null/undefined, mặc định là Infinity
-            maxDiscount: coupon.maxDiscount === Infinity ? undefined : coupon.maxDiscount, // Antd InputNumber cần undefined cho "không giới hạn"
+            // Nếu maxDiscount là Infinity, đặt là undefined để Antd InputNumber hiển thị placeholder
+            maxDiscount: coupon.maxDiscount === Infinity ? undefined : coupon.maxDiscount, 
+            usageLimit: coupon.usageLimit === Infinity ? undefined : coupon.usageLimit, 
         });
         setIsModalVisible(true);
     };
@@ -100,7 +106,6 @@ const CouponManagement = () => {
             expiresAt: values.expiresAt ? values.expiresAt.toISOString() : null, // Chuyển moment object sang ISO string
             minAmount: Number(values.minAmount) || 0,
             value: Number(values.value),
-            // Chuyển undefined thành Infinity nếu không có giá trị
             maxDiscount: values.maxDiscount === undefined ? Infinity : Number(values.maxDiscount), 
             usageLimit: values.usageLimit === undefined ? Infinity : Number(values.usageLimit),
             isActive: values.isActive !== undefined ? values.isActive : true,
@@ -125,85 +130,55 @@ const CouponManagement = () => {
         }
     };
 
-    // Columns for Ant Design Table
     const columns = [
         {
-            title: 'Mã ưu đãi',
-            dataIndex: 'code',
-            key: 'code',
-            sorter: (a, b) => a.code.localeCompare(b.code),
+            title: 'Mã ưu đãi', dataIndex: 'code', key: 'code', sorter: (a, b) => a.code.localeCompare(b.code),
         },
         {
-            title: 'Loại',
-            dataIndex: 'type',
-            key: 'type',
+            title: 'Loại', dataIndex: 'type', key: 'type',
             render: (type) => (type === 'percentage' ? 'Phần trăm (%)' : 'Cố định (VNĐ)'),
-            filters: [{ text: 'Phần trăm', value: 'percentage' }, { text: 'Cố định', value: 'fixed' }],
-            onFilter: (value, record) => record.type === value,
+            filters: [{ text: 'Phần trăm', value: 'percentage' }, { text: 'Cố định', value: 'fixed' }], onFilter: (value, record) => record.type === value,
         },
         {
-            title: 'Giá trị',
-            dataIndex: 'value',
-            key: 'value',
+            title: 'Giá trị', dataIndex: 'value', key: 'value',
             render: (value, record) => (record.type === 'percentage' ? `${value}%` : `${value.toLocaleString('vi-VN')} VNĐ`),
         },
         {
-            title: 'Đơn hàng tối thiểu',
-            dataIndex: 'minAmount',
-            key: 'minAmount',
-            render: (amount) => `${(amount || 0).toLocaleString('vi-VN')} VNĐ`, // Đảm bảo amount không null
+            title: 'Đơn hàng tối thiểu', dataIndex: 'minAmount', key: 'minAmount',
+            render: (amount) => `${(amount || 0).toLocaleString('vi-VN')} VNĐ`, 
         },
         {
-            title: 'Giảm tối đa',
-            dataIndex: 'maxDiscount',
-            key: 'maxDiscount',
-            render: (amount) => { // SỬA LỖI: KIỂM TRA amount CÓ LÀ SỐ VÀ KHÁC null/undefined KHÔNG
+            title: 'Giảm tối đa', dataIndex: 'maxDiscount', key: 'maxDiscount',
+            render: (amount) => { 
                 if (amount === Infinity) return 'Không giới hạn';
-                if (typeof amount === 'number' && !isNaN(amount)) {
-                    return `${amount.toLocaleString('vi-VN')} VNĐ`;
-                }
-                return 'N/A'; // Hoặc giá trị mặc định khác
+                if (typeof amount === 'number' && !isNaN(amount)) { return `${amount.toLocaleString('vi-VN')} VNĐ`; }
+                return 'N/A'; 
             },
         },
         {
-            title: 'Hết hạn',
-            dataIndex: 'expiresAt',
-            key: 'expiresAt',
+            title: 'Hết hạn', dataIndex: 'expiresAt', key: 'expiresAt',
             render: (date) => (date ? new Date(date).toLocaleDateString('vi-VN') : 'Không'),
         },
         {
-            title: 'Đang hoạt động',
-            dataIndex: 'isActive',
-            key: 'isActive',
+            title: 'Đang hoạt động', dataIndex: 'isActive', key: 'isActive',
             render: (isActive) => (isActive ? <Tag color="green">Có</Tag> : <Tag color="red">Không</Tag>),
-            filters: [{ text: 'Có', value: true }, { text: 'Không', value: false }],
-            onFilter: (value, record) => record.isActive === value,
+            filters: [{ text: 'Có', value: true }, { text: 'Không', value: false }], onFilter: (value, record) => record.isActive === value,
         },
         {
-            title: 'Hành động',
-            key: 'actions',
+            title: 'Hành động', key: 'actions', width: 180, align: 'center',
             render: (_, record) => (
                 <Space size="middle">
                     <Button type="primary" icon={<EditOutlined />} onClick={() => showEditModal(record)}>
                         Sửa
                     </Button>
                     <Popconfirm
-                        title="Xóa mã ưu đãi"
-                        description="Bạn có chắc chắn muốn xóa mã ưu đãi này?"
-                        onConfirm={() => handleDeleteCoupon(record._id)}
-                        okText="Xóa"
-                        okType="danger"
-                        cancelText="Hủy"
-                        icon={<ExclamationCircleOutlined style={{ color: 'red' }} />}
-                    >
-                        <Button type="danger" icon={<DeleteOutlined />}>
-                            Xóa
-                        </Button>
+                        title="Xóa mã ưu đãi" description="Bạn có chắc chắn muốn xóa mã ưu đãi này?"
+                        onConfirm={() => handleDeleteCoupon(record._id)} okText="Xóa" cancelText="Hủy"
+                        icon={<ExclamationCircleOutlined style={{ color: 'red' }} />}>
+                        <Button type="danger" icon={<DeleteOutlined />}>Xóa</Button>
                     </Popconfirm>
                 </Space>
             ),
-            width: 180,
-            align: 'center',
         },
     ];
 
@@ -217,7 +192,8 @@ const CouponManagement = () => {
                 Thêm mã ưu đãi mới
             </Button>
 
-            {error && <AntMessage type="error" content={error} style={{ marginBottom: '20px' }} />}
+            {/* Error message render here. Note: We rely on AntMessage.error utility call, not the component render here */}
+            {error && <div style={{ color: 'red', marginBottom: '10px' }}>{error}</div>}
 
             {loading ? (
                 <Spin tip="Đang tải mã ưu đãi...">
@@ -247,12 +223,9 @@ const CouponManagement = () => {
                     form={form}
                     layout="vertical"
                     onFinish={onFinishForm}
-                    // initialValues: Set giá trị mặc định cho form mới hoặc khi sửa
                     initialValues={isEditing && currentCoupon ? {
                         ...currentCoupon,
-                        // Chuyển Date object sang moment object cho DatePicker
                         expiresAt: currentCoupon.expiresAt ? moment(currentCoupon.expiresAt) : null,
-                        // Nếu maxDiscount là Infinity, Ant Design InputNumber cần giá trị là undefined để hiển thị placeholder
                         maxDiscount: currentCoupon.maxDiscount === Infinity ? undefined : currentCoupon.maxDiscount,
                         usageLimit: currentCoupon.usageLimit === Infinity ? undefined : currentCoupon.usageLimit,
                     } : { type: 'percentage', minAmount: 0, maxDiscount: undefined, usageLimit: undefined, isActive: true }} 

@@ -3,8 +3,8 @@ import axios from 'axios';
 
 const API_URL = 'http://localhost:5001/api/auth';
 
-// Hàm đăng ký
-const register = async (userData) => { // KHÔNG CÓ 'export' TRỰC TIẾP TẠI ĐÂY
+// Hàm đăng ký (Public)
+const register = async (userData) => { 
     try {
         const response = await axios.post(`${API_URL}/register`, userData);
         return response.data;
@@ -14,8 +14,8 @@ const register = async (userData) => { // KHÔNG CÓ 'export' TRỰC TIẾP TẠ
     }
 };
 
-// Hàm đăng nhập
-const login = async (credentials) => { // KHÔNG CÓ 'export' TRỰC TIẾP TẠI ĐÂY
+// Hàm đăng nhập (Public)
+const login = async (credentials) => { 
     try {
         const response = await axios.post(`${API_URL}/login`, credentials);
         return response.data;
@@ -26,7 +26,7 @@ const login = async (credentials) => { // KHÔNG CÓ 'export' TRỰC TIẾP TẠ
 };
 
 // Hàm cập nhật hồ sơ người dùng hiện tại
-const updateProfile = async (userData, token) => { // KHÔNG CÓ 'export' TRỰC TIẾP TẠI ĐÂY
+const updateProfile = async (userData, token) => { 
     try {
         const config = {
             headers: {
@@ -43,7 +43,7 @@ const updateProfile = async (userData, token) => { // KHÔNG CÓ 'export' TRỰC
 };
 
 // Hàm lấy thông tin user hiện tại (getMe)
-const getProfile = async (token) => { // KHÔNG CÓ 'export' TRỰC TIẾP TẠI ĐÂY
+const getProfile = async (token) => { 
     try {
         const config = {
             headers: {
@@ -63,13 +63,9 @@ const getProfile = async (token) => { // KHÔNG CÓ 'export' TRỰC TIẾP TẠI
 // =========================================================
 
 // Lấy tất cả người dùng (Admin Only)
-const getAllUsers = async (token) => { // KHÔNG CÓ 'export' TRỰC TIẾP TẠI ĐÂY
+const getAllUsers = async (token) => { 
     try {
-        const config = {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        };
+        const config = { headers: { Authorization: `Bearer ${token}` } };
         const response = await axios.get(`${API_URL}/users`, config);
         return response.data;
     } catch (error) {
@@ -79,14 +75,9 @@ const getAllUsers = async (token) => { // KHÔNG CÓ 'export' TRỰC TIẾP TẠ
 };
 
 // Cập nhật người dùng theo ID (Admin Only)
-const updateUser = async (userId, userData, token) => { // KHÔNG CÓ 'export' TRỰC TIẾP TẠI ĐÂY
+const updateUser = async (userId, userData, token) => { 
     try {
-        const config = {
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
-            },
-        };
+        const config = { headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` } };
         const response = await axios.put(`${API_URL}/users/${userId}`, userData, config);
         return response.data;
     } catch (error) {
@@ -96,13 +87,9 @@ const updateUser = async (userId, userData, token) => { // KHÔNG CÓ 'export' T
 };
 
 // Xóa người dùng (Admin Only)
-const deleteUser = async (userId, token) => { // KHÔNG CÓ 'export' TRỰC TIẾP TẠI ĐÂY
+const deleteUser = async (userId, token) => { 
     try {
-        const config = {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        };
+        const config = { headers: { Authorization: `Bearer ${token}` } };
         const response = await axios.delete(`${API_URL}/users/${userId}`, config);
         return response.data;
     } catch (error) {
@@ -111,14 +98,13 @@ const deleteUser = async (userId, token) => { // KHÔNG CÓ 'export' TRỰC TI�
     }
 };
 
-
 // --- DÒNG EXPORT CUỐI CÙNG: ĐẢM BẢO TẤT CẢ CÁC HÀM ĐƯỢC LIỆT KÊ CHỈ MỘT LẦN VÀ ĐÚNG CHÍNH TẢ ---
 export {
     register,
     login,
     updateProfile,
-    getProfile, // <-- ĐẢM BẢO CHỈ CÓ MỘT LẦN EXPORT NÀY
-    getAllUsers,
-    updateUser,
-    deleteUser,
+    getProfile, 
+    getAllUsers,    
+    updateUser,     
+    deleteUser,     
 };

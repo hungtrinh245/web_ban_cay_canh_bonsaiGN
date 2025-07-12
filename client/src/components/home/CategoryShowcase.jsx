@@ -1,118 +1,122 @@
 // client/src/components/home/CategoryShowcase.jsx
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { getCategories } from '../../services/productService';
+import { getCategories } from '../../services/productService'; // Import hàm API
 
 const CategoryShowcase = () => {
     const [categories, setCategories] = useState([]);
-
-    // Ánh xạ tên danh mục với một hình ảnh đại diện
-    const categoryImages = {
-        'Cây để bàn': '/images/sample-kim-tien.jpg',
-        'Cây phong thủy': '/images/sample-tung-la-han.jpg',
-        'Sen đá': '/images/sample-sen-da-chuoi-ngoc.jpg',
-        'Xương rồng': '/images/sample-xuong-rong-tai-tho.jpg',
-        'Cây thủy sinh': '/images/sample-trau-ba.jpg',
-        // Thêm các danh mục khác bạn có ở đây
-        'Cây cao cấp': '/images/sample-sanh-co.jpg',
-        'Cây văn phòng': '/images/sample-luoi-ho.jpg',
-           'Cây Dây Leo': '/images/sample-trau-ba.jpg', 
-        'Cây Ăn Trái': '/images/sample-mai-vang.jpg', 
-        'Dụng Cụ & Chậu': '/images/sample-tung-la-han.jpg' 
-    };
-    const defaultImage = '/images/sample-mai-vang.jpg'; // Ảnh mặc định 
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
         const fetchCategories = async () => {
             try {
+                setLoading(true);
+                // getCategories sẽ trả về một mảng các đối tượng { _id, name, description, ... }
                 const data = await getCategories();
+                // Lọc chỉ 6 danh mục đầu tiên hoặc hiển thị tất cả
                 setCategories(data);
-            } catch (error) {
-                console.error("Không thể tải danh mục:", error);
+            } catch (err) {
+                setError("Không thể tải danh mục.");
+                console.error("Fetch categories error:", err);
+            } finally {
+                setLoading(false);
             }
         };
+
         fetchCategories();
     }, []);
 
-    const sectionStyle = {
-        padding: '60px 20px',
+    // --- CÁC STYLE ---
+    const showcaseStyle = {
+        padding: '80px 0',
+        backgroundColor: '#fff',
         textAlign: 'center',
-        background: '#fff',
+    };
+
+    const sectionTitleStyle = {
+        fontSize: '2.5em',
+        fontWeight: 'bold',
+        color: '#2c3e50',
+        marginBottom: '40px',
+        position: 'relative',
+        paddingBottom: '15px',
+        '&::after': {
+            content: '""',
+            width: '80px',
+            height: '4px',
+            background: '#28a745',
+            margin: '0 auto',
+            display: 'block',
+            marginTop: '10px',
+        }
     };
 
     const gridStyle = {
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-        gap: '20px',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+        gap: '30px',
         maxWidth: '1200px',
-        margin: '40px auto 0 auto'
+        margin: '0 auto',
     };
-    
-    const cardStyle = {
-        position: 'relative',
-        height: '350px',
-        borderRadius: '8px',
-        overflow: 'hidden',
-        color: 'white',
+
+    const categoryCardStyle = {
+        backgroundColor: '#f8f9fa',
+        borderRadius: '12px',
+        padding: '25px',
+        boxShadow: '0 4px 15px rgba(0,0,0,0.05)',
+        transition: 'transform 0.3s ease, box-shadow 0.3s ease',
         textDecoration: 'none',
+        color: '#333',
         display: 'flex',
+        flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
-        transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+        minHeight: '150px',
+        '&:hover': {
+            transform: 'translateY(-5px)',
+            boxShadow: '0 8px 20px rgba(0,0,0,0.1)',
+            backgroundColor: '#e9f5e9',
+        }
     };
 
-    const cardImageStyle = {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        objectFit: 'cover',
-        zIndex: 1,
-        transition: 'transform 0.3s ease',
-    };
-
-    const cardOverlayStyle = {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        background: 'rgba(0, 0, 0, 0.4)',
-        zIndex: 2,
-    };
-
-    const cardTitleStyle = {
-        position: 'relative',
-        zIndex: 3,
-        fontSize: '1.5em',
+    const categoryTitleStyle = {
+        fontSize: '1.4em',
         fontWeight: 'bold',
-        textShadow: '2px 2px 4px rgba(0,0,0,0.7)',
+        marginTop: '15px',
+        color: '#2c3e50',
     };
-    
+
+    const loadingStyle = {
+        textAlign: 'center',
+        padding: '50px',
+    };
+
+    if (loading) return <div style={loadingStyle}>Đang tải danh mục...</div>;
+    if (error) return <div style={{...loadingStyle, color: 'red'}}>Lỗi: {error}</div>;
 
     return (
-        <div style={sectionStyle}>
-            <h2 style={{ fontSize: '2em', fontWeight: 'normal', marginBottom: '10px' }}>KHÁM PHÁ THEO DANH MỤC</h2>
-            <div style={{width: '100px', height: '4px', background: '#28a745', margin: '0 auto 40px auto'}}></div>
-            
+        <div style={showcaseStyle}>
+            <h2 style={sectionTitleStyle}>
+                KHÁM PHÁ THEO DANH MỤC
+                <div style={sectionTitleStyle['&::after']}></div>
+            </h2>
             <div style={gridStyle}>
-                {categories.map(category => (
+                {categories.map((category) => (
+                    // SỬA LỖI: Đảm bảo sử dụng key duy nhất (_id) và render tên (name)
                     <Link
-                        key={category}
-                        to={`/shop/category/${encodeURIComponent(category)}`}
-                        style={cardStyle}
-                        onMouseOver={e => e.currentTarget.style.transform = 'scale(1.03)'}
-                        onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
+                        key={category._id} // <- Đảm bảo key duy nhất
+                        to={`/shop/category/${category.name}`}
+                        style={categoryCardStyle}
+                        onMouseOver={(e) => Object.assign(e.currentTarget.style, categoryCardStyle['&:hover'])}
+                        onMouseOut={(e) => Object.assign(e.currentTarget.style, categoryCardStyle)}
                     >
-                        <img 
-                            src={categoryImages[category] || defaultImage} 
-                            alt={category} 
-                            style={cardImageStyle}
-                        />
-                        <div style={cardOverlayStyle}></div>
-                        <h3 style={cardTitleStyle}>{category}</h3>
+                        {/* Lỗi "Objects are not valid as a React child" xảy ra khi bạn 
+                            cố gắng render category trực tiếp trong JSX, ví dụ: <div>{category}</div>.
+                            Chúng ta cần render category.name.
+                        */}
+                        <h3 style={categoryTitleStyle}>{category.name}</h3> 
+                        <p style={{fontSize: '0.9em', color: '#666'}}>{category.description || ''}</p>
                     </Link>
                 ))}
             </div>

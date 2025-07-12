@@ -94,8 +94,7 @@ export {
     getPostById,
     getLatestPosts,
     getFeaturedPosts,
-    // EXPORTS MỚI CHO ADMIN POSTS
-    createPost,       // <-- ĐẢM BẢO HÀM NÀY ĐƯỢC EXPORT Ở ĐÂY
-    updatePost,       // <-- ĐẢM BẢO HÀM NÀY ĐƯỢC EXPORT Ở ĐÂY
-    deletePost,       // <-- ĐẢM BẢO HÀM NÀY ĐƯỢC EXPORT Ở ĐÂY
+    createPost,       // <-- Đảm bảo export
+    updatePost,       // <-- Đảm bảo export
+    deletePost,       // <-- Đảm bảo export
 };

@@ -2,11 +2,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+// Đảm bảo các hàm này được export từ productService.js
 import { getAllOrdersAdmin, updateOrderToPaid, updateOrderToDelivered } from '../../services/productService'; 
 
 // Import Ant Design Components
 import { Table, Button, Modal, Space, Popconfirm, Tag, message as AntMessage, Spin } from 'antd';
-// SỬA LỖI: Thay thế ShippingPrintOutlined bằng CarOutlined (hoặc một icon phù hợp khác)
+// Đảm bảo các icons được import đúng cách (CarOutlined thay vì ShippingPrintOutlined)
 import { CheckOutlined, ExclamationCircleOutlined, EyeOutlined, CarOutlined } from '@ant-design/icons'; 
 
 const { confirm } = Modal;
@@ -23,19 +24,28 @@ const OrderManagement = () => {
         try {
             setLoading(true);
             setError(null);
-            const data = await getAllOrdersAdmin(token);
+            // Gửi token xác thực Admin
+            const data = await getAllOrdersAdmin(token); 
             setOrders(data);
         } catch (err) {
+            // Sử dụng AntMessage utility function để hiển thị lỗi. 
+            // Không render <AntMessage /> trực tiếp trong JSX.
+            AntMessage.error('Lỗi khi tải dữ liệu đơn hàng: ' + (err.message || 'Không xác định'));
             setError(err.message || 'Không thể tải dữ liệu đơn hàng.');
             console.error("Fetch orders error:", err);
-            AntMessage.error('Lỗi: ' + (err.message || 'Không thể tải dữ liệu.'));
         } finally {
             setLoading(false);
         }
     };
 
     useEffect(() => {
-        fetchOrders();
+        // Chỉ fetch khi có token (người dùng đã đăng nhập)
+        if (token) { 
+            fetchOrders();
+        } else {
+            setLoading(false);
+            setError("Bạn cần đăng nhập để xem đơn hàng.");
+        }
     }, [token]); 
 
     const handleUpdatePaid = (orderId) => {
@@ -45,9 +55,9 @@ const OrderManagement = () => {
             content: 'Đơn hàng này sẽ được đánh dấu là đã thanh toán.',
             okText: 'Xác nhận',
             cancelText: 'Hủy',
-            async onOk() {
+            async onOk() { 
                 try {
-                    await updateOrderToPaid(orderId, token);
+                    await updateOrderToPaid(orderId, token); 
                     AntMessage.success('Đơn hàng đã được đánh dấu là đã thanh toán!');
                     fetchOrders(); 
                 } catch (err) {
@@ -65,9 +75,9 @@ const OrderManagement = () => {
             content: 'Đơn hàng này sẽ được đánh dấu là đã giao hàng.',
             okText: 'Xác nhận',
             cancelText: 'Hủy',
-            async onOk() {
+            async onOk() { 
                 try {
-                    await updateOrderToDelivered(orderId, token);
+                    await updateOrderToDelivered(orderId, token); 
                     AntMessage.success('Đơn hàng đã được đánh dấu là đã giao hàng!');
                     fetchOrders(); 
                 } catch (err) {
@@ -78,96 +88,44 @@ const OrderManagement = () => {
         });
     };
 
-    // Columns for Ant Design Table
     const columns = [
+        { title: 'ID Đơn hàng', dataIndex: '_id', key: '_id', render: (text) => text.slice(-6).toUpperCase(), width: 120 },
+        { title: 'Người dùng', dataIndex: 'user', key: 'user', render: (user) => (user ? `${user.name} (${user.email})` : 'Khách') },
+        { title: 'Ngày đặt', dataIndex: 'createdAt', key: 'createdAt', render: (date) => new Date(date).toLocaleDateString('vi-VN'), sorter: (a, b) => new Date(a.createdAt) - new Date(b.createdAt) },
+        { title: 'Tổng tiền', dataIndex: 'totalPrice', key: 'totalPrice', render: (price) => `${price.toLocaleString('vi-VN')} VNĐ`, sorter: (a, b) => a.totalPrice - b.totalPrice },
         {
-            title: 'ID',
-            dataIndex: '_id',
-            key: '_id',
-            render: (text) => text.slice(-6).toUpperCase(),
-            width: 100,
+            title: 'Thanh toán', dataIndex: 'isPaid', key: 'isPaid',
+            render: (isPaid, record) => (<Tag color={isPaid ? 'green' : 'orange'}>{isPaid ? 'Đã TT' : 'Chờ TT'}</Tag>),
+            filters: [{ text: 'Đã TT', value: true }, { text: 'Chờ TT', value: false }], onFilter: (value, record) => record.isPaid === value,
         },
         {
-            title: 'Người dùng',
-            dataIndex: 'user',
-            key: 'user',
-            render: (user) => (user ? user.name : 'Khách'),
+            title: 'Giao hàng', dataIndex: 'isDelivered', key: 'isDelivered',
+            render: (isDelivered, record) => (<Tag color={isDelivered ? 'blue' : 'gray'}>{isDelivered ? 'Đã giao' : 'Đang XL'}</Tag>),
+            filters: [{ text: 'Đã giao', value: true }, { text: 'Đang XL', value: false }], onFilter: (value, record) => record.isDelivered === value,
         },
         {
-            title: 'Ngày đặt',
-            dataIndex: 'createdAt',
-            key: 'createdAt',
-            render: (date) => new Date(date).toLocaleDateString('vi-VN'),
-        },
-        {
-            title: 'Tổng tiền',
-            dataIndex: 'totalPrice',
-            key: 'totalPrice',
-            render: (price) => `${price.toLocaleString('vi-VN')} VNĐ`,
-            sorter: (a, b) => a.totalPrice - b.totalPrice,
-        },
-        {
-            title: 'Thanh toán',
-            dataIndex: 'isPaid',
-            key: 'isPaid',
-            render: (isPaid, record) => (
-                <Tag color={isPaid ? 'green' : 'orange'}>
-                    {isPaid ? 'Đã TT' : 'Chờ TT'}
-                </Tag>
-            ),
-            filters: [{ text: 'Đã TT', value: true }, { text: 'Chờ TT', value: false }],
-            onFilter: (value, record) => record.isPaid === value,
-        },
-        {
-            title: 'Giao hàng',
-            dataIndex: 'isDelivered',
-            key: 'isDelivered',
-            render: (isDelivered, record) => (
-                <Tag color={isDelivered ? 'blue' : 'gray'}>
-                    {isDelivered ? 'Đã giao' : 'Đang XL'}
-                </Tag>
-            ),
-            filters: [{ text: 'Đã giao', value: true }, { text: 'Đang XL', value: false }],
-            onFilter: (value, record) => record.isDelivered === value,
-        },
-        {
-            title: 'Hành động',
-            key: 'actions',
+            title: 'Hành động', key: 'actions', width: 200, align: 'center',
             render: (_, record) => (
                 <Space size="middle">
                     <Button type="default" icon={<EyeOutlined />} onClick={() => navigate(`/order/${record._id}`)}>
                         Xem
                     </Button>
-                    {!record.isPaid && ( // Chỉ hiện nút TT nếu chưa TT
+                    {!record.isPaid && ( 
                         <Popconfirm
-                            title="Xác nhận đã thanh toán?"
-                            onConfirm={() => handleUpdatePaid(record._id)}
-                            okText="Có"
-                            cancelText="Không"
-                            icon={<ExclamationCircleOutlined style={{ color: 'orange' }} />}
-                        >
-                            <Button icon={<CheckOutlined />} style={{ backgroundColor: '#28a745', borderColor: '#28a745', color: 'white' }}>
-                                TT
-                            </Button>
+                            title="Xác nhận đã thanh toán?" onConfirm={() => handleUpdatePaid(record._id)} okText="Có" cancelText="Không"
+                            icon={<ExclamationCircleOutlined style={{ color: 'orange' }} />}>
+                            <Button icon={<CheckOutlined />} style={{ backgroundColor: '#28a745', borderColor: '#28a745', color: 'white' }}>TT</Button>
                         </Popconfirm>
                     )}
-                    {!record.isDelivered && ( // Chỉ hiện nút Giao nếu chưa Giao
+                    {!record.isDelivered && ( 
                         <Popconfirm
-                            title="Xác nhận đã giao hàng?"
-                            onConfirm={() => handleUpdateDelivered(record._id)}
-                            okText="Có"
-                            cancelText="Không"
-                            icon={<ExclamationCircleOutlined style={{ color: 'blue' }} />}
-                        >
-                            <Button icon={<CarOutlined />} style={{ backgroundColor: '#007bff', borderColor: '#007bff', color: 'white' }}> {/* ĐÃ ĐỔI ICON */}
-                                Giao
-                            </Button>
+                            title="Xác nhận đã giao hàng?" onConfirm={() => handleUpdateDelivered(record._id)} okText="Có" cancelText="Không"
+                            icon={<ExclamationCircleOutlined style={{ color: 'blue' }} />}>
+                            <Button icon={<CarOutlined />} style={{ backgroundColor: '#007bff', borderColor: '#007bff', color: 'white' }}>Giao</Button>
                         </Popconfirm>
                     )}
                 </Space>
             ),
-            width: 200,
-            align: 'center',
         },
     ];
 
@@ -177,7 +135,8 @@ const OrderManagement = () => {
                 Quản lý Đơn hàng
             </h1>
 
-            {error && <AntMessage type="error" content={error} style={{ marginBottom: '20px' }} />}
+            {/* Sửa lỗi: Xóa dòng render AntMessage trong JSX để tránh lỗi "Element type is invalid" */}
+            {/* {error && <AntMessage type="error" content={error} style={{ marginBottom: '20px' }} />} */}
 
             {loading ? (
                 <Spin tip="Đang tải đơn hàng...">
