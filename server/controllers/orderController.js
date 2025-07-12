@@ -1,53 +1,28 @@
 // server/controllers/orderController.js
 const Order = require('../models/Order');
-const Bonsai = require('../models/bonsai'); //cập nhật tồn kho
+const Bonsai = require('../models/bonsai'); 
+const mongoose = require('mongoose');
 
 const addOrderItems = async (req, res) => {
     const {
-        orderItems,
-        shippingAddress,
-        paymentMethod,
-        itemsPrice,
-        shippingPrice,
-        taxPrice, // Mặc định 0
-        totalPrice,
-        notes,
-        createAccount,
-        shipToDifferentAddress,
+        orderItems, shippingAddress, paymentMethod, itemsPrice, shippingPrice, taxPrice, totalPrice, notes, createAccount, shipToDifferentAddress, userId, 
     } = req.body;
-
     if (orderItems && orderItems.length === 0) {
         res.status(400).json({ message: 'Không có sản phẩm trong đơn hàng' });
         return;
     } else {
         try {
-            // Lấy user ID nếu người dùng đã đăng nhập (middleware protect sẽ gắn req.user)
-            const userId = req.user ? req.user._id : null;
-
+            const orderUserId = req.user ? req.user._id : userId;
             const order = new Order({
-                user: userId, // Gán user ID 
-                orderItems: orderItems.map(x => ({
-                    ...x,
-                    product: x.product, //trường 'product' là ObjectId
-                    _id: undefined, // Bỏ _id tự động tạo khi map, để Mongoose tự tạo _id cho subdocument
-                })),
-                shippingAddress,
-                paymentMethod,
-                itemsPrice,
-                shippingPrice,
-                taxPrice: taxPrice || 0, // Đảm bảo có giá trị
-                totalPrice,
-                notes,
-                createAccount,
-                shipToDifferentAddress,
+                user: orderUserId, 
+                orderItems: orderItems.map(x => ({ ...x, product: x.product, _id: undefined, })),
+                shippingAddress, paymentMethod, itemsPrice, shippingPrice, taxPrice: taxPrice || 0, totalPrice, notes, createAccount, shipToDifferentAddress,
             });
 
-            // --- GIẢM SỐ LƯỢNG TỒN KHO CỦA SẢN PHẨM ---
             for (const item of order.orderItems) {
                 const product = await Bonsai.findById(item.product);
                 if (product) {
                     if (product.stockQuantity < item.qty) {
-                        // Nếu tồn kho không đủ, hủy bỏ đơn hàng
                         res.status(400).json({ message: `Sản phẩm "${product.name}" không đủ số lượng tồn kho. Chỉ còn ${product.stockQuantity} sản phẩm.` });
                         return;
                     }
@@ -58,11 +33,8 @@ const addOrderItems = async (req, res) => {
                     return;
                 }
             }
-            // --- KẾT THÚC GIẢM TỒN KHO ---
-
             const createdOrder = await order.save();
             res.status(201).json(createdOrder);
-
         } catch (error) {
             console.error('Lỗi khi tạo đơn hàng:', error);
             if (error.name === 'ValidationError') {
@@ -74,18 +46,16 @@ const addOrderItems = async (req, res) => {
     }
 };
 
-
 const getOrderById = async (req, res) => {
     try {
-        // Populate user details (name and email) if order has a user
-        const order = await Order.findById(req.params.id).populate(
-            'user',
-            'name email'
-        );
+        const orderId = req.params.id;
+        if (!mongoose.Types.ObjectId.isValid(orderId)) {
+            return res.status(400).json({ message: 'ID đơn hàng không hợp lệ.' });
+        }
+        const order = await Order.findById(orderId).populate('user', 'name email');
 
         if (order) {
-            // Đảm bảo chỉ user của đơn hàng hoặc admin mới có thể xem
-            if (req.user && (order.user.toString() === req.user._id.toString() || req.user.role === 'admin')) {
+            if (order.user === null || (req.user && (order.user._id.toString() === req.user._id.toString() || req.user.role === 'admin'))) {
                 res.json(order);
             } else {
                 res.status(403).json({ message: 'Bạn không có quyền xem đơn hàng này.' });
@@ -95,22 +65,16 @@ const getOrderById = async (req, res) => {
         }
     } catch (error) {
         console.error('Lỗi khi lấy đơn hàng theo ID:', error);
-        if (error.name === 'CastError') {
-            return res.status(400).json({ message: 'ID đơn hàng không hợp lệ.' });
-        }
         res.status(500).json({ message: 'Lỗi máy chủ nội bộ khi lấy đơn hàng.' });
     }
 };
 
-
-// @desc    Get user's own orders
-// @route   GET /api/orders/myorders
-// @access  Private (only for logged in user)
-
 const getMyOrders = async (req, res) => {
     try {
-        // req.user._id được gắn từ middleware 'protect'
-        const orders = await Order.find({ user: req.user._id }).sort({ createdAt: -1 }); // Sắp xếp mới nhất
+        if (!req.user || !req.user._id || !mongoose.Types.ObjectId.isValid(req.user._id)) { 
+            return res.status(400).json({ message: 'Người dùng không xác thực hoặc ID người dùng không hợp lệ.' });
+        }
+        const orders = await Order.find({ user: req.user._id }).sort({ createdAt: -1 });
         res.json(orders);
     } catch (error) {
         console.error('Lỗi khi lấy đơn hàng của người dùng:', error);
@@ -118,8 +82,56 @@ const getMyOrders = async (req, res) => {
     }
 };
 
-module.exports = {
-    addOrderItems,
-    getOrderById,
-    getMyOrders,
+const updateOrderToPaid = async (req, res) => {
+    try {
+        const order = await Order.findById(req.params.id);
+        if (order) {
+            order.isPaid = true;
+            order.paidAt = Date.now();
+            const updatedOrder = await order.save();
+            res.json(updatedOrder);
+        } else {
+            res.status(404).json({ message: 'Không tìm thấy đơn hàng.' });
+        }
+    } catch (error) {
+        console.error('Lỗi khi cập nhật trạng thái đã thanh toán:', error);
+        res.status(500).json({ message: 'Lỗi máy chủ nội bộ khi cập nhật trạng thái thanh toán.' });
+    }
+};
+
+const updateOrderToDelivered = async (req, res) => {
+    try {
+        const order = await Order.findById(req.params.id);
+        if (order) {
+            order.isDelivered = true;
+            order.deliveredAt = Date.now();
+            const updatedOrder = await order.save();
+            res.json(updatedOrder);
+        } else {
+            res.status(404).json({ message: 'Không tìm thấy đơn hàng.' });
+        }
+    } catch (error) {
+        console.error('Lỗi khi cập nhật trạng thái đã giao hàng:', error);
+        res.status(500).json({ message: 'Lỗi máy chủ nội bộ khi cập nhật trạng thái giao hàng.' });
+    }
+};
+
+const getAllOrders = async (req, res) => {
+    try {
+        const orders = await Order.find({}).populate('user', 'id name email').sort({ createdAt: -1 });
+        res.json(orders);
+    } catch (error) {
+        console.error('Lỗi khi lấy tất cả đơn hàng (Admin):', error);
+        res.status(500).json({ message: 'Lỗi máy chủ nội bộ khi lấy tất cả đơn hàng.' });
+    }
+};
+
+// ĐẢM BẢO TẤT CẢ CÁC HÀM ĐƯỢC EXPORT Ở ĐÂY
+module.exports = { 
+    addOrderItems, 
+    getOrderById, 
+    getMyOrders, 
+    updateOrderToPaid, 
+    updateOrderToDelivered, 
+    getAllOrders // <-- ĐẢM BẢO HÀM NÀY ĐƯỢC EXPORT
 };

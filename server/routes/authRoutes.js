@@ -1,22 +1,30 @@
 // server/routes/authRoutes.js
 const express = require('express');
 const router = express.Router();
+const { protect, authorize } = require('../middleware/authMiddleware'); // Đảm bảo import đúng
 
+const { 
+    registerUser, 
+    loginUser, 
+    getMe, 
+    updateUserProfile,
+    getAllUsers, 
+    getUserById, 
+    updateUser, 
+    deleteUser, 
+} = require('../controllers/authController');
 
-const { registerUser, loginUser, getMe, updateUserProfile } = require('../controllers/authController');
-
-const { protect } = require('../middleware/authMiddleware');
-
-// Định nghĩa route cho việc đăng ký
 router.post('/register', registerUser);
-
-// Định nghĩa route cho việc đăng nhập
 router.post('/login', loginUser);
-
-// Định nghĩa route để lấy thông tin cá nhân, route này được bảo vệ
 router.get('/me', protect, getMe);
+router.put('/profile', protect, updateUserProfile);
 
-// Định nghĩa route để cập nhật thông tin cá nhân, route này được bảo vệ
-router.put('/profile', protect, updateUserProfile); // <-- ĐẢM BẢO DÒNG NÀY VÀ import CỦA NÓ ĐÚNG
+// Admin Only Routes for Users
+// Lỗi "Route.get() requires a callback function but got a [object Undefined]" 
+// xảy ra nếu getAllUsers ở trên là undefined.
+router.get('/users', protect, authorize('admin'), getAllUsers);
+router.get('/users/:id', protect, authorize('admin'), getUserById);
+router.put('/users/:id', protect, authorize('admin'), updateUser);
+router.delete('/users/:id', protect, authorize('admin'), deleteUser);
 
 module.exports = router;

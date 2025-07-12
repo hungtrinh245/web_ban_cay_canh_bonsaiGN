@@ -1,16 +1,25 @@
 // server/routes/orderRoutes.js
 const express = require('express');
 const router = express.Router();
-const { addOrderItems, getOrderById, getMyOrders } = require('../controllers/orderController');
-const { protect } = require('../middleware/authMiddleware'); // Middleware bảo vệ route
+const { protect, authorize } = require('../middleware/authMiddleware'); // Đảm bảo import đúng
 
-// Route để tạo đơn hàng mới
+const { 
+    addOrderItems, 
+    getOrderById, 
+    getMyOrders,
+    updateOrderToPaid, 
+    updateOrderToDelivered, 
+    getAllOrders, // <-- ĐẢM BẢO IMPORT HÀM NÀY
+} = require('../controllers/orderController');
+
+// User Routes
 router.post('/', protect, addOrderItems);
-
-// Route để lấy chi tiết đơn hàng theo ID
+router.get('/myorders', protect, getMyOrders);
 router.get('/:id', protect, getOrderById);
 
-// Route để lấy các đơn hàng của người dùng hiện tại
-router.get('/myorders', protect, getMyOrders); 
+// Admin Only Order Routes
+router.get('/', protect, authorize('admin'), getAllOrders); // <-- Lỗi xảy ra ở đây nếu getAllOrders là undefined
+router.put('/:id/pay', protect, authorize('admin'), updateOrderToPaid);
+router.put('/:id/deliver', protect, authorize('admin'), updateOrderToDelivered);
 
 module.exports = router;
