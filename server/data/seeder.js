@@ -1,20 +1,22 @@
+// server/data/seeder.js
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const colors = require("colors"); 
 const connectDB = require("../config/db");
-const Coupon = require("../models/Coupon"); 
 
-
+// Load models
 const Bonsai = require("../models/bonsai"); 
-
+const Coupon = require("../models/Coupon"); 
 const Post = require("../models/Post"); 
+const User = require("../models/User"); 
+const Category = require("../models/Category"); // Đảm bảo import Category model
 
-
+// Load env vars
 dotenv.config({ path: __dirname + "/../.env" });
 
-
+// --- DỮ LIỆU MẪU SẢN PHẨM ---
 const bonsaiData = [
- {
+    {
         name: "Cây Tùng La Hán",
         description: "Cây Tùng La Hán có ý nghĩa phong thủy rất lớn, mang lại sự may mắn, thịnh vượng và bình an cho gia chủ.",
         price: 450000,
@@ -133,7 +135,7 @@ const bonsaiData = [
         category: "Sen đá",
         stockQuantity: 80,
     },
-     {
+    {
         name: "Vạn Niên Thanh",
         description: "Cây Vạn Niên Thanh leo, dễ trồng trong nước hoặc đất, mang ý nghĩa về sự sung túc và trường tồn.",
         price: 130000,
@@ -150,7 +152,7 @@ const bonsaiData = [
         stockQuantity: 55,
         isFeatured: true
     },
-     {
+    {
         name: "Bình tưới cây",
         description: "Bình xịt phun sương dung tích 500ml, giúp cung cấp độ ẩm cần thiết cho các loại cây ưa ẩm.",
         price: 45000,
@@ -166,7 +168,7 @@ const bonsaiData = [
         category: "Cây phong thủy",
         stockQuantity: 25,
     },
-     {
+    {
         name: "Cây Phú Quý",
         description: "Cây Phú Quý mang ý nghĩa tiền tài, phú quý cho gia chủ. Cây rất dễ chăm sóc, phù hợp đặt trong nhà hoặc văn phòng.",
         price: 35000, 
@@ -193,24 +195,24 @@ const bonsaiData = [
     },
 ];
 
-//data ma ưu đãi
+// Dữ liệu mẫu cho mã ưu đãi
 const couponData = [
     {
         code: 'SALE10',
         type: 'percentage',
-        value: 10, // 10%
-        minAmount: 100000, // Đơn hàng từ 100k
-        maxDiscount: 100000, // Giảm tối đa 100k
-        expiresAt: new Date(new Date().setFullYear(new Date().getFullYear() + 1)), // Hết hạn sau 1 năm
+        value: 10,
+        minAmount: 100000,
+        maxDiscount: 100000,
+        expiresAt: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
         usageLimit: 100,
         isActive: true,
     },
     {
         code: 'FREESHIP',
         type: 'fixed',
-        value: 30000, // Giảm 30k VNĐ
-        minAmount: 0, // Áp dụng cho mọi đơn
-        expiresAt: new Date(new Date().setMonth(new Date().getMonth() + 3)), // Hết hạn sau 3 tháng
+        value: 30000,
+        minAmount: 0,
+        expiresAt: new Date(new Date().setMonth(new Date().getMonth() + 3)),
         usageLimit: 50,
         isActive: true,
     },
@@ -223,7 +225,6 @@ const couponData = [
         isActive: true,
     },
 ];
-
 
 // Dữ liệu mẫu cho bài viết
 const postData = [
@@ -270,46 +271,87 @@ const postData = [
     },
 ];
 
+// Dữ liệu người dùng mẫu (để tạo admin user)
+const usersData = [
+    {
+        name: 'Admin User',
+        email: 'admin@example.com',
+        password: 'password123', // Mật khẩu sẽ được hash bởi User model
+        role: 'admin',
+    },
+    {
+        name: 'Regular User',
+        email: 'user@example.com',
+        password: 'password123',
+        role: 'user',
+    },
+];
+
+// Dữ liệu mẫu DANH MỤC (Đã thêm trường 'image')
+const categoryData = [
+    { name: "Cây để bàn", description: "Các loại cây nhỏ gọn, phù hợp trang trí bàn làm việc, bàn học.", image: "/images/sample-tung-la-han.jpg" },
+    { name: "Cây phong thủy", description: "Cây mang ý nghĩa phong thủy tốt lành, thu hút tài lộc, may mắn.", image: "/images/sample-tung-la-han.jpg" },
+    { name: "Sen đá", description: "Các loại sen đá dễ thương, đa dạng về hình dáng và màu sắc.", image: "/images/sample-tung-la-han.jpg" },
+    { name: "Xương rồng", description: "Xương rồng với vẻ đẹp mạnh mẽ, ít cần chăm sóc, thích hợp cho người bận rộn.", image: "/images/sample-tung-la-han.jpg" },
+    { name: "Cây thủy sinh", description: "Cây có thể trồng trong nước, mang lại không gian xanh mát và dễ chịu.", image: "/images/sample-tung-la-han.jpg" },
+    { name: "Cây cao cấp", description: "Các tác phẩm bonsai, cây cảnh giá trị cao, được tạo tác nghệ thuật.", image: "/images/sample-tung-la-han.jpg" },
+    { name: "Cây văn phòng", description: "Cây phù hợp trang trí văn phòng, giúp thanh lọc không khí, giảm căng thẳng.", image: "/images/sample-tung-la-han.jpg" },
+    { name: "Cây Dây Leo", description: "Cây thân leo, tạo điểm nhấn xanh cho không gian tường, ban công.", image: "/images/sample-tung-la-han.jpg" },
+    { name: "Cây Ăn Trái", description: "Cây cảnh cho trái, vừa trang trí vừa có thể thu hoạch.", image: "/images/sample-tung-la-han.jpg" },
+    { name: "Dụng Cụ & Chậu", description: "Các loại dụng cụ và chậu cảnh phục vụ cho việc chăm sóc và trang trí cây.", image: "/images/sample-tung-la-han.jpg" },
+];
+
+
 // Kết nối tới DB
 connectDB();
 
 // Hàm nhập dữ liệu
 const importData = async () => {
-    try {
-        await Bonsai.deleteMany();
-        await Coupon.deleteMany(); 
+    try {
+        // Xóa dữ liệu cũ
+        await Bonsai.deleteMany();
+        await Coupon.deleteMany(); 
 await Post.deleteMany(); 
-        await Bonsai.insertMany(bonsaiData);
-        await Coupon.insertMany(couponData); 
- await Post.insertMany(postData);
-        console.log("Dữ liệu mẫu đã được thêm thành công!".green.inverse);
-        process.exit();
-    } catch (error) {
-        console.error(`Lỗi: ${error}`.red.inverse);
-        process.exit(1);
-    }
+await User.deleteMany();
+await Category.deleteMany(); // <-- ĐẢM BẢO CATEGORY ĐƯỢC XÓA
+
+        // Thêm dữ liệu mới
+        await Bonsai.insertMany(bonsaiData);
+        await Coupon.insertMany(couponData); 
+ await Post.insertMany(postData);
+await User.insertMany(usersData); // <-- ĐẢM BẢO USER ĐƯỢC THÊM
+await Category.insertMany(categoryData); // <-- ĐẢM BẢO CATEGORY ĐƯỢC THÊM
+
+        console.log("Dữ liệu mẫu đã được thêm thành công!".green.inverse);
+        process.exit();
+    } catch (error) {
+        console.error(`Lỗi: ${error}`.red.inverse);
+        process.exit(1);
+    }
 };
 
 
 // Hàm xóa dữ liệu
 const destroyData = async () => {
-    try {
-        await Bonsai.deleteMany();
-        await Coupon.deleteMany(); // <-- XÓA COUPONS
-   await Post.deleteMany();
-        console.log("Dữ liệu đã được xóa thành công!".red.inverse);
-        process.exit();
-    } catch (error) {
-        console.error(`Lỗi: ${error}`.red.inverse);
-        process.exit(1);
-    }
+    try {
+        await Bonsai.deleteMany();
+        await Coupon.deleteMany(); // <-- XÓA COUPONS
+   await Post.deleteMany();
+        await User.deleteMany(); // <-- XÓA USERS
+        await Category.deleteMany(); // <-- XÓA CATEGORIES
+        console.log("Dữ liệu đã được xóa thành công!".red.inverse);
+        process.exit();
+    } catch (error) {
+        console.error(`Lỗi: ${error}`.red.inverse);
+        process.exit(1);
+    }
 };
 
 // Xử lý tham số dòng lệnh
 if (process.argv[2] === "-d") {
-  // Nếu có tham số -d, ví dụ "node seeder.js -d"
-  destroyData();
+  // Nếu có tham số -d, ví dụ "node seeder.js -d"
+  destroyData();
 } else {
-  // Mặc định sẽ là nhập dữ liệu
-  importData();
+  // Mặc định sẽ là nhập dữ liệu
+  importData();
 }

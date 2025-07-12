@@ -1,7 +1,6 @@
-// server/controllers/orderController.js
 const Order = require('../models/Order');
 const Bonsai = require('../models/bonsai'); 
-const mongoose = require('mongoose');
+const mongoose = require('mongoose'); // Import mongoose để kiểm tra ObjectId
 
 const addOrderItems = async (req, res) => {
     const {
@@ -82,14 +81,24 @@ const getMyOrders = async (req, res) => {
     }
 };
 
+// @desc    Update order to paid (Admin Only)
+// @route   PUT /api/orders/:id/pay
+// @access  Private/Admin
 const updateOrderToPaid = async (req, res) => {
     try {
-        const order = await Order.findById(req.params.id);
+        const orderId = req.params.id;
+        if (!mongoose.Types.ObjectId.isValid(orderId)) {
+            return res.status(400).json({ message: 'ID đơn hàng không hợp lệ.' });
+        }
+        const order = await Order.findById(orderId); // Find by ID
+
         if (order) {
             order.isPaid = true;
             order.paidAt = Date.now();
-            const updatedOrder = await order.save();
-            res.json(updatedOrder);
+            // order.paymentResult = { ... }; // Update paymentResult if available from payment gateway
+
+            const updatedOrder = await order.save(); // Save the updated order
+            res.json(updatedOrder); // Return the updated order
         } else {
             res.status(404).json({ message: 'Không tìm thấy đơn hàng.' });
         }
@@ -99,14 +108,23 @@ const updateOrderToPaid = async (req, res) => {
     }
 };
 
+// @desc    Update order to delivered (Admin Only)
+// @route   PUT /api/orders/:id/deliver
+// @access  Private/Admin
 const updateOrderToDelivered = async (req, res) => {
     try {
-        const order = await Order.findById(req.params.id);
+        const orderId = req.params.id;
+        if (!mongoose.Types.ObjectId.isValid(orderId)) {
+            return res.status(400).json({ message: 'ID đơn hàng không hợp lệ.' });
+        }
+        const order = await Order.findById(orderId); // Find by ID
+
         if (order) {
             order.isDelivered = true;
             order.deliveredAt = Date.now();
-            const updatedOrder = await order.save();
-            res.json(updatedOrder);
+
+            const updatedOrder = await order.save(); // Save the updated order
+            res.json(updatedOrder); // Return the updated order
         } else {
             res.status(404).json({ message: 'Không tìm thấy đơn hàng.' });
         }
@@ -116,6 +134,9 @@ const updateOrderToDelivered = async (req, res) => {
     }
 };
 
+// @desc    Get all orders (Admin Only)
+// @route   GET /api/orders
+// @access  Private/Admin
 const getAllOrders = async (req, res) => {
     try {
         const orders = await Order.find({}).populate('user', 'id name email').sort({ createdAt: -1 });
@@ -126,12 +147,11 @@ const getAllOrders = async (req, res) => {
     }
 };
 
-// ĐẢM BẢO TẤT CẢ CÁC HÀM ĐƯỢC EXPORT Ở ĐÂY
 module.exports = { 
     addOrderItems, 
     getOrderById, 
     getMyOrders, 
     updateOrderToPaid, 
     updateOrderToDelivered, 
-    getAllOrders // <-- ĐẢM BẢO HÀM NÀY ĐƯỢC EXPORT
+    getAllOrders 
 };

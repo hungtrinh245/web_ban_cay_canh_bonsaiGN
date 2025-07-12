@@ -5,15 +5,19 @@ const categorySchema = new mongoose.Schema({
     name: {
         type: String,
         required: [true, 'Tên danh mục không được để trống'],
-        unique: true, // Đảm bảo tên danh mục là duy nhất
+        unique: true,
         trim: true,
     },
     description: {
         type: String,
-        required: false, // Mô tả là tùy chọn
+        required: false,
+    },
+    image: { 
+        type: String,
+        required: false, 
     },
 }, {
-    timestamps: true, // Tự động thêm createdAt và updatedAt
+    timestamps: true,
 });
 
 const Category = mongoose.model('Category', categorySchema);

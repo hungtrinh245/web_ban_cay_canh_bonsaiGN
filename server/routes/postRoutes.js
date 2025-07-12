@@ -1,18 +1,22 @@
 // server/routes/postRoutes.js
 const express = require('express');
 const router = express.Router();
-const { getPosts, getPostById, getLatestPosts, getFeaturedPosts } = require('../controllers/postController');
+const { protect, authorize } = require('../middleware/authMiddleware');
 
-// Route để lấy tất cả bài viết (hỗ trợ phân trang qua query params)
-router.get('/', getPosts);
+const { 
+    getPosts, getPostById, getLatestPosts, getFeaturedPosts,
+    createPost, updatePost, deletePost, // ĐẢM BẢO CÁC HÀM NÀY ĐƯỢC IMPORT
+} = require('../controllers/postController');
 
-// Route để lấy bài viết mới nhất (cho homepage, giới hạn cố định)
+// Public routes for posts
+router.get('/', getPosts); // GET /api/posts (lấy tất cả bài viết)
 router.get('/latest', getLatestPosts);
-
-// Route để lấy bài viết nổi bật
 router.get('/featured', getFeaturedPosts);
-
-// Route để lấy một bài viết theo ID(đặt cuối)
 router.get('/:id', getPostById);
+
+// Admin Only routes for posts (CRUD)
+router.post('/', protect, authorize('admin'), createPost);
+router.put('/:id', protect, authorize('admin'), updatePost);
+router.delete('/:id', protect, authorize('admin'), deletePost);
 
 module.exports = router;
