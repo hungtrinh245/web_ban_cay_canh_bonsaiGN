@@ -1,4 +1,3 @@
-// client/src/components/admin/ProductManagement.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -6,8 +5,8 @@ import {
     getAllBonsais, 
     createBonsai,
     updateBonsai,
-    deleteBonsai,
-    getCategories // getCategories sẽ gọi API /api/categories
+    deleteBonsai, // Make sure deleteBonsai is imported
+    getCategories 
 } from '../../services/productService'; 
 import Pagination from '../common/Pagination';
 
@@ -19,76 +18,59 @@ const { Option } = Select;
 const { confirm } = Modal;
 
 const ProductManagement = () => {
-    const { token } = useAuth(); // Lấy token từ AuthContext để gọi API admin
+    const { token } = useAuth(); // Get token from AuthContext
     const navigate = useNavigate();
 
-    // States cho dữ liệu bảng sản phẩm
     const [products, setProducts] = useState([]);
-    const [categories, setCategories] = useState([]); // Danh mục cho dropdown lọc và form
-    const [loading, setLoading] = useState(true); // Loading cho việc tải bảng sản phẩm
-    const [error, setError] = useState(null);     // Error cho việc tải bảng sản phẩm
+    const [categories, setCategories] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-    // States cho phân trang
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
-    const productsPerPage = 8; // Số sản phẩm trên mỗi trang của bảng
+    const productsPerPage = 8;
 
-    // States cho Modal (Form thêm/sửa sản phẩm)
-    const [isModalVisible, setIsModalVisible] = useState(false); // Điều khiển hiển thị Modal
-    const [isEditing, setIsEditing] = useState(false);           // Chế độ sửa hay thêm mới
-    const [currentProduct, setCurrentProduct] = useState(null);  // Sản phẩm đang được sửa
-    const [form] = Form.useForm(); // Ant Design Form instance
-
-    // State loading cho form (khi gửi dữ liệu)
+    const [isModalVisible, setIsModalVisible] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
+    const [currentProduct, setCurrentProduct] = useState(null);
+    const [form] = Form.useForm();
+    
     const [formLoading, setFormLoading] = useState(false);
 
-    // Hàm tải dữ liệu sản phẩm và danh mục
     const fetchProductsAndCategories = async (page = 1) => {
         try {
             setLoading(true);
             setError(null);
-            // Gọi API lấy tất cả sản phẩm với phân trang
             const productData = await getAllBonsais(page, productsPerPage);
             setProducts(productData.products);
             setCurrentPage(productData.page);
             setTotalPages(productData.totalPages);
 
-            // Gọi API lấy danh mục (sử dụng getCategories từ productService.js)
-            // LƯU Ý: Nếu backend của bạn đã cập nhật để có API /api/categories, thì dùng nó
-            // Nếu bạn vẫn đang sử dụng hàm getBonsaiCategories ở bonsaiController.js, API đó là /api/bonsais/categories
-            
-            // Ở đây, tôi giả định bạn đã có API Categories riêng biệt
             const categoryData = await getCategories();
-            // Category API trả về một mảng object { _id, name, ... }
             setCategories(categoryData.map(cat => cat.name)); 
         } catch (err) {
             setError(err.message || 'Không thể tải dữ liệu sản phẩm hoặc danh mục.');
             console.error("Fetch product/category error:", err);
-            // VÌ BẠN ĐANG GẶP LỖI 404, HÀM NÀY SẼ THROW ERROR VÀ CHÚNG TA CÓ THỂ HIỂN THỊ THÔNG BÁO.
             AntMessage.error('Lỗi: ' + (err.message || 'Không thể tải dữ liệu.')); 
         } finally {
             setLoading(false);
         }
     };
 
-    // useEffect để tải dữ liệu ban đầu
     useEffect(() => {
-        // Chỉ fetch khi token đã có (tức là đã đăng nhập admin)
         if (token) {
             fetchProductsAndCategories();
         } else {
             setLoading(false);
-            // AdminProtectedRoute sẽ xử lý việc chuyển hướng nếu không có quyền
+            // AdminProtectedRoute will handle redirection if unauthorized
         }
-    }, [token]); // Chạy lại khi token thay đổi
+    }, [token]);
 
-    // Xử lý thay đổi trang
     const handlePageChange = (page) => {
         setCurrentPage(page);
-        fetchProductsAndCategories(page); // Tải lại dữ liệu cho trang mới
+        fetchProductsAndCategories(page);
     };
 
-    // Hiển thị Modal "Thêm sản phẩm mới"
     const showAddModal = () => {
         if (!token) { 
             AntMessage.error("Bạn cần đăng nhập để thực hiện thao tác này.");
@@ -97,12 +79,10 @@ const ProductManagement = () => {
         setIsEditing(false);
         setCurrentProduct(null);
         form.resetFields(); 
-        // Đặt giá trị mặc định cho form mới (đặc biệt là mảng images)
         form.setFieldsValue({ isFeatured: false, images: [{ url: '' }] }); 
         setIsModalVisible(true);
     };
 
-    // Hiển thị Modal "Sửa sản phẩm"
     const showEditModal = (product) => {
         if (!token) { 
             AntMessage.error("Bạn cần đăng nhập để thực hiện thao tác này.");
@@ -110,7 +90,6 @@ const ProductManagement = () => {
         }
         setIsEditing(true);
         setCurrentProduct(product);
-        // Thiết lập giá trị cho form khi sửa
         form.setFieldsValue({ 
             ...product, 
             images: product.images && product.images.length > 0 ? product.images.map(url => ({ url })) : [{ url: '' }],
@@ -118,15 +97,13 @@ const ProductManagement = () => {
         setIsModalVisible(true);
     };
 
-    // Xử lý khi đóng Modal (Cancel)
     const handleCancelModal = () => {
         setIsModalVisible(false);
         form.resetFields(); 
     };
 
-    // Xử lý xóa sản phẩm
     const handleDeleteProduct = (productId) => {
-        // KIỂM TRA TOKEN TRƯỚC KHI XÓA
+        // IMPORTANT: Check for token before proceeding with delete operation
         if (!token) { 
             AntMessage.error("Bạn cần đăng nhập để thực hiện thao tác này.");
             return;
@@ -140,10 +117,10 @@ const ProductManagement = () => {
             cancelText: 'Hủy',
             async onOk() { 
                 try {
-                    // Truyền token vào hàm deleteBonsai
+                    // Pass the token to the deleteBonsai service function
                     await deleteBonsai(productId, token); 
                     AntMessage.success('Sản phẩm đã xóa thành công!'); 
-                    fetchProductsAndCategories(currentPage); // Tải lại danh sách sản phẩm
+                    fetchProductsAndCategories(currentPage); // Reload product list
                 } catch (err) {
                     AntMessage.error('Lỗi khi xóa sản phẩm: ' + (err.message || 'Lỗi không xác định')); 
                     console.error("Delete product error:", err);
@@ -152,38 +129,35 @@ const ProductManagement = () => {
         });
     };
 
-    // Xử lý khi Submit Form (Thêm hoặc Sửa)
     const onFinishForm = async (values) => {
-        // KIỂM TRA TOKEN TRƯỚC KHI SUBMIT FORM
+        // IMPORTANT: Check for token before submitting the form
         if (!token) { 
             AntMessage.error("Bạn cần đăng nhập để thực hiện thao tác này.");
             return;
         }
         setFormLoading(true);
 
-        // Chuyển đổi mảng images từ [{ url: '...' }] về ['...']
         const imageURLs = values.images ? values.images.map(item => item.url).filter(url => url && url.trim() !== '') : [];
 
-        // Chuẩn bị dữ liệu sản phẩm để gửi đi
         const productData = {
             ...values,
             price: Number(values.price),
             stockQuantity: Number(values.stockQuantity),
             images: imageURLs, 
-            isFeatured: values.isFeatured || false, // Đảm bảo có giá trị false nếu undefined
+            isFeatured: values.isFeatured || false,
         };
 
         try {
             if (isEditing && currentProduct) {
-                await updateBonsai(currentProduct._id, productData, token); // Truyền token vào đây
+                await updateBonsai(currentProduct._id, productData, token); // Pass the token
                 AntMessage.success('Cập nhật sản phẩm thành công!'); 
             } else {
-                await createBonsai(productData, token); // Truyền token vào đây
+                await createBonsai(productData, token); // Pass the token
                 AntMessage.success('Thêm sản phẩm mới thành công!'); 
             }
-            setIsModalVisible(false); // Đóng modal sau khi thành công
-            form.resetFields(); // Reset form
-            fetchProductsAndCategories(currentPage); // Tải lại danh sách sản phẩm
+            setIsModalVisible(false); 
+            form.resetFields(); 
+            fetchProductsAndCategories(currentPage); 
         } catch (err) {
             AntMessage.error('Lỗi: ' + (err.message || 'Không thể lưu sản phẩm.')); 
             console.error("Save product form error:", err);
@@ -192,7 +166,6 @@ const ProductManagement = () => {
         }
     };
 
-    // Định nghĩa các cột cho Ant Design Table (giữ nguyên)
     const columns = [
         {
             title: 'ID', dataIndex: '_id', key: '_id',
@@ -233,7 +206,6 @@ const ProductManagement = () => {
         },
     ];
 
-    // Giao diện render chính của component
     return (
         <div style={{ padding: '20px' }}>
             <h1 style={{ fontSize: '2em', fontWeight: 'bold', color: '#2c3e50', marginBottom: '20px', paddingBottom: '10px', borderBottom: '2px solid #28a745' }}>
@@ -244,8 +216,7 @@ const ProductManagement = () => {
                 Thêm sản phẩm mới
             </Button>
 
-            {/* AntMessage.error đã được gọi trong hàm fetchProductsAndCategories, không cần render ở đây */}
-            {/* Nếu có lỗi, AntMessage đã hiển thị ở góc trên màn hình */}
+            {/* AntMessage.error is called directly in functions, no need to render a component here */}
             
             {loading ? (
                 <Spin tip="Đang tải sản phẩm...">
@@ -302,7 +273,6 @@ const ProductManagement = () => {
                         <Form.Item label="Danh mục" name="category" rules={[{ required: true, message: 'Vui lòng chọn danh mục!' }]} style={{ width: '48%' }}>
                             <Select placeholder="Chọn danh mục">
                                 {categories.map(cat => (
-                                    // Sửa lỗi ở đây: category là tên danh mục (string), không phải object
                                     <Option key={cat} value={cat}>{cat}</Option> 
                                 ))}
                             </Select>
@@ -313,7 +283,6 @@ const ProductManagement = () => {
                         <Input type="number" placeholder="Số lượng tồn kho" min={0} />
                     </Form.Item>
 
-                    {/* Dynamic Image URLs */}
                     <Form.List name="images">
                         {(fields, { add, remove }) => (
                             <>

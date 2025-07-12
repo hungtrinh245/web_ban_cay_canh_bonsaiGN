@@ -1,7 +1,7 @@
 // client/src/components/home/CategoryShowcase.jsx
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { getCategories } from '../../services/productService'; // Import hàm API
+import { getCategories } from '../../services/productService'; 
 
 const CategoryShowcase = () => {
     const [categories, setCategories] = useState([]);
@@ -12,9 +12,7 @@ const CategoryShowcase = () => {
         const fetchCategories = async () => {
             try {
                 setLoading(true);
-                // getCategories sẽ trả về một mảng các đối tượng { _id, name, description, ... }
-                const data = await getCategories();
-                // Lọc chỉ 6 danh mục đầu tiên hoặc hiển thị tất cả
+                const data = await getCategories(); 
                 setCategories(data);
             } catch (err) {
                 setError("Không thể tải danh mục.");
@@ -63,7 +61,6 @@ const CategoryShowcase = () => {
     const categoryCardStyle = {
         backgroundColor: '#f8f9fa',
         borderRadius: '12px',
-        padding: '25px',
         boxShadow: '0 4px 15px rgba(0,0,0,0.05)',
         transition: 'transform 0.3s ease, box-shadow 0.3s ease',
         textDecoration: 'none',
@@ -71,8 +68,8 @@ const CategoryShowcase = () => {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '150px',
+        overflow: 'hidden', // Ẩn phần ảnh thừa nếu tràn
+        minHeight: '250px', // Tăng chiều cao tối thiểu của thẻ
         '&:hover': {
             transform: 'translateY(-5px)',
             boxShadow: '0 8px 20px rgba(0,0,0,0.1)',
@@ -80,10 +77,27 @@ const CategoryShowcase = () => {
         }
     };
 
+    const categoryImageStyle = { // STYLE MỚI CHO ẢNH DANH MỤC (Bao phủ toàn bộ)
+        width: '100%', // Chiếm toàn bộ chiều rộng
+        height: '150px', // Chiều cao cố định
+        objectFit: 'cover', // Đảm bảo ảnh bao phủ và không bị méo
+        borderRadius: '12px 12px 0 0', // Chỉ bo góc trên
+        marginBottom: '15px', // Khoảng cách với chữ
+    };
+
+    const categoryContentStyle = { // Style cho phần nội dung (chữ)
+        padding: '0 20px 20px', // Padding dưới và hai bên
+        textAlign: 'center',
+        flexGrow: 1, // Đảm bảo nội dung chiếm hết không gian còn lại
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+    };
+
     const categoryTitleStyle = {
         fontSize: '1.4em',
         fontWeight: 'bold',
-        marginTop: '15px',
+        marginTop: '0', 
         color: '#2c3e50',
     };
 
@@ -91,6 +105,11 @@ const CategoryShowcase = () => {
         textAlign: 'center',
         padding: '50px',
     };
+
+    // Helper functions for hover effects
+    const applyHover = (e, hoverStyle) => Object.assign(e.currentTarget.style, hoverStyle);
+    const removeHover = (e, baseStyle) => Object.assign(e.currentTarget.style, baseStyle);
+
 
     if (loading) return <div style={loadingStyle}>Đang tải danh mục...</div>;
     if (error) return <div style={{...loadingStyle, color: 'red'}}>Lỗi: {error}</div>;
@@ -103,20 +122,22 @@ const CategoryShowcase = () => {
             </h2>
             <div style={gridStyle}>
                 {categories.map((category) => (
-                    // SỬA LỖI: Đảm bảo sử dụng key duy nhất (_id) và render tên (name)
                     <Link
-                        key={category._id} // <- Đảm bảo key duy nhất
+                        key={category._id} 
                         to={`/shop/category/${category.name}`}
                         style={categoryCardStyle}
-                        onMouseOver={(e) => Object.assign(e.currentTarget.style, categoryCardStyle['&:hover'])}
-                        onMouseOut={(e) => Object.assign(e.currentTarget.style, categoryCardStyle)}
+                        onMouseOver={(e) => applyHover(e, categoryCardStyle['&:hover'])}
+                        onMouseOut={(e) => removeHover(e, categoryCardStyle)}
                     >
-                        {/* Lỗi "Objects are not valid as a React child" xảy ra khi bạn 
-                            cố gắng render category trực tiếp trong JSX, ví dụ: <div>{category}</div>.
-                            Chúng ta cần render category.name.
-                        */}
-                        <h3 style={categoryTitleStyle}>{category.name}</h3> 
-                        <p style={{fontSize: '0.9em', color: '#666'}}>{category.description || ''}</p>
+                        {/* HIỂN THỊ ẢNH DANH MỤC (Bao phủ toàn bộ phần trên) */}
+                        {category.image && (
+                            <img src={category.image} alt={category.name} style={categoryImageStyle} />
+                        )}
+                        {/* Phần nội dung của thẻ */}
+                        <div style={categoryContentStyle}>
+                            <h3 style={categoryTitleStyle}>{category.name}</h3> 
+                            <p style={{fontSize: '0.9em', color: '#666'}}>{category.description || ''}</p>
+                        </div>
                     </Link>
                 ))}
             </div>

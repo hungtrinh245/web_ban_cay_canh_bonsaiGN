@@ -1,315 +1,351 @@
 // client/src/components/layout/CategorySidebar.jsx
 import React, { useState, useEffect } from 'react';
-import { getCategories, getNewProducts } from '../../services/productService';
+import { getCategories, getNewProducts } from '../../services/productService'; 
 import { Link } from 'react-router-dom';
+// SỬA LỖI: Import Button từ antd
+import { Button } from 'antd'; 
 
-// Thêm onApplyPriceFilter, initialMinPrice, initialMaxPrice vào props
-const CategorySidebar = ({ selectedCategory, onSelectCategory, onApplyPriceFilter, initialMinPrice, initialMaxPrice }) => {
+const CategorySidebar = ({ selectedCategory, onSelectCategory, onApplyPriceFilter, overallMinPriceRange, overallMaxPriceRange, initialMinPrice, initialMaxPrice }) => {
     const [categories, setCategories] = useState([]);
     const [randomProducts, setRandomProducts] = useState([]);
-    const [minPriceRange, setMinPriceRange] = useState(0); // Giới hạn min của thanh trượt
-    const [maxPriceRange, setMaxPriceRange] = useState(1000000); // Giới hạn max của thanh trượt (có thể lấy từ API)
-    const [currentMinPrice, setCurrentMinPrice] = useState(initialMinPrice); // Giá trị hiện tại của range
-    const [currentMaxPrice, setCurrentMaxPrice] = useState(initialMaxPrice); // Giá trị hiện tại của range
+    const [minPriceRange, setMinPriceRange] = useState(overallMinPriceRange); 
+    const [maxPriceRange, setMaxPriceRange] = useState(overallMaxPriceRange); 
+    
+    const [currentMinPrice, setCurrentMinPrice] = useState(initialMinPrice); 
+    const [currentMaxPrice, setCurrentMaxPrice] = useState(initialMaxPrice); 
 
-    // Dữ liệu mẫu cho bài viết mới nhất (tạm thời, sau này có thể fetch từ API)
+    // Hàm này sẽ được dùng để lấy các bài viết mới nhất cho sidebar (nếu có)
     const latestPosts = [
-        { id: 1, title: 'Nên tưới cây bằng nước máy hay nước đun sôi?', image: '/images/sample-luoi-ho.jpg' },
-        { id: 2, title: '8 yếu tố giúp cây trồng trong nhà luôn xanh tốt', image: '/images/sample-trau-ba.jpg' },
-        { id: 3, title: '10 loại cây trừ tà ma, xua đuổi vận xui hiệu quả', image: '/images/sample-xuong-rong-tai-tho.jpg' },
-        { id: 4, title: 'Bí quyết chọn chậu phù hợp cho từng loại cây', image: '/images/sample-sanh-co.jpg' },
-        { id: 5, title: 'Sự thật bất ngờ về lợi ích của cây cảnh trong nhà', image: '/images/sample-kim-tien.jpg' },
+        { _id: '1', title: 'Nên tưới cây bằng nước máy hay nước đun sôi?', image: '/images/tuoi-cay-bang-nuoc-may-2.jpg' },
+        { _id: '2', title: '8 yếu tố giúp cây trồng trong nhà luôn xanh tốt', image: '/images/yeu-to-giup-cay-canh-trong-nha-luon-xanh-tot.jpg' },
+        { _id: '3', title: 'Bí quyết chọn chậu phù hợp cho từng loại cây', image: '/images/bi-quyet-chon-chau-cay.jpg' },
     ];
 
     useEffect(() => {
         const fetchSidebarData = async () => {
             try {
-                const categoryData = await getCategories();
+                const categoryData = await getCategories(); 
                 setCategories(categoryData);
 
-                const productsData = await getNewProducts();
+                const productsDataResponse = await getNewProducts(); 
+                const productsData = productsDataResponse.products || []; 
                 const shuffled = productsData.sort(() => 0.5 - Math.random());
-                setRandomProducts(shuffled.slice(0, 5));
+                setRandomProducts(shuffled.slice(0, 5)); 
 
-                // Cập nhật giới hạn min/max của thanh trượt dựa trên dữ liệu sản phẩm
                 const prices = productsData.map(p => p.price).filter(p => p !== undefined);
                 if (prices.length > 0) {
                     const dynamicMin = Math.min(...prices);
                     const dynamicMax = Math.max(...prices);
                     setMinPriceRange(dynamicMin);
                     setMaxPriceRange(dynamicMax);
+                } else {
+                    setMinPriceRange(0);
+                    setMaxPriceRange(1000000); 
                 }
 
             } catch (error) {
                 console.error("Không thể tải dữ liệu sidebar:", error);
             }
         };
-        fetchSidebarData();
-    }, []);
 
-    // Cập nhật giá trị thanh trượt khi initialMinPrice/initialMaxPrice thay đổi từ ShopPage
+        fetchSidebarData();
+    }, [overallMinPriceRange, overallMaxPriceRange]); 
+
     useEffect(() => {
         setCurrentMinPrice(initialMinPrice);
         setCurrentMaxPrice(initialMaxPrice);
     }, [initialMinPrice, initialMaxPrice]);
 
-
     const handlePriceFilterChange = (e) => {
-        const value = Number(e.target.value);
-        if (e.target.id === "minPrice") {
-            setCurrentMinPrice(value);
-            // Đảm bảo min không vượt quá max
-            if (value > currentMaxPrice) {
-                setCurrentMaxPrice(value);
-            }
-        } else if (e.target.id === "maxPrice") {
-            setCurrentMaxPrice(value);
-            // Đảm bảo max không nhỏ hơn min
-            if (value < currentMinPrice) {
-                setCurrentMinPrice(value);
-            }
+        if (e.target.id === 'minPrice') {
+            setCurrentMinPrice(Number(e.target.value));
+        } else {
+            setCurrentMaxPrice(Number(e.target.value));
         }
     };
 
     const applyFilter = () => {
-        // Gọi hàm callback từ ShopPage
         if (onApplyPriceFilter) {
             onApplyPriceFilter(currentMinPrice, currentMaxPrice);
         }
     };
 
-    const sectionTitleStyle = {
-        fontSize: '1.2em',
-        fontWeight: 'bold',
-        marginBottom: '15px',
-        marginTop: '30px',
-        color: '#333',
-        borderBottom: '2px solid #28a745',
-        paddingBottom: '8px',
-    };
+    // Helper functions for hover effects
+    const applyHover = (e, hoverStyle) => Object.assign(e.currentTarget.style, hoverStyle);
+    const removeHover = (e, baseStyle) => Object.assign(e.currentTarget.style, baseStyle);
 
-    const linkStyle = (category) => ({
-        display: 'block',
-        padding: '10px 15px',
-        textDecoration: 'none',
-        color: selectedCategory === category ? '#28a745' : '#555',
-        fontWeight: selectedCategory === category ? 'bold' : 'normal',
-        background: selectedCategory === category ? '#e9f5e9' : 'transparent',
-        borderRadius: '5px',
-        cursor: 'pointer',
-        transition: 'all 0.2s',
-        fontSize: '0.95em'
-    });
-
-    const sidebarWrapperStyle = {
+    // --- CÁC STYLE ---
+    const sidebarStyle = {
         width: '280px',
-        padding: '20px',
-        background: '#fff',
-        boxShadow: '2px 0 8px rgba(0,0,0,0.08)',
-        minHeight: 'calc(100vh - 120px)',
-        boxSizing: 'border-box',
-        overflowY: 'auto',
+        flexShrink: 0,
+        paddingRight: '30px',
+        fontFamily: 'Roboto, sans-serif',
     };
 
-    const priceFilterContainerStyle = {
-        padding: '15px 0',
-        borderBottom: '1px solid #eee',
-        marginBottom: '20px'
+    const sectionStyle = {
+        marginBottom: '30px',
+        background: 'white',
+        borderRadius: '12px',
+        boxShadow: '0 4px 15px rgba(0,0,0,0.05)',
+        padding: '25px',
+        border: '1px solid #eee',
     };
 
-    const priceRangeInputStyle = {
-        width: '100%',
-        margin: '10px 0',
-        height: '5px',
-        background: '#d3d3d3',
+    const sectionTitleStyle = {
+        fontSize: '1.3em',
+        fontWeight: 'bold',
+        color: '#2c3e50',
+        marginBottom: '15px',
+        paddingBottom: '10px',
+        borderBottom: '2px solid #eee',
+    };
+
+    const categoryListStyle = {
+        listStyle: 'none',
+        padding: 0,
+        margin: 0,
+    };
+
+    const categoryItemStyle = {
+        marginBottom: '8px',
+        '&:hover': {
+            color: '#28a745',
+            transform: 'translateX(5px)',
+        },
+        transition: 'color 0.2s, transform 0.2s',
+    };
+
+    const categoryLinkStyle = {
+        textDecoration: 'none',
+        color: '#555',
+        fontSize: '0.95em',
+        display: 'block',
+        padding: '5px 0',
+    };
+
+    const priceFilterInputGroup = {
+        display: 'flex',
+        alignItems: 'center',
+        marginBottom: '15px',
+        gap: '10px',
+    };
+
+    const priceInputStyle = {
+        width: 'calc(50% - 20px)',
+        padding: '8px',
         borderRadius: '5px',
-        outline: 'none',
-        opacity: '0.7',
-        transition: 'opacity .2s',
-        appearance: 'none',
+        border: '1px solid #ccc',
+        fontSize: '0.9em',
     };
-    
-    const filterButtonStyle = {
+
+    const filterButton = {
+        width: '100%',
+        padding: '10px',
         background: '#28a745',
         color: 'white',
         border: 'none',
-        padding: '8px 18px',
         borderRadius: '5px',
         cursor: 'pointer',
+        fontSize: '1em',
         fontWeight: 'bold',
-        marginTop: '10px',
         transition: 'background-color 0.3s ease',
-    };
-
-    const productListItemStyle = {
-        display: 'flex',
-        alignItems: 'center',
-        marginBottom: '15px',
-        gap: '10px',
-        borderBottom: '1px solid #f0f0f0',
-        paddingBottom: '10px',
-    };
-
-    const productImgStyle = {
-        width: '60px',
-        height: '60px',
-        objectFit: 'cover',
-        borderRadius: '5px',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-    };
-
-    const productInfoStyle = {
-        flex: 1,
-        textAlign: 'left',
-    };
-
-    const productNameStyle = {
-        margin: 0,
-        fontSize: '0.95em',
-        fontWeight: 'bold',
-        color: '#333',
-        textDecoration: 'none',
         '&:hover': {
-            color: '#28a745',
+            backgroundColor: '#218838',
         }
     };
 
-    const productPriceStyle = {
-        margin: '3px 0 0 0',
-        fontSize: '0.9em',
-        color: '#28a745',
-        fontWeight: 'bold',
+    const randomProductListStyle = {
+        listStyle: 'none',
+        padding: 0,
+        margin: 0,
     };
 
-    const postItemStyle = {
+    const randomProductItemStyle = {
         display: 'flex',
         alignItems: 'center',
         marginBottom: '15px',
-        gap: '10px',
-        borderBottom: '1px solid #f0f0f0',
-        paddingBottom: '10px',
+        paddingBottom: '15px',
+        borderBottom: '1px dashed #eee',
+        '&:last-child': {
+            borderBottom: 'none',
+            paddingBottom: '0',
+            marginBottom: '0',
+        }
     };
 
-    const postImgStyle = {
+    const randomProductImageStyle = {
         width: '60px',
         height: '60px',
         objectFit: 'cover',
-        borderRadius: '5px',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+        borderRadius: '8px',
+        marginRight: '15px',
     };
 
-    const postTitleStyle = {
-        margin: 0,
-        fontSize: '0.95em',
+    const randomProductInfoStyle = {
+        flexGrow: 1,
+        textAlign: 'left',
+    };
+
+    const randomProductNameStyle = {
+        fontSize: '1em',
+        fontWeight: 'bold',
         color: '#333',
         textDecoration: 'none',
         '&:hover': {
             color: '#28a745',
+            textDecoration: 'underline',
+        }
+    };
+
+    const randomProductPriceStyle = {
+        fontSize: '0.9em',
+        color: '#28a745',
+        fontWeight: 'bold',
+        marginTop: '5px',
+    };
+
+    const blogPostItemStyle = {
+        display: 'flex',
+        alignItems: 'center',
+        marginBottom: '15px',
+        paddingBottom: '15px',
+        borderBottom: '1px dashed #eee',
+        '&:last-child': {
+            borderBottom: 'none',
+            paddingBottom: '0',
+            marginBottom: '0',
+        }
+    };
+
+    const blogPostImageStyle = {
+        width: '80px',
+        height: '60px',
+        objectFit: 'cover',
+        borderRadius: '8px',
+        marginRight: '15px',
+    };
+
+    const blogPostTitleStyle = {
+        fontSize: '0.95em',
+        fontWeight: 'bold',
+        color: '#333',
+        textDecoration: 'none',
+        '&:hover': {
+            color: '#28a745',
+            textDecoration: 'underline',
         }
     };
 
 
     return (
-        <div style={sidebarWrapperStyle}>
-            {/* DANH MỤC SẢN PHẨM */}
-            <h3 style={sectionTitleStyle}>
-                DANH MỤC SẢN PHẨM
-            </h3>
-            <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 30px 0' }}>
-                <li
-                    style={{
-                        ...linkStyle(null),
-                        onMouseOver: (e) => Object.assign(e.currentTarget.style, { background: '#f0f0f0', color: '#28a745' }),
-                        onMouseOut: (e) => Object.assign(e.currentTarget.style, { background: 'transparent', color: selectedCategory === null ? '#28a745' : '#555' }),
-                    }}
-                    onClick={() => onSelectCategory(null)}
-                >
-                    Tất cả sản phẩm
-                </li>
-                {categories.map(category => (
-                    <li
-                        key={category}
-                        style={{
-                            ...linkStyle(category),
-                            onMouseOver: (e) => Object.assign(e.currentTarget.style, { background: '#f0f0f0', color: '#28a745' }),
-                            onMouseOut: (e) => Object.assign(e.currentTarget.style, { background: 'transparent', color: selectedCategory === category ? '#28a745' : '#555' }),
-                        }}
-                        onClick={() => onSelectCategory(category)}
+        <div style={sidebarStyle}>
+            {/* Lọc theo danh mục */}
+            <div style={sectionStyle}>
+                <h3 style={sectionTitleStyle}>DANH MỤC SẢN PHẨM</h3>
+                <ul style={categoryListStyle}>
+                    <li style={categoryItemStyle}
+                        onMouseOver={(e) => applyHover(e, categoryItemStyle['&:hover'])}
+                        onMouseOut={(e) => removeHover(e, categoryItemStyle)}
                     >
-                        {category}
+                        <Link 
+                            to="/shop" 
+                            style={{...categoryLinkStyle, fontWeight: selectedCategory === null ? 'bold' : 'normal'}}
+                            onClick={() => onSelectCategory(null)}
+                        >
+                            Tất cả sản phẩm
+                        </Link>
                     </li>
-                ))}
-            </ul>
+                    {categories.map((cat) => (
+                        <li key={cat._id} style={categoryItemStyle}
+                            onMouseOver={(e) => applyHover(e, categoryItemStyle['&:hover'])}
+                            onMouseOut={(e) => removeHover(e, categoryItemStyle)}
+                        >
+                            <Link 
+                                to={`/shop/category/${cat.name}`} 
+                                style={{...categoryLinkStyle, fontWeight: selectedCategory === cat.name ? 'bold' : 'normal'}}
+                                onClick={() => onSelectCategory(cat.name)}
+                            >
+                                {cat.name}
+                            </Link>
+                        </li>
+                    ))}
+                </ul>
+            </div>
 
-            {/* LỌC THEO GIÁ */}
-            <h3 style={sectionTitleStyle}>LỌC THEO GIÁ</h3>
-            <div style={priceFilterContainerStyle}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', alignItems: 'center' }}>
-                    <label htmlFor="minPrice" style={{ fontSize: '0.9em', color: '#555' }}>Từ:</label>
-                    <input
-                        type="range"
-                        id="minPrice"
-                        min={minPriceRange}
-                        max={maxPriceRange}
-                        value={currentMinPrice}
-                        onChange={handlePriceFilterChange}
-                        style={priceRangeInputStyle}
+            {/* Lọc theo giá */}
+            <div style={sectionStyle}>
+                <h3 style={sectionTitleStyle}>LỌC THEO GIÁ</h3>
+                <div style={priceFilterInputGroup}>
+                    <input 
+                        type="number" 
+                        id="minPrice" 
+                        value={currentMinPrice} 
+                        onChange={handlePriceFilterChange} 
+                        style={priceInputStyle} 
+                        min={minPriceRange} 
+                        max={maxPriceRange} 
                     />
-                    <span style={{ fontSize: '0.9em', fontWeight: 'bold', color: '#28a745', minWidth: '80px', textAlign: 'right' }}>{currentMinPrice.toLocaleString('vi-VN')} VNĐ</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px', alignItems: 'center' }}>
-                    <label htmlFor="maxPrice" style={{ fontSize: '0.9em', color: '#555' }}>Đến:</label>
-                    <input
-                        type="range"
-                        id="maxPrice"
-                        min={minPriceRange}
-                        max={maxPriceRange}
-                        value={currentMaxPrice}
-                        onChange={handlePriceFilterChange}
-                        style={priceRangeInputStyle}
+                    <span>-</span>
+                    <input 
+                        type="number" 
+                        id="maxPrice" 
+                        value={currentMaxPrice} 
+                        onChange={handlePriceFilterChange} 
+                        style={priceInputStyle} 
+                        min={minPriceRange} 
+                        max={maxPriceRange} 
                     />
-                    <span style={{ fontSize: '0.9em', fontWeight: 'bold', color: '#28a745', minWidth: '80px', textAlign: 'right' }}>{currentMaxPrice.toLocaleString('vi-VN')} VNĐ</span>
                 </div>
-                
-                <button
-                    onClick={applyFilter} // Gọi hàm applyFilter
-                    style={filterButtonStyle}
-                    onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#4CAF50'}
-                    onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#28a745'}
+                <Button 
+                    onClick={applyFilter} 
+                    style={filterButton}
+                    onMouseOver={(e) => applyHover(e, filterButton['&:hover'])}
+                    onMouseOut={(e) => removeHover(e, filterButton)}
                 >
-                    Áp dụng
-                </button>
+                    Lọc
+                </Button>
             </div>
 
-            {/* SẢN PHẨM MỚI (hoặc Ngẫu nhiên) */}
-            <h3 style={sectionTitleStyle}>SẢN PHẨM MỚI</h3>
-            <div style={{ marginBottom: '30px' }}>
-                {randomProducts.map(product => (
-                    <Link to={`/products/${product._id}`} key={product._id} style={{ textDecoration: 'none' }}>
-                        <div style={productListItemStyle}>
-                            <img src={product.images && product.images.length > 0 ? product.images[0] : 'https://via.placeholder.com/60?text=No+Image'} alt={product.name} style={productImgStyle} />
-                            <div style={productInfoStyle}>
-                                <p style={productNameStyle}>{product.name}</p>
-                                {product.price && <p style={productPriceStyle}>{product.price.toLocaleString('vi-VN')} VNĐ</p>}
+            {/* Sản phẩm ngẫu nhiên */}
+            <div style={sectionStyle}>
+                <h3 style={sectionTitleStyle}>SẢN PHẨM CÓ THỂ BẠN THÍCH</h3>
+                <ul style={randomProductListStyle}>
+                    {randomProducts.map((product) => (
+                        // SỬA LỖI: Đảm bảo key duy nhất và render thuộc tính của product
+                        <li key={product._id} style={randomProductItemStyle}>
+                            <img src={product.images && product.images.length > 0 ? product.images[0] : 'https://via.placeholder.com/60?text=No+Image'} alt={product.name} style={randomProductImageStyle} />
+                            <div style={randomProductInfoStyle}>
+                                <Link to={`/products/${product._id}`} style={randomProductNameStyle}
+                                    onMouseOver={(e) => applyHover(e, randomProductNameStyle['&:hover'])}
+                                    onMouseOut={(e) => removeHover(e, randomProductNameStyle)}
+                                >
+                                    {product.name}
+                                </Link>
+                                <p style={randomProductPriceStyle}>{product.price.toLocaleString('vi-VN')} VNĐ</p>
                             </div>
-                        </div>
-                    </Link>
-                ))}
+                        </li>
+                    ))}
+                </ul>
             </div>
 
-            {/* BÀI VIẾT MỚI NHẤT */}
-            <h3 style={sectionTitleStyle}>BÀI VIẾT MỚI NHẤT</h3>
-            <div>
-                {latestPosts.map(post => (
-                    <Link to={`/blog/${post.id}`} key={post.id} style={{ textDecoration: 'none' }}>
-                        <div style={postItemStyle}>
-                            <img src={post.image} alt={post.title} style={postImgStyle} />
-                            <div style={productInfoStyle}>
-                                <p style={postTitleStyle}>{post.title}</p>
+            {/* Bài viết mới nhất */}
+            <div style={sectionStyle}>
+                <h3 style={sectionTitleStyle}>BÀI VIẾT MỚI NHẤT</h3>
+                <ul style={randomProductListStyle}> {/* Tái sử dụng style list */}
+                    {latestPosts.map((post) => (
+                        <li key={post._id} style={blogPostItemStyle}>
+                            <img src={post.image || 'https://via.placeholder.com/80?text=No+Image'} alt={post.title} style={blogPostImageStyle} />
+                            <div style={randomProductInfoStyle}>
+                                <Link to={`/blog/${post._id}`} style={blogPostTitleStyle}
+                                    onMouseOver={(e) => applyHover(e, blogPostTitleStyle['&:hover'])}
+                                    onMouseOut={(e) => removeHover(e, blogPostTitleStyle)}
+                                >
+                                    {post.title}
+                                </Link>
                             </div>
-                        </div>
-                    </Link>
-                ))}
+                        </li>
+                    ))}
+                </ul>
             </div>
         </div>
     );
