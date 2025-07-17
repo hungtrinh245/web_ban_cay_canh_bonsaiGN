@@ -77,6 +77,7 @@ const orderSchema = new mongoose.Schema({
     deliveredAt: { // Ngày giao hàng
         type: Date,
     },
+ 
     // Thông tin thêm từ form Checkout
     createAccount: { type: Boolean, default: false },
     shipToDifferentAddress: { type: Boolean, default: false }, // Cho phép địa chỉ giao hàng khác địa chỉ thanh toán (nếu triển khai)

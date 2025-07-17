@@ -313,19 +313,22 @@ const deleteBonsai = async (req, res) => {
     const productId = req.params.id;
 
     try {
+        // Validate if productId is a valid MongoDB ObjectId
+        if (!mongoose.Types.ObjectId.isValid(productId)) {
+            return res.status(400).json({ message: 'ID sản phẩm không hợp lệ.' });
+        }
+
         const bonsai = await Bonsai.findById(productId);
 
         if (bonsai) {
-            await Bonsai.deleteOne({ _id: productId }); // Sử dụng deleteOne() với điều kiện
+            await Bonsai.deleteOne({ _id: productId }); // Use deleteOne for Mongoose 5.x/6.x
             res.json({ message: 'Sản phẩm đã được xóa thành công.' });
         } else {
             res.status(404).json({ message: 'Không tìm thấy sản phẩm để xóa.' });
         }
     } catch (error) {
         console.error('Lỗi khi xóa sản phẩm:', error);
-        if (error.name === 'CastError') {
-            return res.status(400).json({ message: 'ID sản phẩm không hợp lệ.' });
-        }
+        // Catch any other potential errors during deletion
         res.status(500).json({ message: 'Lỗi máy chủ nội bộ khi xóa sản phẩm.' });
     }
 };

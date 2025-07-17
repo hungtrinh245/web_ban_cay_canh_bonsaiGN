@@ -1,4 +1,5 @@
 // server/models/Coupon.js
+
 const mongoose = require('mongoose');
 
 const couponSchema = new mongoose.Schema({
@@ -9,12 +10,12 @@ const couponSchema = new mongoose.Schema({
         trim: true,
         uppercase: true,
     },
-    type: { // 'percentage' or 'fixed'
+    type: { // 'percentage' hoặc 'fixed'
         type: String,
         required: [true, 'Loại giảm giá không được để trống'],
         enum: ['percentage', 'fixed'],
     },
-    value: { // Giá trị giảm (10 cho 10%, hoặc 50000 cho 50k VNĐ)
+    value: { // Giá trị giảm (ví dụ: 10 cho 10%, hoặc 50000 cho 50k VNĐ)
         type: Number,
         required: [true, 'Giá trị giảm không được để trống'],
         min: [0, 'Giá trị giảm không thể âm'],
@@ -26,11 +27,11 @@ const couponSchema = new mongoose.Schema({
     },
     maxDiscount: { // Giảm tối đa nếu là % (ví dụ: giảm 10% nhưng tối đa 100k)
         type: Number,
-        default: Infinity,
     },
-    expiresAt: { // Ngày hết hạn
+    // SỬA: Đổi tên thành 'expiryDate' cho nhất quán và đảm bảo kiểu là Date
+    expiryDate: { 
         type: Date,
-        default: null,
+        required: [true, 'Ngày hết hạn không được để trống'],
     },
     usageLimit: { // Số lần sử dụng tối đa của mã
         type: Number,
@@ -40,10 +41,13 @@ const couponSchema = new mongoose.Schema({
         type: Number,
         default: 0,
     },
-    isActive: { // Trạng thái hoạt động của mã
+    // Đảm bảo kiểu dữ liệu là Boolean
+    isActive: { 
         type: Boolean,
         default: true,
     },
+    // XÓA: Các trường 'couponCode' và 'discount' không thuộc về model này.
+    // Chúng thuộc về model Order để lưu lại mã đã áp dụng.
 }, {
     timestamps: true,
 });

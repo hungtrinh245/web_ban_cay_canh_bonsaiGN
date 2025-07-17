@@ -10,6 +10,7 @@ const orderRoutes = require("./routes/orderRoutes");
 const postRoutes = require("./routes/postRoutes"); 
 const contactRoutes = require("./routes/contactRoutes"); 
 const categoryRoutes = require("./routes/categoryRoutes"); 
+const chatbotRoutes = require("./routes/chatbotRoutes");
 
 connectDB(); 
 
@@ -27,6 +28,7 @@ app.use('/api/orders', orderRoutes); // ĐẢM BẢO
 app.use('/api/posts', postRoutes); 
 app.use('/api/contact', contactRoutes); 
 app.use('/api/categories', categoryRoutes); // ĐẢM BẢO
+app.use('/api/chatbot', chatbotRoutes); 
 
 app.listen(PORT, () => {
     console.log(`Backend server mới đang chạy trên http://localhost:${PORT}`);
