@@ -548,6 +548,17 @@ const deleteCategory = async (categoryId, token) => {
 };
 
 
+const getActiveCoupons = async () => {
+    try {
+        const response = await axios.get(`${API_URL_COUPONS}/active`);
+        return response.data;
+    } catch (error) {
+        console.error('Lỗi khi lấy mã ưu đãi đang hoạt động:', error);
+        throw error;
+    }
+};
+
+
 // =========================================================
 // DÒNG EXPORT CUỐI CÙNG: ĐẢM BẢO TẤT CẢ CÁC HÀM ĐƯỢC LIỆT KÊ CHỈ MỘT LẦN VÀ ĐÚNG CHÍNH TẢ
 // =========================================================
@@ -580,6 +591,7 @@ export {
     createCoupon,     
     updateCoupon,     
     deleteCoupon,     
+    getActiveCoupons,
 
     // Bài viết
     getAllPosts,      

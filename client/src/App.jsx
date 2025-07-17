@@ -30,6 +30,8 @@ import AdminDashboardPage from './pages/AdminDashboardPage';
 import { useAuth } from './context/AuthContext';
 
 
+import Chatbot from './components/common/Chatbot';
+
 // Component bảo vệ route Admin
 const AdminProtectedRoute = ({ children }) => {
     const { user, isAuthenticated, loading: authLoading } = useAuth();
@@ -103,6 +105,7 @@ function App() {
                     <Route path="blog/:id" element={<BlogDetailPage />} />
                     <Route path="search" element={<SearchPage />} />
                     <Route path="profile" element={<ProfilePage />} />
+                    <Route path="chatbot" element={<Chatbot />} />
                     
                     {/* BẢO VỆ ROUTE CHECKOUT: YÊU CẦU ĐĂNG NHẬP */}
                      <Route path="order/:id" element={<OrderDetailPage />} /> 

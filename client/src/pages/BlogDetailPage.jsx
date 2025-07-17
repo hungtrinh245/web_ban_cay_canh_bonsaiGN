@@ -94,7 +94,7 @@ const BlogDetailPage = () => {
         <div style={pageContainerStyle}>
             <h1 style={postTitleStyle}>{post.title}</h1>
             <p style={postMetaStyle}>
-                Bởi {post.author} vào ngày {formattedDate}
+                {/* Bởi {post.author} vào ngày {formattedDate} */}
                 {post.category && ` | Danh mục: ${post.category}`}
                 {post.views > 0 && ` | Lượt xem: ${post.views}`}
             </p>

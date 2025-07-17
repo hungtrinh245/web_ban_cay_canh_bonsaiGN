@@ -1,3 +1,4 @@
+// client/src/components/admin/ProductManagement.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -118,7 +119,7 @@ const ProductManagement = () => {
             async onOk() { 
                 try {
                     // Pass the token to the deleteBonsai service function
-                    await deleteBonsai(productId, token); 
+                    await deleteBonsai(productId, token); // TRUYỀN TOKEN VÀO ĐÂY
                     AntMessage.success('Sản phẩm đã xóa thành công!'); 
                     fetchProductsAndCategories(currentPage); // Reload product list
                 } catch (err) {
