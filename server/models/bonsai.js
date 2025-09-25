@@ -40,7 +40,8 @@ const bonsaiSchema = new mongoose.Schema({
         required: false,
     }],
     category: {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Category',
         required: [true, "Danh mục sản phẩm không được để trống"],
     },
     stockQuantity: {

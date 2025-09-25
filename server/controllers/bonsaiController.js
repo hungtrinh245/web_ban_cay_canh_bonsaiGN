@@ -1,5 +1,6 @@
 // server/controllers/bonsaiController.js
 const Bonsai = require('../models/bonsai.js');
+const mongoose = require('mongoose');
 
 // Hàm trợ giúp tính toán dữ liệu phân trang cho mô hình Bonsai
 const paginateBonsai = async (req) => { 
@@ -11,7 +12,30 @@ const paginateBonsai = async (req) => {
 
    // Áp dụng bộ lọc danh mục(nếu có)
     if (req.query.category && req.query.category !== 'null' && req.query.category !== 'undefined') {
-        query.category = req.query.category;
+        try {
+            // Sử dụng mongoose.model thay vì require để tránh conflict
+            const Category = mongoose.model('Category');
+            console.log('Searching for category with name:', req.query.category);
+            
+            // Tìm Category theo tên để lấy ObjectId
+            const category = await Category.findOne({ name: req.query.category });
+            console.log('Category search result:', category);
+            
+            if (category) {
+                query.category = category._id;
+                console.log('Found category:', category.name, 'with ID:', category._id);
+            } else {
+                console.log('Category not found:', req.query.category);
+                // Thử tìm tất cả categories để debug
+                const allCategories = await Category.find({});
+                console.log('All available categories:', allCategories.map(c => c.name));
+                // Nếu không tìm thấy danh mục, trả về kết quả rỗng
+                query.category = null;
+            }
+        } catch (error) {
+            console.error('Error finding category:', error);
+            query.category = null;
+        }
     }
 // Áp dụng tìm kiếm từ khóa (nếu có)
     if (req.query.keyword) {
@@ -137,6 +161,11 @@ const getBonsaiCategories = async (req, res) => {
 // @access  Public
 const getBonsaisByCategory = async (req, res) => {
     try {
+        // Thêm categoryName từ URL params vào query
+        req.query.category = req.params.categoryName;
+        console.log('getBonsaisByCategory - categoryName from params:', req.params.categoryName);
+        console.log('getBonsaisByCategory - query.category:', req.query.category);
+        
         const { products, page, limit, totalPages, totalDocuments } = await paginateBonsai(req);
         res.json({
             products,

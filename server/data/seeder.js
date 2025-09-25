@@ -95,6 +95,7 @@ const bonsaiData = [
         isFeatured: true
     },
     {
+        
         name: "Bộ dụng cụ làm vườn mini",
         description: "Bộ 3 dụng cụ làm vườn mini gồm xẻng, cào, xúc đất, tiện lợi cho việc chăm sóc các chậu cây nhỏ trong nhà.",
         price: 75000,
@@ -203,7 +204,7 @@ const couponData = [
         value: 10,
         minAmount: 100000,
         maxDiscount: 100000,
-        expiresAt: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
+        expiryDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
         usageLimit: 100,
         isActive: true,
     },
@@ -212,7 +213,7 @@ const couponData = [
         type: 'fixed',
         value: 30000,
         minAmount: 0,
-        expiresAt: new Date(new Date().setMonth(new Date().getMonth() + 3)),
+        expiryDate: new Date(new Date().setMonth(new Date().getMonth() + 3)),
         usageLimit: 50,
         isActive: true,
     },
@@ -221,7 +222,7 @@ const couponData = [
         type: 'fixed',
         value: 50000,
         minAmount: 200000,
-        expiresAt: new Date(new Date().setMonth(new Date().getMonth() + 6)),
+        expiryDate: new Date(new Date().setMonth(new Date().getMonth() + 6)),
         isActive: true,
     },
 ];
@@ -307,27 +308,42 @@ connectDB();
 
 // Hàm nhập dữ liệu
 const importData = async () => {
-    try {
-        // Xóa dữ liệu cũ
-        await Bonsai.deleteMany();
-        await Coupon.deleteMany(); 
-await Post.deleteMany(); 
-await User.deleteMany();
-await Category.deleteMany(); // <-- ĐẢM BẢO CATEGORY ĐƯỢC XÓA
+    try {
+        // Xóa dữ liệu cũ
+        await Bonsai.deleteMany();
+        await Coupon.deleteMany(); 
+        await Post.deleteMany(); 
+        await User.deleteMany();
+        await Category.deleteMany(); // <-- ĐẢM BẢO CATEGORY ĐƯỢC XÓA
 
-        // Thêm dữ liệu mới
-        await Bonsai.insertMany(bonsaiData);
-        await Coupon.insertMany(couponData); 
- await Post.insertMany(postData);
-await User.insertMany(usersData); // <-- ĐẢM BẢO USER ĐƯỢC THÊM
-await Category.insertMany(categoryData); // <-- ĐẢM BẢO CATEGORY ĐƯỢC THÊM
+        // Thêm categories trước
+        const insertedCategories = await Category.insertMany(categoryData);
+        console.log("Categories đã được thêm:", insertedCategories.length);
 
-        console.log("Dữ liệu mẫu đã được thêm thành công!".green.inverse);
-        process.exit();
-    } catch (error) {
-        console.error(`Lỗi: ${error}`.red.inverse);
-        process.exit(1);
-    }
+        // Tạo mapping từ tên category sang ObjectId
+        const categoryMap = {};
+        insertedCategories.forEach(cat => {
+            categoryMap[cat.name] = cat._id;
+        });
+
+        // Cập nhật bonsaiData để sử dụng ObjectId thay vì tên
+        const updatedBonsaiData = bonsaiData.map(bonsai => ({
+            ...bonsai,
+            category: categoryMap[bonsai.category] || null
+        }));
+
+        // Thêm dữ liệu mới
+        await Bonsai.insertMany(updatedBonsaiData);
+        await Coupon.insertMany(couponData); 
+        await Post.insertMany(postData);
+        await User.insertMany(usersData); // <-- ĐẢM BẢO USER ĐƯỢC THÊM
+
+        console.log("Dữ liệu mẫu đã được thêm thành công!".green.inverse);
+        process.exit();
+    } catch (error) {
+        console.error(`Lỗi: ${error}`.red.inverse);
+        process.exit(1);
+    }
 };
 
 

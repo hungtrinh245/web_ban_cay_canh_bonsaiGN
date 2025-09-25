@@ -147,11 +147,97 @@ const getAllOrders = async (req, res) => {
     }
 };
 
+// @desc    Update order status (Admin Only)
+// @route   PUT /api/orders/:id/status
+// @access  Private/Admin
+const updateOrderStatus = async (req, res) => {
+    try {
+        const orderId = req.params.id;
+        const { orderStatus, note } = req.body;
+        
+        if (!mongoose.Types.ObjectId.isValid(orderId)) {
+            return res.status(400).json({ message: 'ID đơn hàng không hợp lệ.' });
+        }
+        
+        if (!orderStatus) {
+            return res.status(400).json({ message: 'Trạng thái đơn hàng là bắt buộc.' });
+        }
+        
+        const order = await Order.findById(orderId);
+        if (!order) {
+            return res.status(404).json({ message: 'Không tìm thấy đơn hàng.' });
+        }
+        
+        // Cập nhật trạng thái
+        order.orderStatus = orderStatus;
+        order.statusNote = note || '';
+        order.statusUpdatedAt = Date.now();
+        
+        // Cập nhật các trường liên quan
+        if (orderStatus === 'delivered') {
+            order.isDelivered = true;
+            order.deliveredAt = Date.now();
+        } else if (orderStatus === 'cancelled') {
+            order.isDelivered = false;
+        }
+        
+        const updatedOrder = await order.save();
+        res.json(updatedOrder);
+    } catch (error) {
+        console.error('Lỗi khi cập nhật trạng thái đơn hàng:', error);
+        res.status(500).json({ message: 'Lỗi máy chủ nội bộ khi cập nhật trạng thái đơn hàng.' });
+    }
+};
+
+// @desc    Update payment status (Admin Only)
+// @route   PUT /api/orders/:id/payment-status
+// @access  Private/Admin
+const updatePaymentStatus = async (req, res) => {
+    try {
+        const orderId = req.params.id;
+        const { paymentStatus, note } = req.body;
+        
+        if (!mongoose.Types.ObjectId.isValid(orderId)) {
+            return res.status(400).json({ message: 'ID đơn hàng không hợp lệ.' });
+        }
+        
+        if (!paymentStatus) {
+            return res.status(400).json({ message: 'Trạng thái thanh toán là bắt buộc.' });
+        }
+        
+        const order = await Order.findById(orderId);
+        if (!order) {
+            return res.status(404).json({ message: 'Không tìm thấy đơn hàng.' });
+        }
+        
+        // Cập nhật trạng thái thanh toán
+        order.paymentStatus = paymentStatus;
+        order.paymentNote = note || '';
+        order.paymentUpdatedAt = Date.now();
+        
+        // Cập nhật các trường liên quan
+        if (paymentStatus === 'paid') {
+            order.isPaid = true;
+            order.paidAt = Date.now();
+        } else if (paymentStatus === 'failed') {
+            order.isPaid = false;
+        }
+        
+        const updatedOrder = await order.save();
+        res.json(updatedOrder);
+    } catch (error) {
+        console.error('Lỗi khi cập nhật trạng thái thanh toán:', error);
+        res.status(500).json({ message: 'Lỗi máy chủ nội bộ khi cập nhật trạng thái thanh toán.' });
+    }
+};
+
 module.exports = { 
     addOrderItems, 
     getOrderById, 
     getMyOrders, 
     updateOrderToPaid, 
     updateOrderToDelivered, 
+    updateOrderStatus,
+    updatePaymentStatus,
     getAllOrders 
 };

@@ -77,6 +77,28 @@ const orderSchema = new mongoose.Schema({
     deliveredAt: { // Ngày giao hàng
         type: Date,
     },
+    
+    // Trạng thái đơn hàng mới
+    orderStatus: {
+        type: String,
+        enum: ['pending', 'confirmed', 'preparing', 'shipping', 'delivered', 'cancelled', 'returned'],
+        default: 'pending'
+    },
+    
+    // Trạng thái thanh toán mới
+    paymentStatus: {
+        type: String,
+        enum: ['pending', 'paid', 'failed', 'refunded'],
+        default: 'pending'
+    },
+    
+    // Ghi chú trạng thái
+    statusNote: { type: String },
+    paymentNote: { type: String },
+    
+    // Thời gian cập nhật trạng thái
+    statusUpdatedAt: { type: Date },
+    paymentUpdatedAt: { type: Date },
  
     // Thông tin thêm từ form Checkout
     createAccount: { type: Boolean, default: false },
