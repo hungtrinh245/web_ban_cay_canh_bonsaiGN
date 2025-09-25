@@ -1,14 +1,28 @@
-
 import React, { useState } from 'react';
 import { Outlet, Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { Layout, Menu, Input, Badge, Avatar, Dropdown, Space, Button } from 'antd';
+import {
+    ShoppingCartOutlined,
+    UserOutlined,
+    HomeOutlined,
+    ShopOutlined,
+    InfoCircleOutlined,
+    PhoneOutlined,
+    FileTextOutlined,
+    SearchOutlined,
+    LogoutOutlined,
+    LoginOutlined,
+    UserAddOutlined
+} from '@ant-design/icons';
 import Newsletter from '../components/layout/Newsletter';
 import Footer from '../components/layout/Footer';
-import MiniCart from '../components/layout/MiniCart'; 
+import MiniCart from '../components/layout/MiniCart';
 
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 
-import { FaShoppingCart, FaUserCircle, FaHome, FaStore as LogoStoreIcon, FaInfoCircle, FaPhone, FaNewspaper, FaSearch, FaStore } from 'react-icons/fa'; 
+const { Header, Content } = Layout;
+const { Search } = Input;
 
 const ClientLayout = () => {
     const { isAuthenticated, user, logout } = useAuth();
@@ -19,12 +33,14 @@ const ClientLayout = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [showMiniCart, setShowMiniCart] = useState(false);
 
-    const totalCartItems = cartItems.reduce((sum, item) => sum + item.qty, 0);
-    const miniCartSubtotal = cartItems.reduce((acc, item) => acc + item.qty * item.price, 0);
+    // Safety check: ensure cartItems is always an array
+    const safeCartItems = Array.isArray(cartItems) ? cartItems : [];
+    const totalCartItems = safeCartItems.reduce((sum, item) => sum + item.qty, 0);
+    const miniCartSubtotal = safeCartItems.reduce((acc, item) => acc + item.qty * item.price, 0);
 
     const handleLogout = () => {
         logout();
-        navigate('/login'); 
+        navigate('/login');
     };
 
     const handleCloseMiniCart = () => {
@@ -35,371 +51,297 @@ const ClientLayout = () => {
         setShowMiniCart(true);
     };
 
-    const handleSearchSubmit = (e) => {
-        e.preventDefault();
-        if (searchTerm.trim()) {
-            navigate(`/search?keyword=${encodeURIComponent(searchTerm.trim())}`);
-            setSearchTerm('');
+    const handleSearch = (value) => {
+        if (value.trim()) {
+            // Dùng tham số 'keyword' để tương thích với SearchPage
+            navigate(`/search?keyword=${encodeURIComponent(value.trim())}`);
         }
     };
-    const headerTopStyle = {
-        background: '#1a1a1a',
-        color: 'white',
-        padding: '0.8rem 2.5rem',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-        position: 'sticky',
-        top: 0,
-        zIndex: 100,
-        fontFamily: 'Roboto, sans-serif',
-        width: '100%',
-        boxSizing: 'border-box'
-    };
 
-    const logoStyle = {
-        color: '#4CAF50',
-        textDecoration: 'none',
-        fontSize: '1.8rem',
-        fontWeight: 'bold',
-        letterSpacing: '1px',
-        display: 'flex',
-        alignItems: 'center'
-    };
-
-    const logoSpanStyle = {
-        color: 'white',
-        marginLeft: '5px'
-    };
-
-    const userActionsStyle = {
-        display: 'flex',
-        alignItems: 'center',
-        gap: '20px'
-    };
-
-    const navLinkStyle = {
-        color: 'white',
-        textDecoration: 'none',
-        fontSize: '1rem',
-        padding: '8px 12px',
-        borderRadius: '5px',
-        transition: 'background-color 0.3s ease, color 0.3s ease',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '5px'
-    };
-
-    const navLinkHoverStyle = {
-        backgroundColor: '#4CAF50',
-        color: 'white',
-    };
-
-    const headerCartLinkStyle = {
-        ...navLinkStyle,
-        position: 'relative',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '10px',
-        background: '#444',
-        padding: '8px 15px',
-        borderRadius: '25px',
-        cursor: 'pointer',
-        transition: 'background-color 0.3s ease, transform 0.2s',
-    };
-
-    const headerCartLinkHoverStyle = {
-        backgroundColor: '#555',
-        transform: 'scale(1.02)'
-    };
-
-    const cartBadgeStyle = {
-        position: 'absolute',
-        top: '-8px',
-        right: '-8px',
-        background: '#FF5722',
-        borderRadius: '50%',
-        minWidth: '22px',
-        height: '22px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontSize: '0.75rem',
-        fontWeight: 'bold',
-        color: 'white',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
-    };
-
-    const cartTextStyle = {
-        fontSize: '1rem',
-        fontWeight: 'bold',
-        color: 'white',
-        whiteSpace: 'nowrap'
-    };
-
-    const cartPriceStyle = {
-        fontSize: '0.9em',
-        color: '#f0f0f0',
-        marginLeft: '5px',
-        whiteSpace: 'nowrap'
-    };
-
-    const buttonStyle = {
-        padding: '8px 15px',
-        background: 'none',
-        border: '1px solid #4CAF50',
-        color: '#4CAF50',
-        borderRadius: '5px',
-        cursor: 'pointer',
-        fontSize: '1rem',
-        transition: 'background-color 0.3s ease, color 0.3s ease',
-    };
-
-    const buttonHoverStyle = {
-        backgroundColor: '#4CAF50',
-        color: 'white',
-    };
-
-    const mainNavBarStyle = {
-        background: '#28a745',
-        padding: '0.8rem 2.5rem',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-        fontFamily: 'Roboto, sans-serif',
-        width: '100%',
-        boxSizing: 'border-box'
-    };
-
-    const mainNavLinkContainerStyle = {
-        display: 'flex',
-        justifyContent: 'center',
-        gap: '35px',
-    };
-
-    const mainNavLinkBaseStyle = {
-        color: 'white',
-        textDecoration: 'none',
-        fontSize: '1.05rem',
-        fontWeight: '500',
-        padding: '5px 10px',
-        position: 'relative',
-        transition: 'color 0.3s ease, border-bottom 0.3s ease, padding-bottom 0.3s ease',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '5px'
-    };
-
-    const mainNavLinkHoverStyle = {
-        color: '#f0f0f0',
-    };
-
-    const mainNavLinkActiveStyle = {
-        fontWeight: 'bold',
-        color: 'white',
-        borderBottom: '3px solid white',
-        paddingBottom: '2px',
-    };
-
-    const getNavLinkStyle = (path) => ({ isActive }) => {
-        const isHomePageActive = path === '/' && (location.pathname === '/' || location.pathname === '/home');
-        const isShopPageActive = path === '/shop' && location.pathname.startsWith('/shop');
-        const isBlogPageActive = path === '/blog' && location.pathname.startsWith('/blog');
-        const isContactPageActive = path === '/contact' && location.pathname === '/contact';
-        const isSearchPageActive = path === '/search' && location.pathname.startsWith('/search');
-
-        const currentlyActive = isActive || isHomePageActive || isShopPageActive || isBlogPageActive || isContactPageActive || isSearchPageActive;
-
-        return {
-            ...mainNavLinkBaseStyle,
-            ...(currentlyActive ? mainNavLinkActiveStyle : {}),
-        };
-    };
-
-    const applyHoverStyle = (e, style) => {
-        Object.assign(e.currentTarget.style, style);
-    };
-
-    const removeHoverStyle = (e, initialStyle) => {
-        const path = e.currentTarget.getAttribute('to');
-        const isHomePageActive = path === '/' && (location.pathname === '/' || location.pathname === '/home');
-        const isShopPageActive = path === '/shop' && location.pathname.startsWith('/shop');
-        const isBlogPageActive = path === '/blog' && location.pathname.startsWith('/blog');
-        const isContactPageActive = path === '/contact' && location.pathname === '/contact';
-        const isSearchPageActive = path === '/search' && location.pathname.startsWith('/search');
-
-        const currentlyActive = e.currentTarget.dataset.isactive === 'true' || isHomePageActive || isShopPageActive || isBlogPageActive || isContactPageActive || isSearchPageActive;
-
-        if (currentlyActive) {
-            Object.assign(e.currentTarget.style, mainNavLinkActiveStyle);
-        } else {
-            Object.assign(e.currentTarget.style, initialStyle);
+    const userMenuItems = [
+        {
+            key: 'profile',
+            icon: <UserOutlined />,
+            label: 'Thông tin cá nhân',
+            onClick: () => navigate('/profile')
+        },
+        {
+            type: 'divider'
+        },
+        {
+            key: 'logout',
+            icon: <LogoutOutlined />,
+            label: 'Đăng xuất',
+            onClick: handleLogout
         }
+    ];
+
+    const guestMenuItems = [
+        {
+            key: 'login',
+            icon: <LoginOutlined />,
+            label: 'Đăng nhập',
+            onClick: () => navigate('/login')
+        },
+        {
+            key: 'register',
+            icon: <UserAddOutlined />,
+            label: 'Đăng ký',
+            onClick: () => navigate('/register')
+        }
+    ];
+
+    const menuItems = [
+        {
+            key: '/',
+            icon: <HomeOutlined />,
+            label: 'Trang chủ'
+        },
+        {
+            key: '/shop',
+            icon: <ShopOutlined />,
+            label: 'Cửa hàng'
+        },
+        {
+            key: '/about',
+            icon: <InfoCircleOutlined />,
+            label: 'Giới thiệu'
+        },
+        {
+            key: '/contact',
+            icon: <PhoneOutlined />,
+            label: 'Liên hệ'
+        },
+        {
+            key: '/blog',
+            icon: <FileTextOutlined />,
+            label: 'Tin tức'
+        }
+    ];
+
+    // Lấy key hiện tại từ location
+    const getCurrentMenuKey = () => {
+        const path = location.pathname;
+        if (path === '/' || path === '/home') return '/';
+        if (path.startsWith('/shop')) return '/shop';
+        if (path.startsWith('/blog')) return '/blog';
+        if (path === '/about') return '/about';
+        if (path === '/contact') return '/contact';
+        return path;
     };
 
 
     return (
-        <>
-            {/* PUBLIC HEADER */}
-            <header style={headerTopStyle}>
-                <Link to="/" style={logoStyle}>
-                    <LogoStoreIcon size={28} style={{ marginRight: '8px', color: 'white' }} /> Bonsai<span style={logoSpanStyle}>GN</span>
-                </Link>
-                
-                {/* Thanh tìm kiếm */}
-                <div style={{ position: 'relative', display: 'flex', alignItems: 'center', flex: 1, maxWidth: '500px', margin: '0 30px' }}>
-                    <form onSubmit={handleSearchSubmit} style={{width: '100%'}}>
-                        <input 
-                            type="text" 
-                            placeholder="Tìm kiếm sản phẩm..." 
-                            value={searchTerm} 
-                            onChange={(e) => setSearchTerm(e.target.value)} 
-                            style={{ 
-                                width: '100%', 
-                                padding: '10px 40px 10px 15px', 
-                                borderRadius: '25px', 
-                                border: '1px solid #555',
-                                background: '#2a2a2a',
-                                color: 'white',
-                                fontSize: '0.95em',
-                                boxSizing: 'border-box'
-                            }} 
-                        />
-                        <button type="submit" style={{ background: 'none', border: 'none', position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer' }}>
-                            <FaSearch style={{ color: '#aaa', fontSize: '1.1em' }} />
-                        </button>
-                    </form>
-                </div>
-
-                <div style={userActionsStyle}>
-                    {/* Giỏ hàng và tổng tiền */}
-                    <Link
-                        to="/cart"
-                        style={headerCartLinkStyle} 
-                        onMouseOver={(e) => applyHoverStyle(e, headerCartLinkHoverStyle)}
-                        onMouseOut={(e) => removeHoverStyle(e, headerCartLinkStyle)}
-                        onClick={(e) => { 
-                            e.preventDefault(); 
-                            setShowMiniCart(!showMiniCart); 
-                        }}
-                    >
-                        <FaShoppingCart size={18} />
-                        <span style={cartTextStyle}>
-                            Giỏ hàng
-                            {totalCartItems > 0 && (
-                                <span style={cartBadgeStyle}>{totalCartItems}</span>
-                            )}
+        <Layout style={{ minHeight: '100vh' }}>
+            {/* Header với logo, search và user actions */}
+            <Header style={{
+                height: '80px',
+                padding: '0 24px',
+                background: 'linear-gradient(135deg, #2F6A37 0%, #52c41a 100%)',
+                boxShadow: '0 4px 20px rgba(47, 106, 55, 0.15)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                position: 'sticky',
+                top: 0,
+                zIndex: 1000
+            }}>
+                {/* Logo */}
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <Link to="/" style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        textDecoration: 'none',
+                        color: 'white'
+                    }}>
+                        <div style={{
+                            fontSize: '28px',
+                            marginRight: '8px',
+                            background: 'linear-gradient(45deg, #fff, #e6f7ff)',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
+                            filter: 'drop-shadow(1px 1px 1px rgba(0,0,0,0.1))'
+                        }}>
+                            🌿
+                        </div>
+                        <span style={{
+                            fontSize: '24px',
+                            fontWeight: 'bold',
+                            background: 'linear-gradient(45deg, #fff, #e6f7ff)',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
+                            filter: 'drop-shadow(1px 1px 1px rgba(0,0,0,0.1))'
+                        }}>
+                            BonsaiGN
                         </span>
-                        {totalCartItems > 0 && ( 
-                            <span style={cartPriceStyle}>
-                                / {miniCartSubtotal.toLocaleString('vi-VN')} VNĐ
-                            </span>
-                        )}
                     </Link>
-                    
-                    {showMiniCart && (
-                        <MiniCart 
-                            cartItems={cartItems} 
-                            subtotal={miniCartSubtotal} 
-                            onClose={handleCloseMiniCart} 
-                        />
-                    )}
-
-                    {isAuthenticated ? (
-                        <>
-                            {/* Link đến trang Hồ sơ (Profile) */}
-                            <Link
-                                to="/profile" 
-                                style={navLinkStyle}
-                                onMouseOver={(e) => applyHoverStyle(e, navLinkHoverStyle)}
-                                onMouseOut={(e) => removeHoverStyle(e, navLinkStyle)}
-                            >
-                                <FaUserCircle size={18} /> Chào, {user.name}
-                            </Link>
-                            <button
-                                onClick={handleLogout}
-                                style={buttonStyle}
-                                onMouseOver={(e) => applyHoverStyle(e, buttonHoverStyle)}
-                                onMouseOut={(e) => removeHoverStyle(e, buttonStyle)}
-                            >
-                                Đăng xuất
-                            </button>
-                        </>
-                    ) : (
-                        <>
-                            <Link
-                                to="/login"
-                                style={navLinkStyle}
-                                onMouseOver={(e) => applyHoverStyle(e, navLinkHoverStyle)}
-                                onMouseOut={(e) => removeHoverStyle(e, navLinkStyle)}
-                            >
-                                Đăng nhập
-                            </Link>
-                            <Link
-                                to="/register"
-                                style={navLinkStyle}
-                                onMouseOver={(e) => applyHoverStyle(e, navLinkHoverStyle)}
-                                onMouseOut={(e) => removeHoverStyle(e, navLinkStyle)}
-                            >
-                                Đăng ký
-                            </Link>
-                        </>
-                    )}
                 </div>
-            </header>
 
-            {/* PUBLIC MAIN NAVIGATION BAR */}
-            <nav style={mainNavBarStyle}>
-                <div style={mainNavLinkContainerStyle}>
-                    <NavLink
-                        to="/"
-                        style={getNavLinkStyle('/')} 
-                        onMouseOver={(e) => applyHoverStyle(e, mainNavLinkHoverStyle)}
-                        onMouseOut={(e) => removeHoverStyle(e, mainNavLinkBaseStyle)}
-                    >
-                        <FaHome /> Trang chủ
-                    </NavLink>
-                    <NavLink
-                        to="/shop"
-                        style={getNavLinkStyle('/shop')} 
-                        onMouseOver={(e) => applyHoverStyle(e, mainNavLinkHoverStyle)}
-                        onMouseOut={(e) => removeHoverStyle(e, mainNavLinkBaseStyle)}
-                    >
-                        <FaStore /> Cửa hàng
-                    </NavLink>
-                    <NavLink
-                        to="/about"
-                        style={getNavLinkStyle('/about')} 
-                        onMouseOver={(e) => applyHoverStyle(e, mainNavLinkHoverStyle)}
-                        onMouseOut={(e) => removeHoverStyle(e, mainNavLinkBaseStyle)}
-                    >
-                        <FaInfoCircle /> Giới thiệu
-                    </NavLink>
-                    <NavLink
-                        to="/contact"
-                        style={getNavLinkStyle('/contact')} 
-                        onMouseOver={(e) => applyHoverStyle(e, mainNavLinkHoverStyle)}
-                        onMouseOut={(e) => removeHoverStyle(e, mainNavLinkBaseStyle)}
-                    >
-                        <FaPhone /> Liên hệ
-                    </NavLink>
-                    <NavLink
-                        to="/blog" 
-                        style={getNavLinkStyle('/blog')} 
-                        onMouseOver={(e) => applyHoverStyle(e, mainNavLinkHoverStyle)}
-                        onMouseOut={(e) => removeHoverStyle(e, mainNavLinkBaseStyle)}
-                    >
-                        <FaNewspaper /> Tin tức
-                    </NavLink>
+                {/* Search Bar */}
+                <div style={{ flex: 1, maxWidth: '500px', margin: '0 24px' }}>
+                    <Search
+                        placeholder="Tìm kiếm cây cảnh, bonsai..."
+                        size="large"
+                        enterButton={
+                            <Button
+                                type="primary"
+                                style={{
+                                    background: 'linear-gradient(135deg, #1890ff, #096dd9)',
+                                    border: 'none',
+                                    height: '40px'
+                                }}
+                            >
+                                <SearchOutlined />
+                            </Button>
+                        }
+                        onSearch={handleSearch}
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        style={{
+                            '& .ant-input': {
+                                borderRadius: '8px 0 0 8px'
+                            },
+                            '& .ant-btn': {
+                                borderRadius: '0 8px 8px 0'
+                            }
+                        }}
+                    />
                 </div>
-            </nav>
 
-            <main style={{ minHeight: '60vh', padding: '0px 0', overflowX: 'hidden' }}>
-                <Outlet /> {/* Đây là nơi các routes con của ClientLayout sẽ được render */}
-            </main>
+                {/* User Actions */}
+                <Space size="large" style={{ alignItems: 'center' }}>
+                    {/* Shopping Cart */}
+                    <div style={{ position: 'relative' }}>
+                        <Button
+                            type="text"
+                            icon={<ShoppingCartOutlined style={{ fontSize: '20px' }} />}
+                            size="large"
+                            onClick={() => setShowMiniCart(!showMiniCart)}
+                            style={{
+                                color: 'white',
+                                height: '48px',
+                                padding: '0 16px',
+                                fontSize: '16px',
+                                fontWeight: '600',
+                                border: 'none',
+                                borderRadius: '8px',
+                                background: 'transparent',
+                                transition: 'all 0.3s ease'
+                            }}
+                            onMouseEnter={(e) => {
+                                e.target.style.background = 'rgba(255,255,255,0.2)';
+                                e.target.style.transform = 'translateY(-1px)';
+                                e.target.style.boxShadow = '0 6px 20px rgba(255,255,255,0.2)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.target.style.background = 'transparent';
+                                e.target.style.transform = 'translateY(0)';
+                                e.target.style.boxShadow = 'none';
+                            }}
+                        >
+                            Giỏ hàng {totalCartItems > 0 && (
+                                <Badge
+                                    count={totalCartItems}
+                                    size="small"
+                                    style={{
+                                        marginLeft: '8px',
+                                        backgroundColor: '#ff4d4f',
+                                        boxShadow: '0 2px 8px rgba(255, 77, 79, 0.3)'
+                                    }}
+                                />
+                            )}
+                        </Button>
 
+                        {/* Mini Cart */}
+                        {showMiniCart && (
+                            <MiniCart
+                                cartItems={safeCartItems}
+                                subtotal={miniCartSubtotal}
+                                onClose={handleCloseMiniCart}
+                            />
+                        )}
+                    </div>
+
+                    {/* User Menu */}
+                    <Dropdown
+                        menu={{ items: isAuthenticated ? userMenuItems : guestMenuItems }}
+                        placement="bottomRight"
+                        trigger={['click']}
+                        arrow
+                    >
+                        <Button
+                            type="text"
+                            size="large"
+                            style={{
+                                color: 'white',
+                                height: '48px',
+                                padding: '0 16px',
+                                fontSize: '16px',
+                                fontWeight: '600',
+                                border: 'none',
+                                borderRadius: '8px',
+                                background: 'transparent',
+                                transition: 'all 0.3s ease'
+                            }}
+                            onMouseEnter={(e) => {
+                                e.target.style.background = 'rgba(255,255,255,0.2)';
+                                e.target.style.transform = 'translateY(-1px)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.target.style.background = 'transparent';
+                                e.target.style.transform = 'translateY(0)';
+                            }}
+                        >
+                            <Space>
+                                <Avatar
+                                    size={32}
+                                    icon={<UserOutlined />}
+                                    style={{ backgroundColor: '#1890ff' }}
+                                />
+                                {isAuthenticated ? user?.name : 'Tài khoản'}
+                            </Space>
+                        </Button>
+                    </Dropdown>
+                </Space>
+            </Header>
+
+            {/* Navigation Menu */}
+            <div style={{
+                background: 'linear-gradient(135deg, #237804 0%, #389e0d 100%)',
+                display: 'flex',
+                justifyContent: 'center',
+                padding: '0 24px'
+            }}>
+                <Menu
+                    mode="horizontal"
+                    selectedKeys={[getCurrentMenuKey()]}
+                    items={menuItems}
+                    style={{
+                        background: 'transparent',
+                        border: 'none',
+                        height: '48px',
+                        lineHeight: '48px',
+                        fontSize: '16px',
+                        fontWeight: '500',
+                        minWidth: 'auto'
+                    }}
+                    theme="dark"
+                    onClick={({ key }) => navigate(key)}
+                />
+            </div>
+
+            {/* Main Content */}
+            <Content style={{
+                minHeight: 'calc(100vh - 128px)',
+                background: '#fff'
+            }}>
+                <Outlet />
+            </Content>
+
+            {/* Footer components */}
             <Newsletter />
             <Footer />
-        </>
+        </Layout>
     );
 };
 

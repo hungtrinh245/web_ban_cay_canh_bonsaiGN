@@ -3,10 +3,19 @@ import React, { createContext, useContext, useReducer, useEffect } from 'react';
 
 const CartContext = createContext();
 
+const getInitialCartItems = () => {
+    try {
+        const items = localStorage.getItem('cartItems');
+        return items ? JSON.parse(items) : [];
+    } catch (error) {
+        console.error('Error parsing cart items from localStorage:', error);
+        localStorage.removeItem('cartItems'); // Clear corrupted data
+        return [];
+    }
+};
+
 const initialState = {
-    cartItems: localStorage.getItem('cartItems')
-        ? JSON.parse(localStorage.getItem('cartItems'))
-        : [],
+    cartItems: getInitialCartItems(),
 };
 
 function reducer(state, action) {

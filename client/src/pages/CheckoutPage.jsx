@@ -1,155 +1,227 @@
 // client/src/pages/CheckoutPage.jsx
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
-import { useAuth } from '../context/AuthContext'; 
+import { useAuth } from '../context/AuthContext';
 // THÊM CÁC HÀM MỚI TỪ SERVICE
-import { createOrder, getActiveCoupons, applyCoupon } from '../services/productService'; 
+import { createOrder } from '../services/productService';
 // THÊM CÁC COMPONENT TỪ ANT DESIGN
-import { Input, Button, List, Tag, Typography, message as AntMessage, Spin } from 'antd';
-
-const { Title, Text } = Typography;
+import { Spin } from 'antd';
+import AddressSelector from '../components/common/AddressSelector';
 
 const CheckoutPage = () => {
     const navigate = useNavigate();
-    const { cartItems, clearCart } = useCart(); 
-    const { user, isAuthenticated, token } = useAuth(); 
+    const location = useLocation();
+    const { cartItems, clearCart } = useCart();
+    const { user, isAuthenticated, token } = useAuth();
+
+    // Nhận dữ liệu từ CartPage
+    const selectedItems = location.state?.selectedItems || cartItems;
+    const appliedDiscount = location.state?.appliedDiscount || { couponCode: null, discountAmount: 0 };
 
     // States cho thông tin giao hàng & thanh toán
-    const [firstName, setFirstName] = useState(user ? (user.name ? user.name.split(' ')[0] : '') : ''); 
-    const [lastName, setLastName] = useState(user ? (user.name ? user.name.split(' ').slice(1).join(' ') : '') : ''); 
-    const [company, setCompany] = useState('');     
-    const [country, setCountry] = useState('Việt Nam'); 
-    const [address, setAddress] = useState('');     
-    const [postalCode, setPostalCode] = useState(''); 
-    const [city, setCity] = useState(''); 
-    const [phone, setPhone] = useState(''); 
+    const [firstName, setFirstName] = useState(user ? (user.name ? user.name.split(' ')[0] : '') : '');
+    const [lastName, setLastName] = useState(user ? (user.name ? user.name.split(' ').slice(1).join(' ') : '') : '');
+    const [company, setCompany] = useState('');
+    const [country, setCountry] = useState('Việt Nam');
+    const [address, setAddress] = useState('');
+    const [postalCode, setPostalCode] = useState('');
+    const [phone, setPhone] = useState('');
     const [email, setEmail] = useState(user ? user.email : '');
 
-    const [createAccount, setCreateAccount] = useState(false); 
-    const [shipToDifferentAddress, setShipToDifferentAddress] = useState(false); 
-    const [notes, setNotes] = useState(''); 
+    // State cho địa chỉ được chọn từ AddressSelector
+    const [selectedAddress, setSelectedAddress] = useState({
+        province: '',
+        district: '',
+        ward: '',
+        fullAddress: ''
+    });
+
+    const [createAccount, setCreateAccount] = useState(false);
+    const [shipToDifferentAddress, setShipToDifferentAddress] = useState(false);
+    const [notes, setNotes] = useState('');
 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-    
-    const [paymentMethod, setPaymentMethod] = useState('cod'); 
 
-    // --- STATE MỚI CHO TÍNH NĂNG MÃ ƯU ĐÃI ---
-    const [couponCode, setCouponCode] = useState('');
-    const [availableCoupons, setAvailableCoupons] = useState([]);
-    const [loadingCoupons, setLoadingCoupons] = useState(true);
-    const [appliedCoupon, setAppliedCoupon] = useState(null);
-    const [discountAmount, setDiscountAmount] = useState(0); // State này giờ sẽ được cập nhật động
+    const [paymentMethod, setPaymentMethod] = useState('cod');
 
-    // Tính toán lại giá trị đơn hàng
-    const subtotal = cartItems.reduce((acc, item) => acc + item.qty * item.price, 0);
+    // Sử dụng dữ liệu từ Cart
+    const discountAmount = appliedDiscount.discountAmount;
+
+    // Tính toán lại giá trị đơn hàng dựa trên selectedItems
+    const subtotal = selectedItems.reduce((acc, item) => acc + item.qty * item.price, 0);
     const shippingFee = subtotal > 500000 ? 0 : 30000;
-    let finalTotal = subtotal + shippingFee - discountAmount; 
-    if (finalTotal < 0) finalTotal = 0; 
+    let finalTotal = subtotal + shippingFee - discountAmount;
+    if (finalTotal < 0) finalTotal = 0;
 
-    // Effect để lấy thông tin người dùng và kiểm tra giỏ hàng
+    // Effect để lấy thông tin người dùng và kiểm tra sản phẩm được chọn
     useEffect(() => {
-        if (cartItems.length === 0) {
-            navigate('/cart'); 
-            return; 
+        if (selectedItems.length === 0) {
+            navigate('/cart');
+            return;
         }
         if (isAuthenticated && user) {
-            setEmail(user.email || ''); 
+            setEmail(user.email || '');
             if (user.name) {
                 const nameParts = user.name.split(' ');
                 setLastName(nameParts.pop() || '');
                 setFirstName(nameParts.join(' ') || '');
             }
         }
-    }, [cartItems, navigate, isAuthenticated, user]);
 
-    // --- EFFECT MỚI: LẤY DANH SÁCH MÃ ƯU ĐÃI KHI TẢI TRANG ---
-    useEffect(() => {
-        const fetchCoupons = async () => {
-            try {
-                setLoadingCoupons(true);
-                const coupons = await getActiveCoupons();
-                setAvailableCoupons(coupons);
-            } catch (error) {
-                console.error("Không thể tải danh sách mã ưu đãi:", error);
-                // Không cần hiển thị lỗi cho người dùng vì đây không phải tính năng cốt lõi
-            } finally {
-                setLoadingCoupons(false);
+        // Validate selected items on page load
+        validateSelectedItems();
+    }, [selectedItems, navigate, isAuthenticated, user]);
+
+    // Function to validate selected items
+    const validateSelectedItems = async () => {
+        const invalidItems = [];
+        for (const item of selectedItems) {
+            const productId = item._id || item.id;
+            if (!productId) {
+                invalidItems.push(item);
+                continue;
             }
-        };
-        fetchCoupons();
-    }, []);
 
-    // --- HÀM MỚI: XỬ LÝ ÁP DỤNG MÃ ƯU ĐÃI ---
-    const handleApplyCoupon = async () => {
-        if (!couponCode) {
-            AntMessage.warning('Vui lòng nhập mã ưu đãi.');
-            return;
+            try {
+                const response = await fetch(`http://localhost:5001/api/bonsais/${productId}`);
+                if (!response.ok) {
+                    invalidItems.push(item);
+                }
+            } catch (error) {
+                console.error('Error validating item:', item, error);
+                invalidItems.push(item);
+            }
         }
-        try {
-            // Gọi API để xác thực và lấy thông tin giảm giá
-            const response = await applyCoupon(couponCode, subtotal);
-            setAppliedCoupon(response.coupon);
-            setDiscountAmount(response.discountAmount);
-            AntMessage.success(`Áp dụng mã "${response.coupon.code}" thành công!`);
-        } catch (error) {
-            setAppliedCoupon(null);
-            setDiscountAmount(0); // Reset giảm giá nếu mã không hợp lệ
-            AntMessage.error(error.message || 'Mã không hợp lệ hoặc không thể áp dụng.');
+
+        if (invalidItems.length > 0) {
+            console.warn('Found invalid items:', invalidItems);
+            setError(`Một số sản phẩm trong giỏ hàng không còn tồn tại. Vui lòng làm mới trang và thử lại.`);
         }
     };
 
-    // --- HÀM MỚI: TỰ ĐỘNG ĐIỀN MÃ KHI BẤM VÀO DANH SÁCH ---
-    const handleApplyFromList = (code) => {
-        setCouponCode(code);
-        AntMessage.info(`Đã chọn mã "${code}". Bấm "Áp dụng" để xác nhận.`);
+    // Xử lý thay đổi địa chỉ từ AddressSelector
+    const handleAddressChange = (addressInfo) => {
+        setSelectedAddress(addressInfo);
     };
+
+
 
     const handleSubmitOrder = useCallback(async (e) => {
         e.preventDefault();
         setLoading(true);
         setError('');
 
-        if (cartItems.length === 0) {
-            setError('Giỏ hàng trống, không thể đặt hàng.');
+        if (selectedItems.length === 0) {
+            setError('Không có sản phẩm nào được chọn để đặt hàng.');
             setLoading(false);
             return;
         }
 
-        if (!firstName || !lastName || !address || !city || !phone || !email) {
-            setError('Vui lòng điền đầy đủ các trường bắt buộc.');
+        if (!firstName || !lastName || !address || !selectedAddress.province || !phone || !email) {
+            setError('Vui lòng điền đầy đủ các trường bắt buộc (bao gồm địa chỉ chi tiết và tỉnh/thành phố).');
             setLoading(false);
             return;
         }
-        
+
         try {
+            // Validate selected items before creating order
+            const validatedItems = [];
+            for (const item of selectedItems) {
+                try {
+                    // Try to get product from API to validate it exists
+                    const productId = item._id || item.id;
+                    if (!productId) {
+                        console.error('Item missing ID:', item);
+                        setError(`Sản phẩm "${item.name}" không có ID hợp lệ.`);
+                        setLoading(false);
+                        return;
+                    }
+
+                    // Validate product exists by making API call
+                    const response = await fetch(`http://localhost:5001/api/bonsais/${productId}`);
+                    if (!response.ok) {
+                        console.error(`Product ${productId} not found:`, response.status);
+                        setError(`Không tìm thấy sản phẩm "${item.name}" với ID: ${productId}`);
+                        setLoading(false);
+                        return;
+                    }
+
+                    validatedItems.push({
+                        product: productId,
+                        name: item.name,
+                        image: item.images && item.images.length > 0 ? item.images[0] : 'no-image.jpg',
+                        qty: item.qty,
+                        price: item.price,
+                    });
+                } catch (error) {
+                    console.error('Error validating item:', item, error);
+                    setError(`Lỗi khi xác thực sản phẩm "${item.name}": ${error.message}`);
+                    setLoading(false);
+                    return;
+                }
+            }
+
             const orderData = {
-                orderItems: cartItems.map(item => ({
-                    product: item._id, 
-                    name: item.name,
-                    image: item.images && item.images.length > 0 ? item.images[0] : 'no-image.jpg',
-                    qty: item.qty,
-                    price: item.price,
-                })),
-                shippingAddress: { firstName, lastName, company, country, address, postalCode, city, phone, email },
-                paymentMethod, 
+                orderItems: validatedItems,
+                shippingAddress: {
+                    firstName,
+                    lastName,
+                    company,
+                    country,
+                    address,
+                    postalCode,
+                    city: selectedAddress.fullAddress, // Sử dụng địa chỉ đầy đủ từ selector
+                    province: selectedAddress.province,
+                    district: selectedAddress.district,
+                    ward: selectedAddress.ward,
+                    phone,
+                    email
+                },
+                paymentMethod,
                 itemsPrice: subtotal,
                 shippingPrice: shippingFee,
-                taxPrice: 0, // Thêm taxPrice nếu cần
+                taxPrice: 0,
                 totalPrice: finalTotal,
                 notes,
                 createAccount,
                 shipToDifferentAddress,
-                userId: isAuthenticated ? user._id : null, 
-                // Thêm thông tin mã giảm giá vào đơn hàng để lưu trữ
-                couponCode: appliedCoupon ? appliedCoupon.code : null,
+                userId: isAuthenticated ? user._id : null,
+                // Thêm thông tin mã giảm giá từ Cart
+                couponCode: appliedDiscount.couponCode,
                 discount: discountAmount,
             };
 
-            const response = await createOrder(orderData, token); 
-            clearCart(); 
-            navigate(`/order/${response._id}`, { state: { order: response } }); 
+            if (paymentMethod === 'vnpay') {
+                try {
+                    const resp = await fetch('http://localhost:5001/api/payment/vnpay/create', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            amount: finalTotal,
+                            orderId: 'ORDER_' + Date.now(),
+                            orderInfo: `Thanh toan don hang ${user?.name || 'Khach'}`
+                        })
+                    });
+                    const data = await resp.json();
+                    if (data.paymentUrl) {
+                        window.location.href = data.paymentUrl;
+                        return;
+                    } else {
+                        throw new Error('Không tạo được URL thanh toán VNPay');
+                    }
+                } catch (e) {
+                    console.error(e);
+                    setError(e.message || 'Không thể tạo thanh toán VNPay');
+                    setLoading(false);
+                    return;
+                }
+            } else {
+                const response = await createOrder(orderData, token);
+                clearCart();
+                navigate(`/order/${response._id}`, { state: { order: response } });
+            }
 
         } catch (err) {
             console.error("Lỗi khi đặt hàng:", err);
@@ -158,10 +230,10 @@ const CheckoutPage = () => {
             setLoading(false);
         }
     }, [
-        cartItems, firstName, lastName, company, country, address, postalCode, city, phone, email,
+        selectedItems, firstName, lastName, company, country, address, postalCode, selectedAddress, phone, email,
         paymentMethod, createAccount, shipToDifferentAddress, notes, subtotal, shippingFee, finalTotal,
-        isAuthenticated, user, clearCart, navigate, token, appliedCoupon, discountAmount
-    ]); 
+        isAuthenticated, user, clearCart, navigate, token, appliedDiscount, discountAmount
+    ]);
 
     // --- Định nghĩa các biến style (giữ nguyên) ---
     const checkoutContainerStyle = { maxWidth: '1200px', margin: '40px auto', padding: '0 20px', fontFamily: 'Roboto, sans-serif', color: '#333' };
@@ -186,7 +258,6 @@ const CheckoutPage = () => {
     const placeOrderButtonStyle = { width: '100%', padding: '18px', background: '#28a745', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '1.2em', fontWeight: 'bold', marginTop: '30px', transition: 'background-color 0.3s ease, transform 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' };
     const errorStyle = { color: 'red', marginBottom: '15px', textAlign: 'center', fontSize: '0.9em' };
     const disclaimerTextStyle = { fontSize: '0.85em', color: '#777', marginTop: '20px', textAlign: 'center', lineHeight: '1.5' };
-    const couponSectionStyle = { marginTop: '20px', paddingTop: '20px', borderTop: '1px solid #eee' };
 
     return (
         <div style={checkoutContainerStyle}>
@@ -195,7 +266,36 @@ const CheckoutPage = () => {
                 <div style={pageTitleUnderlineStyle}></div>
             </h1>
 
-            {error && <p style={errorStyle}>{error}</p>}
+            {error && (
+                <div style={{
+                    ...errorStyle,
+                    backgroundColor: '#ffe6e6',
+                    padding: '15px',
+                    borderRadius: '8px',
+                    border: '1px solid #ffcccc',
+                    marginBottom: '20px'
+                }}>
+                    <p style={{ margin: '0 0 10px 0' }}>{error}</p>
+                    <button
+                        onClick={() => {
+                            // Clear cart and redirect to cart page
+                            clearCart();
+                            navigate('/cart');
+                        }}
+                        style={{
+                            padding: '8px 16px',
+                            backgroundColor: '#dc3545',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontSize: '14px'
+                        }}
+                    >
+                        🔄 Làm mới giỏ hàng
+                    </button>
+                </div>
+            )}
 
             <form onSubmit={handleSubmitOrder}>
                 <div style={mainContentWrapperStyle}>
@@ -206,30 +306,34 @@ const CheckoutPage = () => {
                             {/* ... các input thông tin ... */}
                             <div style={{ display: 'flex', gap: '20px' }}>
                                 <div style={{ ...formGroupStyle, flex: 1 }}>
-                                    <label htmlFor="firstName" style={labelStyle}>Họ <span style={{color: 'red'}}>*</span></label>
+                                    <label htmlFor="firstName" style={labelStyle}>Họ <span style={{ color: 'red' }}>*</span></label>
                                     <input type="text" id="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} style={inputStyle} required />
                                 </div>
                                 <div style={{ ...formGroupStyle, flex: 1 }}>
-                                    <label htmlFor="lastName" style={labelStyle}>Tên <span style={{color: 'red'}}>*</span></label>
+                                    <label htmlFor="lastName" style={labelStyle}>Tên <span style={{ color: 'red' }}>*</span></label>
                                     <input type="text" id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} style={inputStyle} required />
                                 </div>
                             </div>
                             <div style={formGroupStyle}>
-                                <label htmlFor="address" style={labelStyle}>Địa chỉ <span style={{color: 'red'}}>*</span></label>
-                                <input type="text" id="address" value={address} onChange={(e) => setAddress(e.target.value)} style={inputStyle} placeholder="Số nhà, tên đường..." required />
+                                <label htmlFor="address" style={labelStyle}>Địa chỉ chi tiết <span style={{ color: 'red' }}>*</span></label>
+                                <input type="text" id="address" value={address} onChange={(e) => setAddress(e.target.value)} style={inputStyle} placeholder="Số nhà, tên đường, ngõ, ngách..." required />
                             </div>
-                             <div style={{ display: 'flex', gap: '20px' }}>
-                                <div style={{ ...formGroupStyle, flex: 1 }}>
-                                    <label htmlFor="city" style={labelStyle}>Tỉnh / Thành phố <span style={{color: 'red'}}>*</span></label>
-                                    <input type="text" id="city" value={city} onChange={(e) => setCity(e.target.value)} style={inputStyle} required />
-                                </div>
-                                <div style={{ ...formGroupStyle, flex: 1 }}>
-                                    <label htmlFor="phone" style={labelStyle}>Số điện thoại <span style={{color: 'red'}}>*</span></label>
-                                    <input type="tel" id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} style={inputStyle} required />
-                                </div>
+
+                            <div style={formGroupStyle}>
+                                <label style={labelStyle}>Địa chỉ hành chính <span style={{ color: 'red' }}>*</span></label>
+                                <AddressSelector
+                                    onAddressChange={handleAddressChange}
+                                    defaultValues={{}}
+                                    disabled={loading}
+                                />
+                            </div>
+
+                            <div style={formGroupStyle}>
+                                <label htmlFor="phone" style={labelStyle}>Số điện thoại <span style={{ color: 'red' }}>*</span></label>
+                                <input type="tel" id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} style={inputStyle} required />
                             </div>
                             <div style={formGroupStyle}>
-                                <label htmlFor="email" style={labelStyle}>Địa chỉ email <span style={{color: 'red'}}>*</span></label>
+                                <label htmlFor="email" style={labelStyle}>Địa chỉ email <span style={{ color: 'red' }}>*</span></label>
                                 <input type="email" id="email" value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle} required />
                             </div>
                         </div>
@@ -245,6 +349,10 @@ const CheckoutPage = () => {
                                 <label style={{ ...radioItemStyle, ...(paymentMethod === 'bank_transfer' ? radioCheckedStyle : {}) }}>
                                     <input type="radio" name="paymentMethod" value="bank_transfer" checked={paymentMethod === 'bank_transfer'} onChange={(e) => setPaymentMethod(e.target.value)} />
                                     Chuyển khoản ngân hàng
+                                </label>
+                                <label style={{ ...radioItemStyle, ...(paymentMethod === 'vnpay' ? radioCheckedStyle : {}) }}>
+                                    <input type="radio" name="paymentMethod" value="vnpay" checked={paymentMethod === 'vnpay'} onChange={(e) => setPaymentMethod(e.target.value)} />
+                                    Thanh toán VNPay (ATM nội địa)
                                 </label>
                             </div>
                         </div>
@@ -262,38 +370,12 @@ const CheckoutPage = () => {
                             <span>SẢN PHẨM</span>
                             <span>TỔNG CỘNG</span>
                         </div>
-                        {cartItems.map((item) => (
+                        {selectedItems.map((item) => (
                             <div key={item._id} style={summaryItemRowStyle}>
                                 <span>{item.name} × {item.qty}</span>
                                 <span style={{ fontWeight: 'bold' }}>{(item.qty * item.price).toLocaleString('vi-VN')} VNĐ</span>
                             </div>
                         ))}
-                        
-                        {/* --- PHẦN MÃ ƯU ĐÃI MỚI --- */}
-                        <div style={couponSectionStyle}>
-                            <Title level={5}>Mã ưu đãi</Title>
-                            <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
-                                <Input placeholder="Nhập mã" value={couponCode} onChange={(e) => setCouponCode(e.target.value.toUpperCase())} />
-                                <Button type="primary" onClick={handleApplyCoupon}>Áp dụng</Button>
-                            </div>
-                            <List
-                                size="small"
-                                loading={loadingCoupons}
-                                dataSource={availableCoupons}
-                                renderItem={item => (
-                                    <List.Item
-                                        actions={[ <Button type="link" onClick={() => handleApplyFromList(item.code)}>Áp dụng</Button> ]}
-                                    >
-                                        <List.Item.Meta
-                                            avatar={<Tag color="green">{item.code}</Tag>}
-                                            title={<Text strong>{`Giảm ${item.type === 'percentage' ? `${item.value}%` : `${item.value.toLocaleString('vi-VN')} VNĐ`}`}</Text>}
-                                            description={`Đơn tối thiểu: ${item.minAmount.toLocaleString('vi-VN')} VNĐ`}
-                                        />
-                                    </List.Item>
-                                )}
-                            />
-                        </div>
-                        {/* --- KẾT THÚC PHẦN MÃ ƯU ĐÃI --- */}
 
                         <div style={summaryTotalsDividerStyle}></div>
                         <div style={summaryRowStyle}>
@@ -306,10 +388,10 @@ const CheckoutPage = () => {
                                 {shippingFee === 0 ? 'Miễn phí' : `${shippingFee.toLocaleString('vi-VN')} VNĐ`}
                             </span>
                         </div>
-                        {/* --- HIỂN THỊ SỐ TIỀN ĐƯỢC GIẢM --- */}
+                        {/* Hiển thị giảm giá từ Cart */}
                         {discountAmount > 0 && (
-                            <div style={{...summaryRowStyle, color: '#28a745'}}>
-                                <span>Giảm giá ({appliedCoupon?.code}):</span>
+                            <div style={{ ...summaryRowStyle, color: '#28a745' }}>
+                                <span>Giảm giá ({appliedDiscount.couponCode}):</span>
                                 <span style={{ fontWeight: 'bold' }}>- {discountAmount.toLocaleString('vi-VN')} VNĐ</span>
                             </div>
                         )}
@@ -317,7 +399,7 @@ const CheckoutPage = () => {
                             <span>Tổng cộng:</span>
                             <span>{finalTotal.toLocaleString('vi-VN')} VNĐ</span>
                         </div>
-                        
+
                         <button type="submit" style={placeOrderButtonStyle} disabled={loading}>
                             {loading ? 'Đang xử lý...' : 'ĐẶT HÀNG'}
                             {loading && <Spin style={{ marginLeft: '10px' }} />}

@@ -4,7 +4,7 @@ import axios from 'axios';
 const API_URL_BONSAIS = 'http://localhost:5001/api/bonsais';
 const API_URL_COUPONS = 'http://localhost:5001/api/coupons';
 const API_URL_ORDERS = 'http://localhost:5001/api/orders';
-const API_URL_CATEGORIES = 'http://localhost:5001/api/categories'; // Đảm bảo dòng này có
+const API_URL_CATEGORIES = 'http://localhost:5001/api/categories/test'; // Use public test endpoint
 const API_URL_AUTH = 'http://localhost:5001/api/auth'; 
 const API_URL_POSTS = 'http://localhost:5001/api/posts'; 
 
@@ -70,7 +70,11 @@ const getRelatedProducts = async (id) => {
 // Lấy sản phẩm theo danh mục (có phân trang)
 const getProductsByCategory = async (categoryName, page = 1, limit = 8) => {
     try {
-        const response = await axios.get(`${API_URL_BONSAIS}/category/${categoryName}?page=${page}&limit=${limit}`);
+        console.log('getProductsByCategory called with:', { categoryName, page, limit });
+        const url = `${API_URL_BONSAIS}/category/${categoryName}?page=${page}&limit=${limit}`;
+        console.log('API URL:', url);
+        const response = await axios.get(url);
+        console.log('getProductsByCategory response:', response.data);
         return response.data;
     } catch (error) {
         console.error(`Lỗi khi lấy sản phẩm theo danh mục ${categoryName}:`, error);
@@ -162,15 +166,20 @@ const updateBonsai = async (productId, productData, token) => {
 // Xóa sản phẩm (Admin Only)
 const deleteBonsai = async (productId, token) => { 
     try {
+        console.log('deleteBonsai called with:', { productId, token: token ? 'present' : 'missing' });
         const config = {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
         };
+        console.log('Making DELETE request to:', `${API_URL_BONSAIS}/${productId}`);
         const response = await axios.delete(`${API_URL_BONSAIS}/${productId}`, config);
+        console.log('Delete response:', response.data);
         return response.data;
     } catch (error) {
-        console.error('Lỗi khi xóa sản phẩm:', error.response?.data?.message || error.message);
+        console.error('deleteBonsai error:', error);
+        console.error('Error status:', error.response?.status);
+        console.error('Error data:', error.response?.data);
         throw new Error(error.response?.data?.message || 'Xóa sản phẩm thất bại');
     }
 };
@@ -315,6 +324,36 @@ const updateOrderToDelivered = async (orderId, token) => {
     } catch (error) {
         console.error('Lỗi khi cập nhật trạng thái đã giao hàng:', error.response?.data?.message || error.message);
         throw new Error(error.response?.data?.message || 'Cập nhật trạng thái giao hàng thất bại.');
+    }
+};
+
+// Cập nhật trạng thái đơn hàng (Admin) - Hàm mới
+const updateOrderStatus = async (orderId, newStatus, note, token) => {
+    try {
+        const config = { headers: { Authorization: `Bearer ${token}` } };
+        const response = await axios.put(`${API_URL_ORDERS}/${orderId}/status`, {
+            orderStatus: newStatus,
+            note: note
+        }, config);
+        return response.data;
+    } catch (error) {
+        console.error('Lỗi khi cập nhật trạng thái đơn hàng:', error.response?.data?.message || error.message);
+        throw new Error(error.response?.data?.message || 'Cập nhật trạng thái đơn hàng thất bại.');
+    }
+};
+
+// Cập nhật trạng thái thanh toán (Admin) - Hàm mới
+const updatePaymentStatus = async (orderId, newStatus, note, token) => {
+    try {
+        const config = { headers: { Authorization: `Bearer ${token}` } };
+        const response = await axios.put(`${API_URL_ORDERS}/${orderId}/payment-status`, {
+            paymentStatus: newStatus,
+            note: note
+        }, config);
+        return response.data;
+    } catch (error) {
+        console.error('Lỗi khi cập nhật trạng thái thanh toán:', error.response?.data?.message || error.message);
+        throw new Error(error.response?.data?.message || 'Cập nhật trạng thái thanh toán thất bại.');
     }
 };
 
@@ -503,10 +542,17 @@ const sendMessage = async (messageData) => {
 // Lấy danh sách các danh mục (public và admin)
 const getCategories = async () => { 
     try {
+        console.log('Calling getCategories API:', API_URL_CATEGORIES);
         const response = await axios.get(API_URL_CATEGORIES);
-        return response.data;
+        console.log('Categories API response:', response.data);
+        console.log('Categories count:', response.data.count);
+        console.log('First category:', response.data.categories[0]);
+        return response.data.categories; // Trả về mảng categories với _id và name
     } catch (error) {
         console.error('Lỗi khi lấy danh mục:', error);
+        console.error('Error response:', error.response?.data);
+        console.error('Error status:', error.response?.status);
+        console.error('Error message:', error.message);
         throw error;
     }
 };
@@ -583,6 +629,8 @@ export {
     getOrderById,
     updateOrderToPaid,
     updateOrderToDelivered,
+    updateOrderStatus,
+    updatePaymentStatus,
     getAllOrdersAdmin, 
 
     // Mã ưu đãi

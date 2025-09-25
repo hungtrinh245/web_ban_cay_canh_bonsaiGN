@@ -1,9 +1,9 @@
 // client/src/App.jsx
 import React, { useEffect } from 'react';
-import { Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom'; 
+import { Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
 
-import ClientLayout from './layouts/ClientLayout'; 
-import AdminLayout from './layouts/AdminLayout';   
+import ClientLayout from './layouts/ClientLayout';
+import AdminLayout from './layouts/AdminLayout';
 
 import HomePage from './pages/HomePage';
 import ProductDetailPage from './pages/ProductDetailPage';
@@ -18,14 +18,25 @@ import ContactPage from './pages/ContactPage';
 import SearchPage from './pages/SearchPage';
 import ProfilePage from './pages/ProfilePage';
 import AdminLoginPage from './pages/AdminLoginPage';
-import ProductManagement from './components/admin/ProductManagement'; 
-import OrderManagement from './components/admin/OrderManagement';  
-import UserManagement from './components/admin/UserManagement';     
-import CouponManagement from './components/admin/CouponManagement'; 
-import PostManagement from './components/admin/PostManagement';  
+import ProductManagement from './components/admin/ProductManagement';
+import OrderManagement from './components/admin/OrderManagement';
+import UserManagement from './components/admin/UserManagement';
+import CouponManagement from './components/admin/CouponManagement';
+import PostManagement from './components/admin/PostManagement';
+import InventoryManagement from './components/admin/InventoryManagement';
+import CategoryManagement from './components/admin/CategoryManagement';
 import OrderDetailPage from './pages/OrderDetailPage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
-
+import TestAddressSelector from './components/test/TestAddressSelector';
+import TestAdminCRUD from './components/test/TestAdminCRUD';
+import TestCategories from './components/test/TestCategories';
+import SimpleCategoryTest from './components/test/SimpleCategoryTest';
+import TestBasic from './components/test/TestBasic';
+import TestCategoryDropdown from './components/test/TestCategoryDropdown';
+import TestCategoriesSimple from './components/test/TestCategoriesSimple';
+import TestDropdownDebug from './components/test/TestDropdownDebug';
+import TestDropdownFix from './components/test/TestDropdownFix';
+import TestCategorySimple from './components/test/TestCategorySimple';
 
 import { useAuth } from './context/AuthContext';
 
@@ -40,7 +51,7 @@ const AdminProtectedRoute = ({ children }) => {
 
     useEffect(() => {
         if (!authLoading) {
-            if (!isAuthenticated || (user && user.role !== 'admin')) { 
+            if (!isAuthenticated || (user && user.role !== 'admin')) {
                 if (!location.pathname.startsWith('/admin/login')) {
                     alert('Bạn không có quyền truy cập trang quản trị! Vui lòng đăng nhập với tài khoản Admin.');
                     navigate('/admin/login');
@@ -50,14 +61,14 @@ const AdminProtectedRoute = ({ children }) => {
     }, [isAuthenticated, user, authLoading, navigate, location.pathname]);
 
     if (authLoading) {
-        return <p style={{textAlign: 'center', padding: '100px'}}>Đang kiểm tra quyền truy cập...</p>;
+        return <p style={{ textAlign: 'center', padding: '100px' }}>Đang kiểm tra quyền truy cập...</p>;
     }
 
     if (!isAuthenticated || (user && user.role !== 'admin')) {
-        return null; 
+        return null;
     }
 
-    return children; 
+    return children;
 };
 
 // Component bảo vệ route chung (yêu cầu đăng nhập) ---
@@ -74,14 +85,14 @@ const ProtectedRoute = ({ children }) => {
     }, [isAuthenticated, authLoading, navigate, location.pathname]);
 
     if (authLoading) {
-        return <p style={{textAlign: 'center', padding: '100px'}}>Đang tải...</p>;
+        return <p style={{ textAlign: 'center', padding: '100px' }}>Đang tải...</p>;
     }
 
     if (!isAuthenticated) {
-        return null; 
+        return null;
     }
 
-    return children; 
+    return children;
 };
 
 
@@ -91,8 +102,8 @@ function App() {
             <Routes>
                 {/* --- ROUTES CLIENT LAYOUT --- */}
                 <Route path="/" element={<ClientLayout />}>
-                    <Route index element={<HomePage />} /> 
-                    <Route path="home" element={<HomePage />} /> 
+                    <Route index element={<HomePage />} />
+                    <Route path="home" element={<HomePage />} />
                     <Route path="shop" element={<ShopPage />} />
                     <Route path="shop/category/:categoryName" element={<ShopPage />} />
                     <Route path="products/:id" element={<ProductDetailPage />} />
@@ -101,15 +112,25 @@ function App() {
                     <Route path="cart" element={<CartPage />} />
                     <Route path="about" element={<AboutPage />} />
                     <Route path="contact" element={<ContactPage />} />
-                    <Route path="blog" element={<HomePage />} /> 
+                    <Route path="blog" element={<HomePage />} />
                     <Route path="blog/:id" element={<BlogDetailPage />} />
                     <Route path="search" element={<SearchPage />} />
                     <Route path="profile" element={<ProfilePage />} />
                     <Route path="chatbot" element={<Chatbot />} />
-                    
+                    <Route path="test-address" element={<TestAddressSelector />} />
+                    <Route path="test-admin-crud" element={<TestAdminCRUD />} />
+                    <Route path="test-categories" element={<TestCategories />} />
+                    <Route path="simple-category-test" element={<SimpleCategoryTest />} />
+                    <Route path="test-basic" element={<TestBasic />} />
+                    <Route path="test-category-dropdown" element={<TestCategoryDropdown />} />
+                    <Route path="test-categories-simple" element={<TestCategoriesSimple />} />
+                    <Route path="test-dropdown-debug" element={<TestDropdownDebug />} />
+                    <Route path="test-dropdown-fix" element={<TestDropdownFix />} />
+                    <Route path="test-category-simple" element={<TestCategorySimple />} />
+
                     {/* BẢO VỆ ROUTE CHECKOUT: YÊU CẦU ĐĂNG NHẬP */}
-                     <Route path="order/:id" element={<OrderDetailPage />} /> 
-                    <Route path="checkout" element={<ProtectedRoute><CheckoutPage /></ProtectedRoute>} /> 
+                    <Route path="order/:id" element={<OrderDetailPage />} />
+                    <Route path="checkout" element={<ProtectedRoute><CheckoutPage /></ProtectedRoute>} />
                     <Route path="order-success" element={<ProtectedRoute><div><h1>Đặt hàng thành công!</h1><p>Cảm ơn bạn đã mua sắm. Đơn hàng của bạn đang được xử lý.</p><Link to="/">Tiếp tục mua sắm</Link></div></ProtectedRoute>} />
 
                     <Route path="privacy-policy" element={<div><h1>Chính sách bảo mật</h1><p>Nội dung chính sách bảo mật...</p></div>} />
@@ -118,15 +139,17 @@ function App() {
                 </Route>
 
                 {/* --- ROUTES CHO ADMIN --- */}
-                <Route path="/admin/login" element={<AdminLoginPage />} /> 
+                <Route path="/admin/login" element={<AdminLoginPage />} />
 
                 <Route path="/admin/*" element={<AdminProtectedRoute><AdminLayout /></AdminProtectedRoute>}>
-                    <Route index element={<div><h2 style={{fontSize:'1.8em', textAlign:'center', marginTop:'50px'}}>Chào mừng bạn đến với Admin Dashboard!</h2><p style={{textAlign:'center', fontSize:'1.1em', color:'#666'}}>Chọn một chức năng từ menu bên trái để bắt đầu quản lý.</p></div>} /> 
+                    <Route index element={<div><h2 style={{ fontSize: '1.8em', textAlign: 'center', marginTop: '50px' }}>Chào mừng bạn đến với Admin Dashboard!</h2><p style={{ textAlign: 'center', fontSize: '1.1em', color: '#666' }}>Chọn một chức năng từ menu bên trái để bắt đầu quản lý.</p></div>} />
                     <Route path="products" element={<ProductManagement />} />
                     <Route path="orders" element={<OrderManagement />} />
                     <Route path="users" element={<UserManagement />} />
                     <Route path="posts" element={<PostManagement />} />
                     <Route path="coupons" element={<CouponManagement />} />
+                    <Route path="inventory" element={<InventoryManagement />} />
+                    <Route path="categories" element={<CategoryManagement />} />
                     <Route path="admin" element={<AdminDashboardPage />} />
                 </Route>
 

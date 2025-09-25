@@ -1,217 +1,265 @@
 // client/src/components/layout/MiniCart.jsx
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { FaTimesCircle } from 'react-icons/fa'; // Import icon đóng
+import {
+    Card,
+    Button,
+    Space,
+    Typography,
+    Divider,
+    Empty,
+    Image,
+    List,
+    Badge
+} from 'antd';
+import {
+    CloseOutlined,
+    ShoppingCartOutlined,
+    CreditCardOutlined,
+    DeleteOutlined
+} from '@ant-design/icons';
+
+const { Text, Title } = Typography;
 
 // Props: cartItems, subtotal, onClose (hàm để đóng mini-cart)
 const MiniCart = ({ cartItems, subtotal, onClose }) => {
-    // Style cho toàn bộ popover
-    const miniCartStyle = {
-        position: 'absolute',
-        top: '60px', // Vị trí dưới header
-        right: '20px', // Căn phải
-        width: '320px', // Chiều rộng cố định
-        background: 'white',
-        borderRadius: '8px',
-        boxShadow: '0 8px 24px rgba(0,0,0,0.25)', // Shadow mạnh hơn
-        zIndex: 1000, // Đảm bảo nổi lên trên cùng
-        padding: '20px',
-        fontFamily: 'Arial, sans-serif',
-        display: 'flex',
-        flexDirection: 'column',
-        maxHeight: '450px', // Giới hạn chiều cao
-        overflowY: 'auto', // Cuộn nếu quá nhiều sản phẩm
-        border: '1px solid #ddd'
-    };
-
-    // Style cho header của mini-cart
-    const headerStyle = {
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '15px',
-        paddingBottom: '10px',
-        borderBottom: '1px solid #eee',
-    };
-
-    const closeButtonStyle = {
-        background: 'none',
-        border: 'none',
-        fontSize: '1.2em',
-        cursor: 'pointer',
-        color: '#aaa',
-        transition: 'color 0.2s',
-        '&:hover': {
-            color: '#333'
-        }
-    };
-
-    // Style cho mỗi item trong giỏ
-    const cartItemStyle = {
-        display: 'flex',
-        alignItems: 'center',
-        marginBottom: '15px',
-        paddingBottom: '10px',
-        borderBottom: '1px dotted #eee', // Border chấm
-    };
-
-    const itemImageStyle = {
-        width: '60px',
-        height: '60px',
-        objectFit: 'cover',
-        borderRadius: '5px',
-        marginRight: '10px',
-    };
-
-    const itemInfoStyle = {
-        flexGrow: 1,
-        textAlign: 'left',
-    };
-
-    const itemNameStyle = {
-        margin: '0',
-        fontSize: '0.95em',
-        fontWeight: 'bold',
-        color: '#333',
-    };
-
-    const itemQtyPriceStyle = {
-        margin: '2px 0 0 0',
-        fontSize: '0.85em',
-        color: '#666',
-    };
-
-    // Style cho tổng cộng
-    const totalStyle = {
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginTop: '15px',
-        paddingTop: '15px',
-        borderTop: '2px solid #28a745', // Đường kẻ xanh nổi bật
-        fontWeight: 'bold',
-        fontSize: '1.1em',
-        color: '#333',
-    };
-
-    // Style cho các nút hành động
-    const buttonGroupStyle = {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '10px',
-        marginTop: '20px',
-    };
-
-    const buttonBaseStyle = {
-        padding: '12px 15px',
-        borderRadius: '5px',
-        border: 'none',
-        cursor: 'pointer',
-        fontSize: '1em',
-        fontWeight: 'bold',
-        textDecoration: 'none', // Cho Link
-        textAlign: 'center', // Cho Link
-        transition: 'background-color 0.3s ease, color 0.3s ease',
-    };
-
-    const viewCartButtonStyle = {
-        ...buttonBaseStyle,
-        background: '#007bff', // Màu xanh dương
-        color: 'white',
-        '&:hover': {
-            backgroundColor: '#0056b3'
-        }
-    };
-
-    const checkoutButtonStyle = {
-        ...buttonBaseStyle,
-        background: '#28a745', // Màu xanh lá
-        color: 'white',
-        '&:hover': {
-            backgroundColor: '#218838'
-        }
-    };
-
-    const emptyCartMessageStyle = {
-        textAlign: 'center',
-        padding: '30px 0',
-        color: '#777',
-        fontSize: '0.95em',
-    };
-
+    // Safety check: ensure cartItems is always an array
+    const safeCartItems = Array.isArray(cartItems) ? cartItems : [];
 
     return (
-        <div style={miniCartStyle}>
-            <div style={headerStyle}>
-                <h4 style={{ margin: 0, fontSize: '1.1em', color: '#555' }}>GIỎ HÀNG CỦA BẠN</h4>
-                <button 
-                    onClick={onClose} 
-                    style={closeButtonStyle}
-                    onMouseOver={(e) => e.currentTarget.style.color = '#333'}
-                    onMouseOut={(e) => e.currentTarget.style.color = '#aaa'}
-                >
-                    <FaTimesCircle />
-                </button>
+        <Card
+            styles={{
+                body: {
+                    padding: '0'
+                }
+            }}
+            style={{
+                position: 'absolute',
+                top: '60px',
+                right: '20px',
+                width: '380px',
+                maxHeight: '500px',
+                zIndex: 1000,
+                borderRadius: '12px',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
+                border: '1px solid #f0f0f0',
+                overflow: 'hidden'
+            }}
+
+        >
+            {/* Header */}
+            <div style={{
+                padding: '20px 24px 16px',
+                background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
+                borderBottom: '1px solid #f0f0f0'
+            }}>
+                <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+                    alignItems: 'center'
+                }}>
+                    <Space>
+                        <ShoppingCartOutlined style={{
+                            fontSize: '18px',
+                            color: '#2F6A37'
+                        }} />
+                        <Title level={5} style={{
+                            margin: 0,
+                            color: '#2F6A37',
+                            fontWeight: '600'
+                        }}>
+                            Giỏ hàng của bạn
+                        </Title>
+                        <Badge
+                            count={safeCartItems.length}
+                            style={{
+                                backgroundColor: '#2F6A37',
+                                boxShadow: 'none'
+                            }}
+                        />
+                    </Space>
+                    <Button
+                        type="text"
+                        icon={<CloseOutlined />}
+                        onClick={onClose}
+                        style={{
+        border: 'none',
+                            color: '#8c8c8c'
+                        }}
+                        size="small"
+                    />
+                </div>
             </div>
 
-            {cartItems.length === 0 ? (
-                <p style={emptyCartMessageStyle}>Giỏ hàng trống.</p>
-            ) : (
-                // ĐÃ THÊM KEY CHO FRAGMENT NẾU CÓ NHIỀU ELEMENT NGANG HÀNG TRỰC TIẾP
-                // Nếu có nhiều hơn 1 phần tử con trực tiếp ở đây, ví dụ: <div>...</div> và <p>...</p>
-                // thì bạn cần bọc chúng trong một Fragment có key nếu bản thân chúng không phải là list item của map
-                // Tuy nhiên, cấu trúc hiện tại của bạn đã là một div chứa các div khác, nên có thể lỗi key không phải ở đây.
-                // Lỗi "Each child in a list should have a unique 'key' prop" thường xảy ra khi bạn map một mảng và quên key
-                // hoặc khi bạn render một mảng các components mà bản thân array đó không có key.
-                // Đoạn code dưới đây đã đúng, lỗi key có thể ở một chỗ khác.
-                <> 
-                    <div style={{ flex: 1, overflowY: 'auto' }}> {/* Container cuộn cho danh sách sản phẩm */}
-                        {cartItems.map(item => (
-                            <div key={item._id || item.id} style={cartItemStyle}> {/* <-- Đảm bảo key có thể dùng _id HOẶC id */}
-                                <img src={item.images && item.images.length > 0 ? item.images[0] : 'https://via.placeholder.com/60?text=No+Image'} alt={item.name} style={itemImageStyle} />
-                                <div style={itemInfoStyle}>
-                                    <p style={itemNameStyle}>{item.name}</p>
-                                    <p style={itemQtyPriceStyle}>{item.qty} x {item.price.toLocaleString('vi-VN')} VNĐ</p>
-                                </div>
-                                {/* Nút xóa từng sản phẩm (Bạn sẽ cần thêm logic xóa vào đây nếu muốn) */}
-                                {/* <button 
-                                    style={removeButtonStyle}
-                                    // onClick={() => removeFromCart(item)} // Cần truyền removeFromCart prop nếu muốn
+            {/* Content */}
+            <div className="mini-cart-scroll" style={{ maxHeight: '320px', overflowY: 'auto' }}>
+            {safeCartItems.length === 0 ? (
+                    <div style={{ padding: '40px 24px', textAlign: 'center' }}>
+                        <Empty
+                            image={Empty.PRESENTED_IMAGE_SIMPLE}
+                            description={
+                                <Text type="secondary">
+                                    Giỏ hàng của bạn đang trống
+                                </Text>
+                            }
+                        />
+                        <Link to="/shop" onClick={onClose}>
+                            <Button
+                                type="primary"
+                                style={{
+                                    marginTop: '16px',
+                                    background: 'linear-gradient(135deg, #2F6A37, #52c41a)',
+                                    border: 'none',
+                                    borderRadius: '6px'
+                                }}
+                            >
+                                Mua sắm ngay
+                            </Button>
+                        </Link>
+            </div>
+                ) : (
+                    <>
+                        <List
+                            dataSource={safeCartItems}
+                            renderItem={(item) => (
+                                <List.Item
+                                    style={{
+                                        padding: '16px 24px',
+                                        borderBottom: '1px solid #f5f5f5'
+                                    }}
+                                    actions={[
+                                        <Button
+                                            key="remove"
+                                            type="text"
+                                            icon={<DeleteOutlined />}
+                                            size="small"
+                                            style={{ color: '#ff4d4f' }}
+                                        // onClick={() => removeFromCart(item)}
+                                        />
+                                    ]}
                                 >
-                                    <FaTimesCircle size={14} />
-                                </button> */}
-                            </div>
-                        ))}
+                                    <List.Item.Meta
+                                        avatar={
+                                            <Image
+                                                src={item.images && item.images.length > 0
+                                                    ? item.images[0]
+                                                    : 'https://via.placeholder.com/60?text=No+Image'
+                                                }
+                                                alt={item.name}
+                                                width={60}
+                                                height={60}
+                                                style={{
+                                                    borderRadius: '8px',
+                                                    objectFit: 'cover'
+                                                }}
+                                                preview={false}
+                                            />
+                                        }
+                                        title={
+                                            <Text
+                                                style={{
+                                                    fontSize: '14px',
+                                                    fontWeight: '500',
+                                                    color: '#262626'
+                                                }}
+                                                ellipsis={{ tooltip: item.name }}
+                                            >
+                                                {item.name}
+                                            </Text>
+                                        }
+                                        description={
+                                            <Space direction="vertical" size={2}>
+                                                <Text type="secondary" style={{ fontSize: '12px' }}>
+                                                    Số lượng: {item.qty}
+                                                </Text>
+                                                <Text style={{
+                                                    color: '#2F6A37',
+                                                    fontWeight: '600',
+                                                    fontSize: '14px'
+                                                }}>
+                                                    {(item.price * item.qty).toLocaleString('vi-VN')} VNĐ
+                                                </Text>
+                                            </Space>
+                                        }
+                                    />
+                                </List.Item>
+                            )}
+                        />
+                    </>
+                )}
                     </div>
 
-                    <div style={totalStyle}>
-                        <span>Tổng cộng:</span>
-                        <span>{subtotal.toLocaleString('vi-VN')} VNĐ</span>
+            {/* Footer với tổng cộng và buttons */}
+            {cartItems.length > 0 && (
+                <div style={{
+                    borderTop: '1px solid #f0f0f0',
+                    background: '#fafafa'
+                }}>
+                    {/* Tổng cộng */}
+                    <div style={{
+                        padding: '16px 24px',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        background: '#fff',
+                        borderBottom: '1px solid #f0f0f0'
+                    }}>
+                        <Text style={{ fontSize: '16px', fontWeight: '500' }}>
+                            Tổng cộng:
+                        </Text>
+                        <Text style={{
+                            fontSize: '18px',
+                            fontWeight: '700',
+                            color: '#2F6A37'
+                        }}>
+                            {subtotal.toLocaleString('vi-VN')} VNĐ
+                        </Text>
                     </div>
 
-                    <div style={buttonGroupStyle}>
-                        <Link 
-                            to="/cart" 
-                            onClick={onClose} // Đóng mini-cart khi chuyển trang
-                            style={viewCartButtonStyle}
-                            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#0056b3'}
-                            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#007bff'}
-                        >
-                            XEM GIỎ HÀNG
+                    {/* Action buttons */}
+                    <div style={{ padding: '16px 24px' }}>
+                        <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+                            <Link to="/cart" onClick={onClose} style={{ width: '100%' }}>
+                                <Button
+                                    block
+                                    size="large"
+                                    icon={<ShoppingCartOutlined />}
+                                    style={{
+                                        height: '44px',
+                                        border: '1px solid #2F6A37',
+                                        color: '#2F6A37',
+                                        fontWeight: '500',
+                                        borderRadius: '8px'
+                                    }}
+                                >
+                                    Xem giỏ hàng
+                                </Button>
                         </Link>
-                        <Link 
-                            to="/checkout" // Cần tạo route và trang CheckoutPage sau
-                            onClick={onClose} // Đóng mini-cart khi chuyển trang
-                            style={checkoutButtonStyle}
-                            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#218838'}
-                            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#28a745'}
-                        >
-                            THANH TOÁN
+                            <Link to="/checkout" onClick={onClose} style={{ width: '100%' }}>
+                                <Button
+                                    type="primary"
+                                    block
+                                    size="large"
+                                    icon={<CreditCardOutlined />}
+                                    className="cart-button-hover"
+                                    style={{
+                                        height: '44px',
+                                        background: 'linear-gradient(135deg, #2F6A37, #52c41a)',
+                                        border: 'none',
+                                        fontWeight: '600',
+                                        borderRadius: '8px',
+                                        boxShadow: '0 4px 12px rgba(47, 106, 55, 0.3)',
+                                        transition: 'all 0.3s ease'
+                                    }}
+                                >
+                                    Thanh toán ngay
+                                </Button>
                         </Link>
+                        </Space>
                     </div>
-                </>
+                    </div>
             )}
-        </div>
+        </Card>
     );
 };
 

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Select Component</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/antd@5.12.8/dist/antd.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/antd@5.12.8/dist/reset.css">
+</head>
+<body>
+    <div id="root"></div>
+
+    <script>
+        const { Select } = antd;
+        const { Option } = Select;
+
+        function TestSelect() {
+            const categories = [
+                'Cây Dây Leo',
+                'Cây cao cấp', 
+                'Cây phong thủy',
+                'Cây thủy sinh',
+                'Cây văn phòng',
+                'Cây Ăn Trái',
+                'Cây để bàn',
+                'Dụng Cụ & Chậu',
+                'Sen đá',
+                'Xương rồng'
+            ];
+
+            return React.createElement('div', { style: { padding: '20px' } }, [
+                React.createElement('h2', { key: 'title' }, 'Test Select Component'),
+                React.createElement('p', { key: 'info' }, `Categories loaded: ${categories.length}`),
+                React.createElement(Select, {
+                    key: 'select',
+                    placeholder: 'Chọn danh mục',
+                    style: { width: '300px' },
+                    onDropdownVisibleChange: (open) => console.log('Dropdown opened:', open)
+                }, categories.map((cat, index) => 
+                    React.createElement(Option, { key: cat, value: cat }, cat)
+                ))
+            ]);
+        }
+
+        ReactDOM.render(React.createElement(TestSelect), document.getElementById('root'));
+    </script>
+</body>
+</html>
+
+

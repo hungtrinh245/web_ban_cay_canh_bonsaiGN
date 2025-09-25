@@ -21,7 +21,7 @@ const CartPage = () => {
 
   const shippingFee = subtotal > 500000 ? 0 : 30000;
   // Tính finalTotal: tạm tính + phí vận chuyển - số tiền giảm giá
-  let finalTotal = subtotal + shippingFee - discountAmount; 
+  let finalTotal = subtotal + shippingFee - discountAmount;
   if (finalTotal < 0) finalTotal = 0; // Đảm bảo tổng tiền không âm
 
   const handleApplyDiscount = async () => { // <-- CHUYỂN THÀNH ASYNC FUNCTION
@@ -30,7 +30,7 @@ const CartPage = () => {
 
     try {
       // Gọi API applyCoupon, truyền mã và tổng tiền tạm tính
-      const data = await applyCoupon(discountCode, subtotal); 
+      const data = await applyCoupon(discountCode, subtotal);
       setDiscountAmount(data.discountAmount); // Cập nhật số tiền giảm giá từ backend
       alert(data.message); // Hiển thị thông báo thành công từ backend
     } catch (error) {

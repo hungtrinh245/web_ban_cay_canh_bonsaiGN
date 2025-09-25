@@ -1,18 +1,18 @@
 // client/src/components/layout/CategorySidebar.jsx
 import React, { useState, useEffect } from 'react';
-import { getCategories, getNewProducts } from '../../services/productService'; 
+import { getCategories, getNewProducts } from '../../services/productService';
 import { Link } from 'react-router-dom';
 // SỬA LỖI: Import Button từ antd
-import { Button } from 'antd'; 
+import { Button } from 'antd';
 
 const CategorySidebar = ({ selectedCategory, onSelectCategory, onApplyPriceFilter, overallMinPriceRange, overallMaxPriceRange, initialMinPrice, initialMaxPrice }) => {
     const [categories, setCategories] = useState([]);
     const [randomProducts, setRandomProducts] = useState([]);
-    const [minPriceRange, setMinPriceRange] = useState(overallMinPriceRange); 
-    const [maxPriceRange, setMaxPriceRange] = useState(overallMaxPriceRange); 
-    
-    const [currentMinPrice, setCurrentMinPrice] = useState(initialMinPrice); 
-    const [currentMaxPrice, setCurrentMaxPrice] = useState(initialMaxPrice); 
+    const [minPriceRange, setMinPriceRange] = useState(overallMinPriceRange);
+    const [maxPriceRange, setMaxPriceRange] = useState(overallMaxPriceRange);
+
+    const [currentMinPrice, setCurrentMinPrice] = useState(initialMinPrice);
+    const [currentMaxPrice, setCurrentMaxPrice] = useState(initialMaxPrice);
 
     // Hàm này sẽ được dùng để lấy các bài viết mới nhất cho sidebar (nếu có)
     const latestPosts = [
@@ -24,13 +24,13 @@ const CategorySidebar = ({ selectedCategory, onSelectCategory, onApplyPriceFilte
     useEffect(() => {
         const fetchSidebarData = async () => {
             try {
-                const categoryData = await getCategories(); 
+                const categoryData = await getCategories();
                 setCategories(categoryData);
 
-                const productsDataResponse = await getNewProducts(); 
-                const productsData = productsDataResponse.products || []; 
+                const productsDataResponse = await getNewProducts();
+                const productsData = productsDataResponse.products || [];
                 const shuffled = productsData.sort(() => 0.5 - Math.random());
-                setRandomProducts(shuffled.slice(0, 5)); 
+                setRandomProducts(shuffled.slice(0, 5));
 
                 const prices = productsData.map(p => p.price).filter(p => p !== undefined);
                 if (prices.length > 0) {
@@ -40,7 +40,7 @@ const CategorySidebar = ({ selectedCategory, onSelectCategory, onApplyPriceFilte
                     setMaxPriceRange(dynamicMax);
                 } else {
                     setMinPriceRange(0);
-                    setMaxPriceRange(1000000); 
+                    setMaxPriceRange(1000000);
                 }
 
             } catch (error) {
@@ -49,7 +49,7 @@ const CategorySidebar = ({ selectedCategory, onSelectCategory, onApplyPriceFilte
         };
 
         fetchSidebarData();
-    }, [overallMinPriceRange, overallMaxPriceRange]); 
+    }, [overallMinPriceRange, overallMaxPriceRange]);
 
     useEffect(() => {
         setCurrentMinPrice(initialMinPrice);
@@ -108,11 +108,12 @@ const CategorySidebar = ({ selectedCategory, onSelectCategory, onApplyPriceFilte
 
     const categoryItemStyle = {
         marginBottom: '8px',
-        '&:hover': {
-            color: '#28a745',
-            transform: 'translateX(5px)',
-        },
         transition: 'color 0.2s, transform 0.2s',
+    };
+
+    const categoryItemHoverStyle = {
+        color: '#28a745',
+        transform: 'translateX(5px)',
     };
 
     const categoryLinkStyle = {
@@ -149,9 +150,10 @@ const CategorySidebar = ({ selectedCategory, onSelectCategory, onApplyPriceFilte
         fontSize: '1em',
         fontWeight: 'bold',
         transition: 'background-color 0.3s ease',
-        '&:hover': {
-            backgroundColor: '#218838',
-        }
+    };
+
+    const filterButtonHoverStyle = {
+        backgroundColor: '#218838',
     };
 
     const randomProductListStyle = {
@@ -244,31 +246,47 @@ const CategorySidebar = ({ selectedCategory, onSelectCategory, onApplyPriceFilte
                 <h3 style={sectionTitleStyle}>DANH MỤC SẢN PHẨM</h3>
                 <ul style={categoryListStyle}>
                     <li style={categoryItemStyle}
-                        onMouseOver={(e) => applyHover(e, categoryItemStyle['&:hover'])}
+                        onMouseOver={(e) => applyHover(e, categoryItemHoverStyle)}
                         onMouseOut={(e) => removeHover(e, categoryItemStyle)}
                     >
-                        <Link 
-                            to="/shop" 
-                            style={{...categoryLinkStyle, fontWeight: selectedCategory === null ? 'bold' : 'normal'}}
-                            onClick={() => onSelectCategory(null)}
+                        <Link
+                            to="/shop"
+                            style={{ ...categoryLinkStyle, fontWeight: selectedCategory === null ? 'bold' : 'normal' }}
                         >
                             Tất cả sản phẩm
                         </Link>
                     </li>
-                    {categories.map((cat) => (
-                        <li key={cat._id} style={categoryItemStyle}
-                            onMouseOver={(e) => applyHover(e, categoryItemStyle['&:hover'])}
-                            onMouseOut={(e) => removeHover(e, categoryItemStyle)}
-                        >
-                            <Link 
-                                to={`/shop/category/${cat.name}`} 
-                                style={{...categoryLinkStyle, fontWeight: selectedCategory === cat.name ? 'bold' : 'normal'}}
-                                onClick={() => onSelectCategory(cat.name)}
+                    {categories.length > 0 ? (
+                        categories.map((cat) => (
+                            <li key={cat._id} style={categoryItemStyle}
+                                onMouseOver={(e) => applyHover(e, categoryItemHoverStyle)}
+                                onMouseOut={(e) => removeHover(e, categoryItemStyle)}
                             >
-                                {cat.name}
-                            </Link>
+                                <Link
+                                    to={`/shop/category/${encodeURIComponent(cat.name)}`}
+                                    style={{ ...categoryLinkStyle, fontWeight: selectedCategory === cat.name ? 'bold' : 'normal' }}
+                                >
+                                    {cat.name}
+                                    {cat.productCount > 0 && (
+                                        <span style={{
+                                            fontSize: '0.8em',
+                                            color: '#28a745',
+                                            marginLeft: '8px',
+                                            backgroundColor: '#e8f5e8',
+                                            padding: '2px 6px',
+                                            borderRadius: '10px'
+                                        }}>
+                                            ({cat.productCount})
+                                        </span>
+                                    )}
+                                </Link>
+                            </li>
+                        ))
+                    ) : (
+                        <li style={{ ...categoryItemStyle, color: '#999', fontStyle: 'italic' }}>
+                            Đang tải danh mục...
                         </li>
-                    ))}
+                    )}
                 </ul>
             </div>
 
@@ -276,30 +294,30 @@ const CategorySidebar = ({ selectedCategory, onSelectCategory, onApplyPriceFilte
             <div style={sectionStyle}>
                 <h3 style={sectionTitleStyle}>LỌC THEO GIÁ</h3>
                 <div style={priceFilterInputGroup}>
-                    <input 
-                        type="number" 
-                        id="minPrice" 
-                        value={currentMinPrice} 
-                        onChange={handlePriceFilterChange} 
-                        style={priceInputStyle} 
-                        min={minPriceRange} 
-                        max={maxPriceRange} 
+                    <input
+                        type="number"
+                        id="minPrice"
+                        value={currentMinPrice}
+                        onChange={handlePriceFilterChange}
+                        style={priceInputStyle}
+                        min={minPriceRange}
+                        max={maxPriceRange}
                     />
                     <span>-</span>
-                    <input 
-                        type="number" 
-                        id="maxPrice" 
-                        value={currentMaxPrice} 
-                        onChange={handlePriceFilterChange} 
-                        style={priceInputStyle} 
-                        min={minPriceRange} 
-                        max={maxPriceRange} 
+                    <input
+                        type="number"
+                        id="maxPrice"
+                        value={currentMaxPrice}
+                        onChange={handlePriceFilterChange}
+                        style={priceInputStyle}
+                        min={minPriceRange}
+                        max={maxPriceRange}
                     />
                 </div>
-                <Button 
-                    onClick={applyFilter} 
+                <Button
+                    onClick={applyFilter}
                     style={filterButton}
-                    onMouseOver={(e) => applyHover(e, filterButton['&:hover'])}
+                    onMouseOver={(e) => applyHover(e, filterButtonHoverStyle)}
                     onMouseOut={(e) => removeHover(e, filterButton)}
                 >
                     Lọc

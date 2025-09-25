@@ -1,232 +1,696 @@
 // client/src/components/admin/CategoryManagement.jsx
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../context/AuthContext';
-// Đảm bảo các hàm này được export từ productService.js
-import { getCategories, createCategory, updateCategory, deleteCategory } from '../../services/productService'; 
+import {
+    Card,
+    Table,
+    Button,
+    Modal,
+    Form,
+    Input,
+    Select,
+    Space,
+    Tag,
+    Tooltip,
+    Popconfirm,
+    message,
+    Row,
+    Col,
+    Statistic,
+    Typography,
+    Badge,
+    Switch,
+    InputNumber,
+    Image,
+    Alert,
+    Divider,
+    Dropdown,
+    Menu
+} from 'antd';
+import {
+    PlusOutlined,
+    EditOutlined,
+    DeleteOutlined,
+    EyeOutlined,
+    SearchOutlined,
+    ReloadOutlined,
+    FolderOutlined,
+    SortAscendingOutlined,
+    SortDescendingOutlined,
+    CheckCircleOutlined,
+    ExclamationCircleOutlined,
+    WarningOutlined,
+    InfoCircleOutlined,
+    DownloadOutlined,
+    FileExcelOutlined,
+    FilePdfOutlined,
+    PrinterOutlined,
+    SettingOutlined,
+    SwapOutlined
+} from '@ant-design/icons';
 
-// Import Ant Design Components
-import { Table, Button, Modal, Form, Input, Space, Popconfirm, message as AntMessage, Spin } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
-
-const { confirm } = Modal;
+const { Title, Text } = Typography;
+const { Search } = Input;
+const { Option } = Select;
+const { TextArea } = Input;
 
 const CategoryManagement = () => {
-    const { token } = useAuth();
-
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-
-    const [isModalVisible, setIsModalVisible] = useState(false);
-    const [isEditing, setIsEditing] = useState(false);
-    const [currentCategory, setCurrentCategory] = useState(null);
+    const [showModal, setShowModal] = useState(false);
+    const [editingCategory, setEditingCategory] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
+    const [total, setTotal] = useState(0);
+    const [sortBy, setSortBy] = useState('sortOrder');
+    const [sortOrder, setSortOrder] = useState('asc');
     const [form] = Form.useForm();
 
-    const [formLoading, setFormLoading] = useState(false);
-
+    // Fetch categories
     const fetchCategories = async () => {
         try {
             setLoading(true);
-            setError(null);
-            // Gọi API lấy tất cả danh mục (sử dụng getCategories từ productService)
-            const data = await getCategories(); 
-            setCategories(data);
-        } catch (err) {
-            setError(err.message || 'Không thể tải dữ liệu danh mục.');
-            console.error("Fetch categories error:", err);
-            AntMessage.error('Lỗi: ' + (err.message || 'Không thể tải danh mục.'));
+            console.log('Đang gọi API categories...');
+            // Sử dụng URL đầy đủ
+            const response = await fetch('http://localhost:5001/api/categories/test');
+
+            if (response.ok) {
+                const data = await response.json();
+                console.log('Data nhận được:', data);
+                console.log('Categories data:', data.categories);
+                setCategories(data.categories);
+                setTotal(data.count);
+                console.log('Categories loaded:', data.categories);
+            } else {
+                console.error('Response không OK:', response.status, response.statusText);
+                message.error('Lỗi khi tải danh sách danh mục');
+            }
+        } catch (error) {
+            console.error('Lỗi fetch categories:', error);
+            message.error('Lỗi kết nối server');
         } finally {
             setLoading(false);
         }
     };
 
     useEffect(() => {
-        // Chỉ fetch khi có token (hoặc nếu API là public, nhưng Admin cần token để quản lý)
-        if (token) {
-            fetchCategories();
-        } else {
-            setLoading(false);
-            setError("Bạn cần đăng nhập Admin để quản lý danh mục.");
-        }
-    }, [token]);
+        fetchCategories();
+    }, [currentPage, pageSize, searchTerm, sortBy, sortOrder]);
 
-    const showAddModal = () => {
-        setIsEditing(false);
-        setCurrentCategory(null);
-        form.resetFields();
-        setIsModalVisible(true);
-    };
-
-    const showEditModal = (category) => {
-        setIsEditing(true);
-        setCurrentCategory(category);
-        form.setFieldsValue(category); // Đặt giá trị form từ đối tượng category
-        setIsModalVisible(true);
-    };
-
-    const handleCancelModal = () => {
-        setIsModalVisible(false);
-        form.resetFields();
-    };
-
-    const handleDeleteCategory = (categoryId) => {
-        confirm({
-            title: 'Bạn có chắc chắn muốn xóa danh mục này?',
-            icon: <ExclamationCircleOutlined />,
-            content: 'Xóa danh mục có thể ảnh hưởng đến các sản phẩm thuộc danh mục đó.',
-            okText: 'Xóa',
-            okType: 'danger',
-            cancelText: 'Hủy',
-            async onOk() {
-                try {
-                    await deleteCategory(categoryId, token); // Gọi API xóa danh mục
-                    AntMessage.success('Danh mục đã xóa thành công!');
-                    fetchCategories(); // Tải lại danh sách
-                } catch (err) {
-                    AntMessage.error('Lỗi khi xóa danh mục: ' + (err.message || 'Lỗi không xác định'));
-                    console.error("Delete category error:", err);
-                }
-            },
-        });
-    };
-
-    const onFinishForm = async (values) => {
-        setFormLoading(true);
+    // Handle form submission
+    const handleSubmit = async (values) => {
         try {
-            if (isEditing && currentCategory) {
-                await updateCategory(currentCategory._id, values, token); // Gọi API cập nhật
-                AntMessage.success('Cập nhật danh mục thành công!');
-            } else {
-                await createCategory(values, token); // Gọi API tạo mới
-                AntMessage.success('Thêm danh mục mới thành công!');
+            const token = localStorage.getItem('token');
+            const url = editingCategory
+                ? `http://localhost:5001/api/categories/${editingCategory._id}`
+                : 'http://localhost:5001/api/categories/test-create';
+
+            const method = editingCategory ? 'PUT' : 'POST';
+
+            console.log('Submitting category:', values);
+            console.log('URL:', url);
+            console.log('Method:', method);
+            console.log('Token present:', !!token);
+
+            // Chuẩn bị headers
+            const headers = {
+                'Content-Type': 'application/json'
+            };
+
+            // Chỉ thêm Authorization header nếu có token và không phải route test
+            if (token && editingCategory) {
+                headers['Authorization'] = `Bearer ${token}`;
             }
-            setIsModalVisible(false);
-            form.resetFields();
-            fetchCategories(); // Tải lại danh sách
-        } catch (err) {
-            AntMessage.error('Lỗi: ' + (err.message || 'Không thể lưu danh mục.'));
-            console.error("Save category form error:", err);
-        } finally {
-            setFormLoading(false);
+
+            const response = await fetch(url, {
+                method,
+                headers,
+                body: JSON.stringify(values)
+            });
+
+            console.log('Response status:', response.status);
+            console.log('Response ok:', response.ok);
+
+            if (response.ok) {
+                const data = await response.json();
+                message.success(data.message);
+                setShowModal(false);
+                form.resetFields();
+                setEditingCategory(null);
+                fetchCategories();
+            } else {
+                // Kiểm tra nếu response có body
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    const errorData = await response.json();
+                    message.error(errorData.message || 'Có lỗi xảy ra');
+                } else {
+                    const errorText = await response.text();
+                    console.error('Error response:', errorText);
+                    message.error(`Lỗi ${response.status}: ${response.statusText}`);
+                }
+            }
+        } catch (error) {
+            console.error('Lỗi submit form:', error);
+            message.error('Lỗi kết nối server: ' + error.message);
         }
     };
 
-    // Columns for Ant Design Table
+    // Handle delete category
+    const handleDelete = async (categoryId) => {
+        try {
+            const token = localStorage.getItem('token');
+
+            if (!token) {
+                message.error('Bạn cần đăng nhập để thực hiện thao tác này');
+                return;
+            }
+
+            const response = await fetch(`http://localhost:5001/api/categories/test-delete/${categoryId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                message.success(data.message);
+                fetchCategories();
+            } else {
+                const errorData = await response.json();
+                message.error(errorData.message || 'Không thể xóa danh mục');
+            }
+        } catch (error) {
+            console.error('Lỗi delete category:', error);
+            message.error('Lỗi kết nối server');
+        }
+    };
+
+    // Handle toggle status
+    const handleToggleStatus = async (categoryId, currentStatus) => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`/api/categories/${categoryId}/toggle-status`, {
+                method: 'PATCH',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                message.success(data.message);
+                fetchCategories();
+            } else {
+                message.error('Không thể thay đổi trạng thái');
+            }
+        } catch (error) {
+            console.error('Lỗi toggle status:', error);
+            message.error('Lỗi kết nối server');
+        }
+    };
+
+    // Handle sort order change
+    const handleSortOrderChange = async (categoryId, newSortOrder) => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`/api/categories/${categoryId}/sort-order`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ sortOrder: newSortOrder })
+            });
+
+            if (response.ok) {
+                message.success('Cập nhật thứ tự thành công');
+                fetchCategories();
+            } else {
+                message.error('Không thể cập nhật thứ tự');
+            }
+        } catch (error) {
+            console.error('Lỗi update sort order:', error);
+            message.error('Lỗi kết nối server');
+        }
+    };
+
+    // Open edit modal
+    const openEditModal = (category) => {
+        setEditingCategory(category);
+        form.setFieldsValue({
+            name: category.name,
+            description: category.description,
+            image: category.image,
+            parentCategory: category.parentCategory?._id,
+            metaTitle: category.metaTitle,
+            metaDescription: category.metaDescription,
+            sortOrder: category.sortOrder,
+            isActive: category.isActive
+        });
+        setShowModal(true);
+    };
+
+    // Close modal
+    const closeModal = () => {
+        setShowModal(false);
+        setEditingCategory(null);
+        form.resetFields();
+    };
+
+    // Table columns
     const columns = [
         {
-            title: 'ID',
-            dataIndex: '_id',
-            key: '_id',
-            // Sử dụng render để xử lý lỗi nếu _id không phải chuỗi hoặc null
-            render: (text) => (text && text.slice) ? text.slice(-6).toUpperCase() : '',
-            width: 100,
-        },
-        {
-            title: 'Tên danh mục',
+            title: 'Danh Mục',
             dataIndex: 'name',
             key: 'name',
-            sorter: (a, b) => a.name.localeCompare(b.name),
+            render: (name, record) => (
+                <Space>
+                    <FolderOutlined style={{ color: record.isActive ? '#52c41a' : '#d9d9d9' }} />
+                    <div>
+                        <Text strong>{name}</Text>
+                        {record.description && (
+                            <div>
+                                <Text type="secondary" style={{ fontSize: '12px' }}>
+                                    {record.description}
+                                </Text>
+                            </div>
+                        )}
+                    </div>
+                </Space>
+            ),
         },
         {
-            title: 'Mô tả',
-            dataIndex: 'description',
-            key: 'description',
-            render: (text) => text || 'Không có',
+            title: 'Số Sản Phẩm',
+            dataIndex: 'productCount',
+            key: 'productCount',
+            render: (count, record) => {
+                console.log('Rendering productCount:', count, 'for record:', record.name);
+                return (
+                    <Badge
+                        count={count}
+                        showZero
+                        color={count === 0 ? 'default' : count <= 5 ? 'warning' : 'success'}
+                        style={{ backgroundColor: count === 0 ? '#d9d9d9' : count <= 5 ? '#faad14' : '#52c41a' }}
+                    />
+                );
+            },
         },
         {
-            title: 'Ngày tạo',
-            dataIndex: 'createdAt',
-            key: 'createdAt',
-            render: (date) => new Date(date).toLocaleDateString('vi-VN'),
-            sorter: (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
+            title: 'Thứ Tự',
+            dataIndex: 'sortOrder',
+            key: 'sortOrder',
+            render: (sortOrder, record) => {
+                console.log('Rendering sortOrder:', sortOrder, 'for record:', record.name);
+                return (
+                    <Space>
+                        <InputNumber
+                            size="small"
+                            value={sortOrder}
+                            min={0}
+                            onChange={(value) => handleSortOrderChange(record._id, value)}
+                            style={{ width: 80 }}
+                        />
+                        <SwapOutlined style={{ color: '#1890ff' }} />
+                    </Space>
+                );
+            },
         },
         {
-            title: 'Hành động',
-            key: 'actions',
+            title: 'Trạng Thái',
+            dataIndex: 'isActive',
+            key: 'isActive',
+            render: (isActive, record) => (
+                <Switch
+                    checked={isActive}
+                    onChange={() => handleToggleStatus(record._id, isActive)}
+                    checkedChildren="Kích hoạt"
+                    unCheckedChildren="Vô hiệu"
+                />
+            ),
+        },
+        {
+            title: 'Thao Tác',
+            key: 'action',
             render: (_, record) => (
-                <Space size="middle">
-                    <Button type="primary" icon={<EditOutlined />} onClick={() => showEditModal(record)}>
-                        Sửa
-                    </Button>
+                <Space size="small">
+                    <Tooltip title="Chỉnh sửa">
+                        <Button
+                            type="primary"
+                            size="small"
+                            icon={<EditOutlined />}
+                            onClick={() => openEditModal(record)}
+                        />
+                    </Tooltip>
+                    <Tooltip title="Xem chi tiết">
+                        <Button
+                            size="small"
+                            icon={<EyeOutlined />}
+                            onClick={() => openEditModal(record)}
+                        />
+                    </Tooltip>
                     <Popconfirm
-                        title="Xóa danh mục"
-                        description="Bạn có chắc chắn muốn xóa danh mục này? Hành động này không thể hoàn tác và có thể ảnh hưởng đến các sản phẩm liên quan!"
-                        onConfirm={() => handleDeleteCategory(record._id)}
+                        title="Xác nhận xóa"
+                        description={`Bạn có chắc chắn muốn xóa danh mục "${record.name}"?`}
+                        onConfirm={() => handleDelete(record._id)}
                         okText="Xóa"
                         cancelText="Hủy"
-                        icon={<ExclamationCircleOutlined style={{ color: 'red' }} />}
+                        disabled={record.productCount > 0}
                     >
-                        <Button type="danger" icon={<DeleteOutlined />}>
-                            Xóa
-                        </Button>
+                        <Tooltip title={record.productCount > 0 ? 'Không thể xóa vì có sản phẩm' : 'Xóa danh mục'}>
+                            <Button
+                                type="primary"
+                                danger
+                                size="small"
+                                icon={<DeleteOutlined />}
+                                disabled={record.productCount > 0}
+                            />
+                        </Tooltip>
                     </Popconfirm>
                 </Space>
             ),
-            width: 180,
-            align: 'center',
         },
     ];
 
+    // Statistics
+    const stats = {
+        totalCategories: categories.length,
+        activeCategories: categories.filter(c => c.isActive).length,
+        inactiveCategories: categories.filter(c => !c.isActive).length,
+        categoriesWithProducts: categories.filter(c => c.productCount > 0).length,
+        emptyCategories: categories.filter(c => c.productCount === 0).length
+    };
+
     return (
-        <div style={{ padding: '20px' }}>
-            <h1 style={{ fontSize: '2em', fontWeight: 'bold', color: '#2c3e50', marginBottom: '20px', paddingBottom: '10px', borderBottom: '2px solid #28a745' }}>
-                Quản lý Danh mục
-            </h1>
+        <div style={{ padding: '24px' }}>
+            {/* Header */}
+            <div style={{ marginBottom: '24px' }}>
+                <Title level={2} style={{ margin: 0 }}>
+                    <FolderOutlined style={{ marginRight: '8px', color: '#1890ff' }} />
+                    Quản Lý Danh Mục
+                </Title>
+                <Text type="secondary">
+                    Quản lý và tổ chức danh mục sản phẩm một cách hiệu quả
+                </Text>
+            </div>
 
-            <Button type="primary" icon={<PlusOutlined />} onClick={showAddModal} style={{ marginBottom: '20px' }}>
-                Thêm danh mục mới
-            </Button>
+            {/* Statistics Cards */}
+            <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
+                <Col xs={24} sm={12} lg={4}>
+                    <Card size="small">
+                        <Statistic
+                            title="Tổng Danh Mục"
+                            value={stats.totalCategories}
+                            prefix={<FolderOutlined />}
+                            valueStyle={{ color: '#1890ff' }}
+                        />
+                    </Card>
+                </Col>
+                <Col xs={24} sm={12} lg={4}>
+                    <Card size="small">
+                        <Statistic
+                            title="Đang Kích Hoạt"
+                            value={stats.activeCategories}
+                            prefix={<CheckCircleOutlined />}
+                            valueStyle={{ color: '#52c41a' }}
+                        />
+                    </Card>
+                </Col>
+                <Col xs={24} sm={12} lg={4}>
+                    <Card size="small">
+                        <Statistic
+                            title="Vô Hiệu Hóa"
+                            value={stats.inactiveCategories}
+                            prefix={<ExclamationCircleOutlined />}
+                            valueStyle={{ color: '#ff4d4f' }}
+                        />
+                    </Card>
+                </Col>
+                <Col xs={24} sm={12} lg={4}>
+                    <Card size="small">
+                        <Statistic
+                            title="Có Sản Phẩm"
+                            value={stats.categoriesWithProducts}
+                            prefix={<InfoCircleOutlined />}
+                            valueStyle={{ color: '#722ed1' }}
+                        />
+                    </Card>
+                </Col>
+                <Col xs={24} sm={12} lg={4}>
+                    <Card size="small">
+                        <Statistic
+                            title="Trống"
+                            value={stats.emptyCategories}
+                            prefix={<WarningOutlined />}
+                            valueStyle={{ color: '#faad14' }}
+                        />
+                    </Card>
+                </Col>
+            </Row>
 
-            {error && <AntMessage type="error" content={error} style={{ marginBottom: '20px' }} />}
+            {/* Search and Actions */}
+            <Card style={{ marginBottom: '24px' }}>
+                <Row gutter={[16, 16]} align="middle">
+                    <Col xs={24} sm={12} md={8}>
+                        <Search
+                            placeholder="Tìm kiếm danh mục..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            onSearch={() => {
+                                setCurrentPage(1);
+                                fetchCategories();
+                            }}
+                            allowClear
+                        />
+                    </Col>
+                    <Col xs={24} sm={12} md={8}>
+                        <Space>
+                            <Button
+                                icon={<ReloadOutlined />}
+                                onClick={() => {
+                                    setSearchTerm('');
+                                    setCurrentPage(1);
+                                    fetchCategories();
+                                }}
+                            >
+                                Làm mới
+                            </Button>
+                            <Button
+                                type="primary"
+                                icon={<PlusOutlined />}
+                                onClick={() => setShowModal(true)}
+                            >
+                                Thêm Danh Mục
+                            </Button>
+                        </Space>
+                    </Col>
+                    <Col xs={24} sm={24} md={8}>
+                        <Space>
+                            <Text>Sắp xếp theo:</Text>
+                            <Select
+                                value={sortBy}
+                                onChange={setSortBy}
+                                style={{ width: 120 }}
+                            >
+                                <Option value="name">Tên</Option>
+                                <Option value="sortOrder">Thứ tự</Option>
+                                <Option value="createdAt">Ngày tạo</Option>
+                                <Option value="productCount">Số sản phẩm</Option>
+                            </Select>
+                            <Button
+                                icon={sortOrder === 'asc' ? <SortAscendingOutlined /> : <SortDescendingOutlined />}
+                                onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                            />
+                        </Space>
+                    </Col>
+                </Row>
+            </Card>
 
-            {loading ? (
-                <Spin tip="Đang tải danh mục...">
-                    <div style={{ height: '300px' }} />
-                </Spin>
-            ) : (
+            {/* Categories Table */}
+            <Card
+                title={
+                    <Space>
+                        <FolderOutlined />
+                        Danh Sách Danh Mục
+                        <Badge count={total} style={{ backgroundColor: '#52c41a' }} />
+                    </Space>
+                }
+                extra={
+                    <Dropdown overlay={
+                        <Menu>
+                            <Menu.Item key="excel" icon={<FileExcelOutlined />}>
+                                Xuất Excel
+                            </Menu.Item>
+                            <Menu.Item key="pdf" icon={<FilePdfOutlined />}>
+                                Xuất PDF
+                            </Menu.Item>
+                            <Menu.Item key="print" icon={<PrinterOutlined />}>
+                                In báo cáo
+                            </Menu.Item>
+                        </Menu>
+                    }>
+                        <Button icon={<DownloadOutlined />}>
+                            Xuất báo cáo
+                        </Button>
+                    </Dropdown>
+                }
+            >
                 <Table
-                    dataSource={categories}
                     columns={columns}
-                    rowKey="_id" // Antd sẽ sử dụng _id làm key
-                    pagination={{ pageSize: 10 }}
-                    bordered
+                    dataSource={categories}
+                    rowKey="_id"
+                    loading={loading}
+                    pagination={{
+                        current: currentPage,
+                        pageSize: pageSize,
+                        total: total,
+                        showSizeChanger: true,
+                        showQuickJumper: true,
+                        showTotal: (total, range) =>
+                            `${range[0]}-${range[1]} của ${total} danh mục`,
+                        onChange: (page, size) => {
+                            setCurrentPage(page);
+                            setPageSize(size);
+                        }
+                    }}
+                    scroll={{ x: 1200 }}
                 />
-            )}
+            </Card>
 
-            {/* Modal Thêm/Sửa danh mục */}
+            {/* Add/Edit Category Modal */}
             <Modal
-                title={isEditing ? "Sửa danh mục" : "Thêm danh mục mới"}
-                open={isModalVisible}
-                onCancel={handleCancelModal}
+                title={editingCategory ? 'Chỉnh Sửa Danh Mục' : 'Thêm Danh Mục Mới'}
+                open={showModal}
+                onCancel={closeModal}
                 footer={null}
-                width={600}
-                maskClosable={!formLoading}
-                closable={!formLoading}
+                width={700}
             >
                 <Form
                     form={form}
                     layout="vertical"
-                    onFinish={onFinishForm}
-                    initialValues={isEditing && currentCategory ? currentCategory : {}} 
+                    onFinish={handleSubmit}
                 >
-                    <Form.Item label="Tên danh mục" name="name" rules={[{ required: true, message: 'Vui lòng nhập tên danh mục!' }]}>
-                        <Input placeholder="Ví dụ: Cây để bàn, Sen đá, Dụng cụ" />
+                    <Row gutter={16}>
+                        <Col span={12}>
+                            <Form.Item
+                                name="name"
+                                label="Tên danh mục"
+                                rules={[
+                                    { required: true, message: 'Vui lòng nhập tên danh mục!' },
+                                    { max: 100, message: 'Tên danh mục không được quá 100 ký tự!' }
+                                ]}
+                            >
+                                <Input placeholder="Nhập tên danh mục" />
+                            </Form.Item>
+                        </Col>
+                        <Col span={12}>
+                            <Form.Item
+                                name="sortOrder"
+                                label="Thứ tự sắp xếp"
+                                rules={[
+                                    { type: 'number', min: 0, message: 'Thứ tự phải là số dương!' }
+                                ]}
+                            >
+                                <InputNumber
+                                    placeholder="0"
+                                    min={0}
+                                    style={{ width: '100%' }}
+                                />
+                            </Form.Item>
+                        </Col>
+                    </Row>
+
+                    <Form.Item
+                        name="description"
+                        label="Mô tả"
+                        rules={[
+                            { max: 500, message: 'Mô tả không được quá 500 ký tự!' }
+                        ]}
+                    >
+                        <TextArea
+                            rows={3}
+                            placeholder="Nhập mô tả danh mục..."
+                        />
                     </Form.Item>
 
-                    <Form.Item label="Mô tả (tùy chọn)" name="description">
-                        <Input.TextArea rows={3} placeholder="Mô tả về danh mục..." />
+                    <Row gutter={16}>
+                        <Col span={12}>
+                            <Form.Item
+                                name="image"
+                                label="Hình ảnh"
+                            >
+                                <Input placeholder="URL hình ảnh" />
+                            </Form.Item>
+                        </Col>
+                        <Col span={12}>
+                            <Form.Item
+                                name="metaTitle"
+                                label="Meta Title"
+                                rules={[
+                                    { max: 60, message: 'Meta title không được quá 60 ký tự!' }
+                                ]}
+                            >
+                                <Input placeholder="Meta title cho SEO" />
+                            </Form.Item>
+                        </Col>
+                    </Row>
+                    <Row gutter={16}>
+                        <Col span={12}>
+                            <Form.Item
+                                name="isActive"
+                                label="Trạng thái"
+                                valuePropName="checked"
+                            >
+                                <Switch
+                                    checkedChildren="Kích hoạt"
+                                    unCheckedChildren="Vô hiệu"
+                                    defaultChecked
+                                />
+                            </Form.Item>
+                        </Col>
+                    </Row>
+
+                    <Form.Item
+                        name="metaDescription"
+                        label="Meta Description"
+                        rules={[
+                            { max: 160, message: 'Meta description không được quá 160 ký tự!' }
+                        ]}
+                    >
+                        <TextArea
+                            rows={2}
+                            placeholder="Meta description cho SEO..."
+                        />
                     </Form.Item>
 
                     <Form.Item>
-                        <Button type="primary" htmlType="submit" loading={formLoading}>
-                            {isEditing ? 'Cập nhật' : 'Thêm danh mục'}
-                        </Button>
-                        <Button type="default" onClick={handleCancelModal} style={{ marginLeft: '10px' }} disabled={formLoading}>
-                            Hủy
-                        </Button>
+                        <Space>
+                            <Button type="primary" htmlType="submit">
+                                {editingCategory ? 'Cập nhật' : 'Thêm mới'}
+                            </Button>
+                            <Button onClick={closeModal}>
+                                Hủy
+                            </Button>
+                        </Space>
                     </Form.Item>
                 </Form>
             </Modal>
+
+            {/* Info Alert */}
+            <Alert
+                message="Lưu ý quan trọng"
+                description={
+                    <div>
+                        <div>• Chỉ có thể xóa danh mục không có sản phẩm</div>
+                        <div>• Tên danh mục phải là duy nhất</div>
+                        <div>• Slug sẽ được tạo tự động từ tên danh mục</div>
+                    </div>
+                }
+                type="info"
+                showIcon
+                style={{ marginTop: '16px' }}
+            />
         </div>
     );
 };

@@ -1,254 +1,280 @@
 
-import React, { useEffect } from 'react';
-import { NavLink, Outlet, useNavigate, Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import {
+    Layout,
+    Menu,
+    Button,
+    Avatar,
+    Space,
+    Typography,
+    Breadcrumb,
+    theme
+} from 'antd';
+import {
+    MenuFoldOutlined,
+    MenuUnfoldOutlined,
+    DashboardOutlined,
+    ShopOutlined,
+    ShoppingOutlined,
+    UserOutlined,
+    TagOutlined,
+    FileTextOutlined,
+    SettingOutlined,
+    LogoutOutlined,
+    HomeOutlined,
+    InboxOutlined
+} from '@ant-design/icons';
 import { useAuth } from '../context/AuthContext';
-import { FaLeaf, FaHome, FaBox, FaUsers, FaTag, FaClipboardList, FaNewspaper, FaCog } from 'react-icons/fa'; 
+
+const { Header, Sider, Content } = Layout;
+const { Title, Text } = Typography;
 
 const AdminLayout = () => {
     const { user, isAuthenticated, loading: authLoading, logout } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
+    const [collapsed, setCollapsed] = useState(false);
+    const {
+        token: { colorBgContainer },
+    } = theme.useToken();
 
     // Bảo vệ route: Chỉ admin mới được vào. Nếu không phải admin, chuyển hướng.
     useEffect(() => {
         if (!authLoading) {
             if (!isAuthenticated || (user && user.role !== 'admin')) {
                 alert('Bạn không có quyền truy cập trang quản trị!');
-                logout(); 
+                logout();
                 navigate('/admin/login');
             }
         }
     }, [isAuthenticated, user, authLoading, navigate, logout]);
 
-    // --- HÀM handleLogout ---
+    // Menu items cho sidebar
+    const menuItems = [
+        {
+            key: '/admin',
+            icon: <DashboardOutlined />,
+            label: 'Dashboard',
+        },
+        {
+            key: '/admin/products',
+            icon: <ShopOutlined />,
+            label: 'Quản lý Sản phẩm',
+        },
+        {
+            key: '/admin/orders',
+            icon: <ShoppingOutlined />,
+            label: 'Quản lý Đơn hàng',
+        },
+        {
+            key: '/admin/users',
+            icon: <UserOutlined />,
+            label: 'Quản lý Người dùng',
+        },
+        {
+            key: '/admin/coupons',
+            icon: <TagOutlined />,
+            label: 'Quản lý Mã ưu đãi',
+        },
+        {
+            key: '/admin/posts',
+            icon: <FileTextOutlined />,
+            label: 'Quản lý Bài viết',
+        },
+        {
+            key: '/admin/inventory',
+            icon: <InboxOutlined />,
+            label: 'Quản lý Tồn Kho',
+        },
+        {
+            key: '/admin/categories',
+            icon: <TagOutlined />,
+            label: 'Quản lý Danh Mục',
+        },
+        {
+            key: '/admin/settings',
+            icon: <SettingOutlined />,
+            label: 'Cài đặt',
+        },
+    ];
+
+    // Lấy key hiện tại
+    const getCurrentKey = () => {
+        return location.pathname;
+    };
+
+    // Lấy page title dựa trên pathname
+    const getPageTitle = () => {
+        const titles = {
+            '/admin': 'Dashboard',
+            '/admin/products': 'Quản lý Sản phẩm',
+            '/admin/orders': 'Quản lý Đơn hàng',
+            '/admin/users': 'Quản lý Người dùng',
+            '/admin/coupons': 'Quản lý Mã ưu đãi',
+            '/admin/posts': 'Quản lý Bài viết',
+            '/admin/inventory': 'Quản lý Tồn Kho',
+            '/admin/settings': 'Cài đặt',
+        };
+        return titles[location.pathname] || 'Admin Panel';
+    };
+
+    // Breadcrumb items
+    const getBreadcrumbItems = () => {
+        const pathnames = location.pathname.split('/').filter((x) => x);
+        const breadcrumbItems = [
+            {
+                title: <HomeOutlined />,
+                href: '/admin',
+            }
+        ];
+
+        pathnames.forEach((name, index) => {
+            if (name !== 'admin') {
+                const routeTo = `/${pathnames.slice(0, index + 1).join('/')}`;
+                const isLast = index === pathnames.length - 1;
+
+                breadcrumbItems.push({
+                    title: name.charAt(0).toUpperCase() + name.slice(1),
+                    href: isLast ? undefined : routeTo,
+                });
+            }
+        });
+
+        return breadcrumbItems;
+    };
+
     const handleLogout = () => {
-        logout(); 
+        logout();
         navigate('/admin/login');
     };
 
-    const dashboardContainerStyle = {
-        display: 'flex',
-        minHeight: '100vh', 
-        fontFamily: 'Roboto, sans-serif',
-        background: '#f0f2f5', 
-    };
-
-    const sidebarStyle = {
-        width: '280px', 
-        background: '#2c3e50',
-        color: 'white',
-        padding: '25px',
-        boxShadow: '4px 0 15px rgba(0,0,0,0.2)',
-        flexShrink: 0, 
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between', 
-    };
-
-    const sidebarLogoContainerStyle = {
-        marginBottom: '40px',
-        paddingBottom: '20px',
-        borderBottom: '1px solid rgba(255,255,255,0.1)', 
-        textAlign: 'center',
-    };
-
-    const sidebarLogoStyle = {
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: '10px',
-        color: '#4CAF50', 
-        textDecoration: 'none',
-        fontSize: '1.5em', 
-        fontWeight: 'bold',
-        textShadow: '1px 1px 2px rgba(0,0,0,0.5)',
-    };
-
-    const sidebarSubtitleStyle = {
-        fontSize: '0.85em', 
-        color: '#b0c4de',
-        textAlign: 'center',
-        marginTop: '10px', 
-        lineHeight: '1.4',
-    };
-
-    const navListStyle = {
-        listStyle: 'none',
-        padding: 0,
-        margin: 0,
-        flexGrow: 1, 
-    };
-
-    const navItemStyle = {
-        marginBottom: '8px',
-    };
-
-    const navLinkBaseStyle = {
-        display: 'flex',
-        alignItems: 'center',
-        gap: '12px',
-        padding: '14px 20px',
-        color: '#b0c4de', 
-        textDecoration: 'none',
-        borderRadius: '8px',
-        transition: 'background-color 0.2s ease, transform 0.1s ease, color 0.2s', 
-        fontSize: '1.05em',
-        fontWeight: '500',
-    };
-
-    const navLinkHoverStyle = {
-        background: '#3a5068', 
-        transform: 'translateX(5px)',
-        color: 'white',
-    };
-
-    const navLinkActiveStyle = {
-        background: '#4CAF50', 
-        color: 'white',
-        fontWeight: 'bold',
-        boxShadow: '0 4px 10px rgba(0,0,0,0.2)',
-        transform: 'translateX(5px)', 
-    };
-
-    const adminLogoutButtonStyle = {
-        background: '#dc3545',
-        color: 'white',
-        border: 'none',
-        padding: '12px 20px',
-        borderRadius: '8px',
-        cursor: 'pointer',
-        fontSize: '1em',
-        fontWeight: 'bold',
-        textAlign: 'center',
-        marginTop: '30px',
-        transition: 'background-color 0.3s ease, transform 0.2s',
-        '&:hover': {
-            backgroundColor: '#c82333',
-            transform: 'translateY(-2px)',
-        }
-    };
-
-    const mainContentAreaStyle = {
-        flexGrow: 1,
-        padding: '30px',
-        background: '#f8f9fa', 
-        overflowY: 'auto', 
-    };
-
-    const getNavLinkStyle = ({ isActive }) => {
-        return {
-            ...navLinkBaseStyle,
-            ...(isActive ? navLinkActiveStyle : {}),
-        };
-    };
-
-    const applyHover = (e, hoverStyle) => Object.assign(e.currentTarget.style, hoverStyle);
-    const removeHover = (e, baseStyle) => Object.assign(e.currentTarget.style, baseStyle);
-
 
     if (authLoading) {
-        return <p style={{textAlign: 'center', padding: '100px'}}>Đang kiểm tra quyền truy cập Admin...</p>;
+        return <p style={{ textAlign: 'center', padding: '100px' }}>Đang kiểm tra quyền truy cập Admin...</p>;
     }
-    
-    return (
-        <div style={dashboardContainerStyle}>
-            <div style={sidebarStyle}>
-                <div> 
-                    <div style={sidebarLogoContainerStyle}>
-                        <Link to="/admin" style={sidebarLogoStyle}>
-                            <FaLeaf size={32} style={{ color: '#4CAF50' }} /> 
-                            BonsaiGN <br/> 
-                        </Link>
-                    
-                    </div>
 
-                    <ul style={navListStyle}>
-                        <li style={navItemStyle}>
-                            <NavLink 
-                                to="/admin" 
-                                style={getNavLinkStyle}
-                                onMouseOver={(e) => applyHover(e, navLinkHoverStyle)}
-                                onMouseOut={(e) => removeHover(e, navLinkBaseStyle)}
-                            >
-                                <FaHome /> Dashboard
-                            </NavLink>
-                        </li>
-                        <li style={navItemStyle}>
-                            <NavLink 
-                                to="/admin/products" 
-                                style={getNavLinkStyle}
-                                onMouseOver={(e) => applyHover(e, navLinkHoverStyle)}
-                                onMouseOut={(e) => removeHover(e, navLinkBaseStyle)}
-                            >
-                                <FaBox /> Quản lý Sản phẩm
-                            </NavLink>
-                        </li>
-                        <li style={navItemStyle}>
-                            <NavLink 
-                                to="/admin/orders" 
-                                style={getNavLinkStyle}
-                                onMouseOver={(e) => applyHover(e, navLinkHoverStyle)}
-                                onMouseOut={(e) => removeHover(e, navLinkBaseStyle)}
-                            >
-                                <FaClipboardList /> Quản lý Đơn hàng
-                            </NavLink>
-                        </li>
-                        <li style={navItemStyle}>
-                            <NavLink 
-                                to="/admin/users" 
-                                style={getNavLinkStyle}
-                                onMouseOver={(e) => applyHover(e, navLinkHoverStyle)}
-                                onMouseOut={(e) => removeHover(e, navLinkBaseStyle)}
-                            >
-                                <FaUsers /> Quản lý Người dùng
-                            </NavLink>
-                        </li>
-                        <li style={navItemStyle}>
-                            <NavLink 
-                                to="/admin/coupons" 
-                                style={getNavLinkStyle}
-                                onMouseOver={(e) => applyHover(e, navLinkHoverStyle)}
-                                onMouseOut={(e) => removeHover(e, navLinkBaseStyle)}
-                            >
-                                <FaTag /> Quản lý Mã ưu đãi
-                            </NavLink>
-                        </li>
-                        <li style={navItemStyle}>
-                            <NavLink 
-                                to="/admin/posts" 
-                                style={getNavLinkStyle}
-                                onMouseOver={(e) => applyHover(e, navLinkHoverStyle)}
-                                onMouseOut={(e) => removeHover(e, navLinkBaseStyle)}
-                            >
-                                <FaNewspaper /> Quản lý Bài viết
-                            </NavLink>
-                        </li>
-                      
-                        <li style={navItemStyle}>
-                            <NavLink 
-                                to="/admin/settings" 
-                                style={getNavLinkStyle}
-                                onMouseOver={(e) => applyHover(e, navLinkHoverStyle)}
-                                onMouseOut={(e) => removeHover(e, navLinkBaseStyle)}
-                            >
-                                <FaCog /> Cài đặt
-                            </NavLink>
-                        </li>
-                    </ul>
+    return (
+        <Layout style={{ minHeight: '100vh' }}>
+            {/* Sidebar */}
+            <Sider
+                trigger={null}
+                collapsible
+                collapsed={collapsed}
+                style={{
+                    overflow: 'auto',
+                    height: '100vh',
+                    position: 'fixed',
+                    left: 0,
+                    top: 0,
+                    bottom: 0,
+                }}
+            >
+                {/* Logo */}
+                <div style={{
+                    padding: '16px',
+                    textAlign: 'center',
+                    borderBottom: '1px solid #303030'
+                }}>
+                    <Title
+                        level={4}
+                        style={{
+                            color: '#fff',
+                            margin: 0,
+                            fontSize: collapsed ? '16px' : '20px'
+                        }}
+                    >
+                        🌿 {!collapsed && 'BonsaiGN'}
+                    </Title>
+                    {!collapsed && (
+                        <Text style={{ color: '#999', fontSize: '12px' }}>
+                            Admin Panel
+                        </Text>
+                    )}
                 </div>
-              
-                <button 
-                    onClick={handleLogout} 
-                    style={adminLogoutButtonStyle}
-                    onMouseOver={(e) => applyHover(e, adminLogoutButtonStyle['&:hover'])}
-                    onMouseOut={(e) => removeHover(e, adminLogoutButtonStyle)}
-                >
-                    Đăng xuất
-                </button>
-            </div>
-            <div style={mainContentAreaStyle}>
-                <Outlet />
-            </div>
-        </div>
+
+                {/* Menu */}
+                <Menu
+                    theme="dark"
+                    mode="inline"
+                    selectedKeys={[getCurrentKey()]}
+                    items={menuItems}
+                    onClick={({ key }) => navigate(key)}
+                    style={{ borderRight: 0 }}
+                />
+
+                {/* Logout button ở cuối sidebar */}
+                <div style={{
+                    position: 'absolute',
+                    bottom: '16px',
+                    left: '16px',
+                    right: '16px'
+                }}>
+                    <Button
+                        type="primary"
+                        danger
+                        block
+                        icon={<LogoutOutlined />}
+                        onClick={handleLogout}
+                        size={collapsed ? 'small' : 'middle'}
+                    >
+                        {!collapsed && 'Đăng xuất'}
+                    </Button>
+                </div>
+            </Sider>
+
+            {/* Main Layout */}
+            <Layout style={{ marginLeft: collapsed ? 80 : 200, transition: 'margin-left 0.2s' }}>
+                {/* Header */}
+                <Header style={{
+                    padding: '0 24px',
+                    background: colorBgContainer,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    borderBottom: '1px solid #f0f0f0'
+                }}>
+                    <Space>
+                        <Button
+                            type="text"
+                            icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+                            onClick={() => setCollapsed(!collapsed)}
+                            style={{
+                                fontSize: '16px',
+                                width: 64,
+                                height: 64,
+                            }}
+                        />
+                        <Title level={4} style={{ margin: 0 }}>
+                            {getPageTitle()}
+                        </Title>
+                    </Space>
+
+                    <Space>
+                        <Text>Xin chào, </Text>
+                        <Avatar icon={<UserOutlined />} />
+                        <Text strong>{user?.name}</Text>
+                    </Space>
+                </Header>
+
+                {/* Breadcrumb */}
+                <div style={{ padding: '16px 24px 0' }}>
+                    <Breadcrumb items={getBreadcrumbItems()} />
+                </div>
+
+                {/* Content */}
+                <Content style={{
+                    margin: '24px',
+                    padding: '24px',
+                    background: colorBgContainer,
+                    borderRadius: '8px',
+                    minHeight: 'calc(100vh - 160px)',
+                    overflow: 'auto'
+                }}>
+                    <Outlet />
+                </Content>
+            </Layout>
+        </Layout>
     );
 };
 
